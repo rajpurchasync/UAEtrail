@@ -19,14 +19,14 @@ import {
   withAuthResumeQuery,
 } from '../../utils/authReturnContext';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { ExploreJoinOverlays } from '../../discovery/discoverySessionExploreJoinOverlays';
+import { ExploreJoinOverlays } from '../../discovery/discoveryPortExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
 import {
   buildMapPeekReturnPath,
   mapPeekDetailNavState,
-} from '../../discovery/discoverySessionExploreMapPeekNav';
+} from '../../discovery/discoveryPortExploreMapPeekNav';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';

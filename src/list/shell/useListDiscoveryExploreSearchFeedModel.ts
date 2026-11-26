@@ -16,7 +16,7 @@ import {
   parseExploreSearchBrowseState,
   resolveExploreSearchTripPool,
   resolveExploreSearchVenuePool,
-} from '../../discovery/discoverySessionExploreSearch';
+} from '../../discovery/discoveryPortExploreSearch';
 
 export type ListDiscoveryExploreSearchFeedInput = {
   exploreSearch: boolean;

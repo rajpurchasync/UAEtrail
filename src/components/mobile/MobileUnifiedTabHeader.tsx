@@ -8,7 +8,7 @@ import {
   MOBILE_PRODUCT_HEADER_FROSTED,
   MOBILE_PRODUCT_HEADER_REST,
 } from '../../config/consumerScrollChrome';
-import { useComposeImmersiveChrome } from '@/discovery/discoverySessionExploreComposeImmersiveChrome';
+import { useComposeImmersiveChrome } from '@/discovery/discoveryPortExploreComposeImmersiveChrome';
 import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
 import { MobileBackButton } from './MobileBackButton';
 import { MobileConsumerIdentityBar } from './MobileConsumerIdentityBar';

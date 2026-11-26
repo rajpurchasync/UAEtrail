@@ -11,13 +11,13 @@ import {
 } from '../browse/listDiscoverySearchCreateFlowStub';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
-import { intentOpenCompose } from '../../discovery/discoverySessionExploreCompose';
+import { intentOpenCompose } from '../../discovery/discoveryPortExploreCompose';
 import {
   useExploreCreateFlowBridge,
   resolveCreateEntryPreset,
   useHostingFromActivity,
   useHostingWizardPrefill,
-} from '../../discovery/discoverySessionExploreComposeHooks';
+} from '../../discovery/discoveryPortExploreComposeHooks';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { parseListPlanWithUserId } from '../browse/listComposeQuery';
 import { resolveBrowseListCreateFabLabel } from '../browse/browseListCopy';

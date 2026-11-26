@@ -1,7 +1,7 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { resolveActivityMapPeekActionsForHostDto } from '../../activity/activityPeekEngagement';
 import { executeActivityMapPeekAction, type ActivityMapPeekActionHandlers } from '../../activity/executeActivityMapPeekAction';
-import { resolveListFeedFooterFromMapPeekWire } from '../../discovery/discoverySessionListFeedEngagement';
+import { resolveListFeedFooterFromMapPeekWire } from '../../discovery/discoveryPortListFeedEngagement';
 import {
   DiscoveryCardMapPeekEngagementFooter,
   type DiscoveryCardMapPeekEngagementFooterProps,

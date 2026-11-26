@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** W28+ policy — new cross-context ports use discoveryPort*, not discoverySessionExplore*. */
+/** W28+ policy — cross-context ports use discoveryPortExplore/List; spine stays discoverySession*. */
 describe('discoveryPortNamingGuard', () => {
+  it('W29: no legacy discoverySessionExplore/List port files under src/discovery', () => {
+    const root = join(process.cwd(), 'src/discovery');
+    const legacy = readdirSync(root).filter(
+      (f) =>
+        (f.startsWith('discoverySessionExplore') || f.startsWith('discoverySessionList')) &&
+        f.endsWith('.ts') &&
+        !f.endsWith('.test.ts')
+    );
+    expect(legacy).toEqual([]);
+  });
+
   it('W28 map publish ports use discoveryPortExplore prefix', () => {
     const root = join(process.cwd(), 'src/discovery');
     const ports = [

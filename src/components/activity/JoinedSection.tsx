@@ -33,7 +33,7 @@ import { requestStatusClassName, requestStatusLabel } from '../../utils/joinRequ
 import { getRequestEventDate } from '../../utils/activityDates';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
-import { profileHistoryEntityLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { profileHistoryEntityLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { viewReturnPathKey } from '../../utils/viewReturnMemory';
 
 const formatActivityMeta = (activity: MyActivityDTO) => {

@@ -13,13 +13,13 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { isDiscoverBrowseRoute } from '../discovery/discoverySessionExploreDiscoverBrowse';
-import { explorePath } from '../discovery/discoverySessionExploreRouting';
+import { isDiscoverBrowseRoute } from '../discovery/discoveryPortExploreDiscoverBrowse';
+import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   exploreSearchHomePath,
   isExploreSearchHomeState,
-} from '../discovery/discoverySessionExploreSearchRouting';
+} from '../discovery/discoveryPortExploreSearchRouting';
 import { LIST_CAT_PARAM } from '../discovery/discoverySession';
 import {
   MY_CREWS_PATH,

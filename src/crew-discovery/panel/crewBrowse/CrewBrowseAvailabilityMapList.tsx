@@ -3,8 +3,8 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryMapListRowCard } from '@/discovery';
 import type { DiscoveryCardModel } from '@/discovery/discoveryCardModel';
 import { discoverySelectionShowsOfferRideshare } from '@/discovery/discoveryOfferRideshareDispatch';
-import { BrowseCompactRow } from '@/discovery/discoverySessionListFeed';
-import { HOSTING_OFFER_RIDESHARE_LABEL } from '@/discovery/discoverySessionExploreCreateFlowCopy';
+import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';
+import { HOSTING_OFFER_RIDESHARE_LABEL } from '@/discovery/discoveryPortExploreCreateFlowCopy';
 import {
   EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
   EXPLORE_CREWS_EMPTY_MAP_SIGNALS,

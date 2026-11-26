@@ -1,11 +1,11 @@
 import { EXPLORE_FLOW } from '../config/exploreTheme';
-import { exploreFlowChoiceCardClass } from '@/discovery/discoverySessionExploreFlowUi';
+import { exploreFlowChoiceCardClass } from '@/discovery/discoveryPortExploreFlowUi';
 import {
   AVAILABILITY_FIXED_PARTY_PRESETS,
   AVAILABILITY_FIXED_VEHICLE_OPTIONS,
   type AvailabilityFixedTransportMode,
   type AvailabilityFixedVehicleType,
-} from '@/discovery/discoverySessionExploreIntentFixedFlow';
+} from '@/discovery/discoveryPortExploreIntentFixedFlow';
 
 export type AvailabilityOpenLogisticsState = {
   partySize: number;

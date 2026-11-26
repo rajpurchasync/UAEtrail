@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { CountryCode } from './regions';
 import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithDestinations } from './regions';
-import { useExplorePublishedDestinations } from '../discovery/discoverySessionExplorePublishedDestinations';
+import { useExplorePublishedDestinations } from '../discovery/discoveryPortExplorePublishedDestinations';
 
 /** Venue / emirate filter pills backed by static UAE list + `GET /destinations` regions. */
 export const useVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) => {

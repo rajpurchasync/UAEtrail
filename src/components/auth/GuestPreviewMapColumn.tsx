@@ -7,8 +7,8 @@ import {
   expandMapPins,
   layoutColocatedMapPins,
   ExploreMapLoadingSkeleton,
-} from '../../discovery/discoverySessionExploreMapColumn';
-import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoverySessionListMapSplit';
+} from '../../discovery/discoveryPortExploreMapColumn';
+import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoveryPortListMapSplit';
 
 const PlacesMap = lazy(() =>
   import('../ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))

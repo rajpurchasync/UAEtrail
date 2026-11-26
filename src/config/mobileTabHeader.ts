@@ -29,7 +29,7 @@ import {
   APP_SETTINGS_NOTIFICATIONS_PATH,
   APP_SETTINGS_SAFETY_PATH,
 } from './surfacePaths';
-import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoverySessionExploreSearchRouting';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoveryPortExploreSearchRouting';
 
 const TAB_HEADER_ROUTES = new Set([
   '/explore',

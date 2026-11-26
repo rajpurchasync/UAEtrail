@@ -7,7 +7,7 @@ import {
   expandMapPins,
   layoutColocatedMapPins,
   ExploreMapLoadingSkeleton,
-} from '../../discovery/discoverySessionExploreMapColumn';
+} from '../../discovery/discoveryPortExploreMapColumn';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { LIST_MAP_COLUMN_CLOSE } from '../browse/listChromeTheme';
 import { LIST_SIDE_MAP_MIN_PX } from '../browse/listDiscoverySideMapSplit';

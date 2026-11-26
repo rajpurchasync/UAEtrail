@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { planUpcomingEntityLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { planUpcomingEntityLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
 import {
   capturePlanUpcomingViewReturn,
   planUpcomingActivityFocusId,

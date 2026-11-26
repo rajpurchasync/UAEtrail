@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { resolveTripBrowseCardCopy } from '../discovery/discoverySessionListPeek';
+import { resolveTripBrowseCardCopy } from '../discovery/discoveryPortListPeek';
 import { sanitizeExploreLocation } from '@uaetrail/shared-types';
 
 /** Map peek — where the outing meets (emirate/place), not buried in the title. */

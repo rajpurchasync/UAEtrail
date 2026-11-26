@@ -3,8 +3,8 @@ import {
   emptyCreateActivityDraft,
   hydrateCreateActivityDraft,
   type CreateActivityKind,
-} from '@/discovery/discoverySessionExploreHostingPrefill';
-import type { HostingWizardPrefill } from '@/discovery/discoverySessionExploreHostingPrefill';
+} from '@/discovery/discoveryPortExploreHostingPrefill';
+import type { HostingWizardPrefill } from '@/discovery/discoveryPortExploreHostingPrefill';
 
 const modalityToHostKind = (modality: ScheduleModality | undefined): CreateActivityKind => {
   switch (modality) {

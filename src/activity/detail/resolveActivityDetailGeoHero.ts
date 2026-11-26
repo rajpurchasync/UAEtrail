@@ -1,5 +1,5 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { browseCatalogHubLabel } from '../../discovery/discoverySessionListCatalogLabels';
+import { browseCatalogHubLabel } from '../../discovery/discoveryPortListCatalogLabels';
 import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
 import { buildActivityDetailDiscoveryCard } from './buildActivityDetailDiscoveryCard';
 

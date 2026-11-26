@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import type { DestinationDetailPayload } from '../../hooks/destinationHubClientApi';
 import type { ExploreAvailabilityIndex } from '../../hooks/memberPeopleClientApi';
 import { PageMeta } from '../seo/PageMeta';
-import { activityCompose, intentFixedCompose, placeCompose } from '@/discovery/discoverySessionExploreCompose';
-import { explorePath } from '@/discovery/discoverySessionExploreRouting';
+import { activityCompose, intentFixedCompose, placeCompose } from '@/discovery/discoveryPortExploreCompose';
+import { explorePath } from '@/discovery/discoveryPortExploreRouting';
 import { destinationHubPath } from '@uaetrail/shared-types';
 import { type DestinationDetailTabId } from '../../destinationDetail/destinationDetailTab';
 import { DestinationHubMapStrip } from './DestinationHubMapStrip';
@@ -21,12 +21,12 @@ import {
   StatTile,
 } from '../../detail/shell';
 import { detailBackPath } from '../../config/routingCatalog';
-import { readDetailBackToFromLocation } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { parseMobileBackNavState } from '../../utils/mobileBackNav';
 import { resolveDestinationConsumerDetailHeaderChrome } from '../../destinationDetail/detail/resolveDestinationConsumerDetailHeaderChrome';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { DetailHeroShareButton } from '../../detail/shared/DetailHeroShareButton';
-import { ExploreWishlistSaveButton } from '@/discovery/discoverySessionExploreWishlistSave';
+import { ExploreWishlistSaveButton } from '@/discovery/discoveryPortExploreWishlistSave';
 import { buildDestinationDetailDiscoveryCard } from '../../destinationDetail/detail/buildDestinationDetailDiscoveryCard';
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';

@@ -10,7 +10,7 @@ import {
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
   type ExploreMapFilterPillKey,
-} from '../../discovery/discoverySessionExploreRuntime';
+} from '../../discovery/discoveryPortExploreRuntime';
 import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
 
 /**

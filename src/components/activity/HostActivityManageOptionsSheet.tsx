@@ -1,7 +1,7 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { EXPLORE_SHEET } from '../../config/exploreTheme';
-import { ExploreResponsiveSheet } from '@/discovery/discoverySessionExploreResponsiveSheet';
+import { ExploreResponsiveSheet } from '@/discovery/discoveryPortExploreResponsiveSheet';
 import type { ActivityManageSubview } from './activityManageViews';
 import { buildHostManageOptionRows } from './hostManageOptionRows';
 

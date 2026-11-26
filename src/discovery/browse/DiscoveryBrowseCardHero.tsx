@@ -1,7 +1,7 @@
 import type { DiscoveryCardModel } from '../discoveryCardModel';
 import { DiscoveryBrowseThumbnailPoster } from '../DiscoveryBrowseThumbnailPoster';
 import { DiscoveryBrowseListHeroFootOverlay } from './DiscoveryBrowseListImageOverlays';
-import { browseCardListHeroPriceLabel, browseCardMeta } from '../discoverySessionListFeed';
+import { browseCardListHeroPriceLabel, browseCardMeta } from '../discoveryPortListFeed';
 import {
   resolveDiscoveryBrowseListPolicyLabels,
   resolveDiscoveryBrowseListTypeLabel,

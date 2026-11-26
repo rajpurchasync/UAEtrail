@@ -12,7 +12,7 @@ import {
   type ActivityViewerAccessDTO,
   type ActivityViewerEntitlementsDTO,
 } from '@uaetrail/shared-types';
-import { LinkRidesharePanel } from '@/discovery/discoverySessionExploreLinkRideshareUi';
+import { LinkRidesharePanel } from '@/discovery/discoveryPortExploreLinkRideshareUi';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityRollcallView } from './ActivityRollcallView';
@@ -64,7 +64,7 @@ import {
   CreateHostingActivityFlow,
   hostingFlowForComposeKind,
   resolveHostComposeKindFromActivity,
-} from '@/discovery/discoverySessionExploreHostingActivityUi';
+} from '@/discovery/discoveryPortExploreHostingActivityUi';
 import { activityCrewPath, joinAuthPath } from '../../config/routingCatalog';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
 

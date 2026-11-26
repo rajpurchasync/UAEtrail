@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
-import { ExploreResponsiveSheet } from '@/discovery/discoverySessionExploreResponsiveSheet';
+import { ExploreResponsiveSheet } from '@/discovery/discoveryPortExploreResponsiveSheet';
 
 type ActivityInviteExploreSheetProps = {
   open: boolean;

@@ -4,8 +4,8 @@ import { ActivityLinkedParentPlanAffordance } from '../../../components/activity
 import {
   ACTIVITY_DETAIL_RIDESHARE_UNLINKED_GUEST,
   HOSTING_RIDESHARE_LINKED_NOTICE,
-} from '@/discovery/discoverySessionExploreCreateFlowCopy';
-import { LinkParentActivityPanel } from '@/discovery/discoverySessionExploreLinkRideshareUi';
+} from '@/discovery/discoveryPortExploreCreateFlowCopy';
+import { LinkParentActivityPanel } from '@/discovery/discoveryPortExploreLinkRideshareUi';
 import { resolveActivityLinkedParentSummary } from '../../../activity/resolveActivityLinkageSummaries';
 
 export type ActivityDetailRideshareLinkageProps = {

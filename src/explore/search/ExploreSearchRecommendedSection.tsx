@@ -30,7 +30,7 @@ import { useExploreSearchRecommendedCrew } from './useExploreSearchRecommendedCr
 import { CrewBrowseMemberRow } from '@/crew-discovery/panel/crewBrowse/CrewBrowseMemberRow';
 import { ExploreGuestSignInCard } from '../ui/ExploreGuestSignInCard';
 import { useExploreSearchCommunityGroups } from './useExploreSearchCommunityGroups';
-import { CommunityDiscoverBrowseList } from '@/discovery/discoverySessionListExperience';
+import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListExperience';
 import { FEATURE_FLAGS } from '../../config/platform';
 
 type ExploreSearchRecommendedSectionProps = {

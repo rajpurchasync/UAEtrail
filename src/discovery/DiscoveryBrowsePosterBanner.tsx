@@ -3,9 +3,9 @@ import { Clock, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from './discoveryCardModel';
 import { EnvironmentImage } from '../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
-import { DiscoveryCardTypeIcon } from './discoverySessionExploreDiscoveryCardTypeIcon';
-import { browseCardMeta } from './discoverySessionListFeed';
-import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from './discoverySessionListPeek';
+import { DiscoveryCardTypeIcon } from './discoveryPortExploreDiscoveryCardTypeIcon';
+import { browseCardMeta } from './discoveryPortListFeed';
+import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from './discoveryPortListPeek';
 import { DiscoveryCardHostProfileNav } from './DiscoveryCardHostProfileNav';
 import { BROWSE_LIST_HERO_TYPE, BROWSE_LIST_HERO_TYPE_WRAP } from './browse/discoveryBrowseListChrome';
 

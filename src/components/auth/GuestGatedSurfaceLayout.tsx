@@ -8,7 +8,7 @@ import { MobileUnifiedTabHeader } from '../mobile/MobileUnifiedTabHeader';
 import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { useMinWidthPx } from '../../hooks/useMinWidthPx';
 import { useExploreMap } from '../../hooks/useExploreMap';
-import { GuestFeatureUnlockPanel } from '../../discovery/discoverySessionExploreGuestUnlock';
+import { GuestFeatureUnlockPanel } from '../../discovery/discoveryPortExploreGuestUnlock';
 import type { GuestFeatureUnlockKey } from '../../content/guestFeatureUnlockCopy';
 import { APP_PAGE_MIN_H_CLASS } from '../../config/layoutScroll';
 import { collapseDesktopSideNav } from '../../hooks/useDesktopSideNavExpanded';
@@ -17,8 +17,8 @@ import {
   GUEST_GATED_THREE_COLUMN_MIN_PX,
 } from './guestGatedLayout';
 import { GuestPreviewCatalogList } from './GuestPreviewCatalogList';
-import { useListSideMapWidth, ListSideMapResizeHandle } from '../../discovery/discoverySessionListExplorerMapShell';
-import { LIST_BROWSE_MAX_PX } from '../../discovery/discoverySessionListMapSplit';
+import { useListSideMapWidth, ListSideMapResizeHandle } from '../../discovery/discoveryPortListExplorerMapShell';
+import { LIST_BROWSE_MAX_PX } from '../../discovery/discoveryPortListMapSplit';
 import { GuestPreviewMapColumn } from './GuestPreviewMapColumn';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 

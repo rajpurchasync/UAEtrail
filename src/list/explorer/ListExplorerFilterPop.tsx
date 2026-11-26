@@ -12,8 +12,8 @@ import {
   aliasPlaceMapTopicToList,
   destinationPlaceTopicsFrom,
   toggleExploreDestinationPlaceTopic,
-} from '../../discovery/discoverySessionExploreOptionalFilters';
-import type { PlaceMapTopicKey } from '../../discovery/discoverySessionExploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
+import type { PlaceMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilters';
 import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass } from '../browse/listChromeTheme';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { ListFilterFabCorner } from '../browse/listFilterFabSnap';

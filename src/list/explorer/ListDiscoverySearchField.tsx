@@ -7,9 +7,9 @@ import {
   EXPLORE_SEARCH_PROMPT,
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
-} from '../../discovery/discoverySessionExploreBrowseTaxonomy';
-import { exploreSearchScopesForQuery } from '../../discovery/discoverySessionExploreSearchUi';
-import { ExploreSearchScopeHints } from '../../discovery/discoverySessionExploreSearchScopeHints';
+} from '../../discovery/discoveryPortExploreBrowseTaxonomy';
+import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearchUi';
+import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearchScopeHints';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
 import { LIST_SEARCH } from '../browse/listChromeTheme';
 

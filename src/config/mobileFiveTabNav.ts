@@ -9,8 +9,8 @@
 
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from './platform';
 import { MESSAGES_PATH, PLAN_PATH } from './surfacePaths';
-import { explorePath, parseExplorePanel } from '../discovery/discoverySessionExploreRouting';
-import { parseExplorePinKindFilter } from '../discovery/discoverySessionExplorePinKindFilter';
+import { explorePath, parseExplorePanel } from '../discovery/discoveryPortExploreRouting';
+import { parseExplorePinKindFilter } from '../discovery/discoveryPortExplorePinKindFilter';
 import {
   LIST_CAT_PARAM,
   crewsHubHomePath,
@@ -24,7 +24,7 @@ import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   parseExploreSearchScopeFromParams,
-} from '../discovery/discoverySessionExploreSearchRouting';
+} from '../discovery/discoveryPortExploreSearchRouting';
 
 export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'crews', 'chat', 'plan'] as const;
 

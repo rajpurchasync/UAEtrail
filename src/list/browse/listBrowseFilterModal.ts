@@ -1,4 +1,4 @@
-import type { ExploreActivityDatePreset, PlaceMapTopicKey } from '../../discovery/discoverySessionExploreRuntime';
+import type { ExploreActivityDatePreset, PlaceMapTopicKey } from '../../discovery/discoveryPortExploreRuntime';
 import type { BrowsePriceFilter } from './browseListFilters';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { LIST_BROWSE_AUDIENCE_OPTIONS } from './browseAudienceFilter';

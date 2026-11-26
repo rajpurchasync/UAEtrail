@@ -9,7 +9,7 @@ import {
   PACKING_MUST_LABEL,
   PACKING_NICE_LABEL,
   packingChipClassName,
-} from '@/discovery/discoverySessionExploreCreateFlowCopy';
+} from '@/discovery/discoveryPortExploreCreateFlowCopy';
 
 type ActivityPackingListPreviewProps = {
   requirements?: string[] | null;

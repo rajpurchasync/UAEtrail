@@ -9,8 +9,8 @@ import {
 import {
   exploreActivityDatePresetToInclusiveRange,
   type ExploreActivityDatePreset,
-} from '@/discovery/discoverySessionExploreActivityDate';
-import type { MapFilterKey } from '@/discovery/discoverySessionExploreRouting';
+} from '@/discovery/discoveryPortExploreActivityDate';
+import type { MapFilterKey } from '@/discovery/discoveryPortExploreRouting';
 
 const STALE_MS = 60_000;
 

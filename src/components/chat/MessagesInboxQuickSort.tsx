@@ -1,5 +1,5 @@
 import { exploreMapMobileFloatChipClass } from '../../config/exploreTheme';
-import { LIST_CHIP_SCROLL } from '../../discovery/discoverySessionListChrome';
+import { LIST_CHIP_SCROLL } from '../../discovery/discoveryPortListChrome';
 import { INBOX_QUICK_SORT_PILLS, type InboxFilter, type InboxFilterCounts } from '../../utils/inboxThreads';
 
 type MessagesInboxQuickSortProps = {

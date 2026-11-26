@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { BROWSE_CARD_CHIP } from '../discoverySessionListBrowseCardChrome';
+import { BROWSE_CARD_CHIP } from '../discoveryPortListBrowseCardChrome';
 
 type DiscoveryBrowseCardChipRowProps = {
   labels: string[];

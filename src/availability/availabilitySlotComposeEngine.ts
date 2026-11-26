@@ -18,7 +18,7 @@ import {
   isScheduleModality,
   normalizeMemberAvailabilitySlotsForStorage,
 } from '@uaetrail/shared-types';
-import type { AvailabilityFixedDraft } from '@/discovery/discoverySessionExploreIntentFixedFlow';
+import type { AvailabilityFixedDraft } from '@/discovery/discoveryPortExploreIntentFixedFlow';
 import { saveMemberAvailability } from './saveMemberAvailability';
 
 const INTENT_OPEN_CAPACITY_SESSION = 'uaetrail:compose:intent-open-capacity';

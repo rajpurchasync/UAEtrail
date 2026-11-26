@@ -1,10 +1,10 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { browseCatalogHeaderLocationLine } from '../discovery/discoverySessionListCatalogLabels';
+import { browseCatalogHeaderLocationLine } from '../discovery/discoveryPortListCatalogLabels';
 import {
   distanceMeters,
   formatPlaceDistance,
   type ViewerFix,
-} from '../discovery/discoverySessionListPlaceDistance';
+} from '../discovery/discoveryPortListPlaceDistance';
 
 const joinMetaParts = (parts: (string | null | undefined)[]): string | null => {
   const next = parts.map((p) => p?.trim()).filter((p): p is string => Boolean(p));

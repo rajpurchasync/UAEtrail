@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import type { ExploreClockStyle, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
-import type { BrowseListFilterState } from '@/discovery/discoverySessionListFilters';
-import { CrewsTabBody } from '@/discovery/discoverySessionListCrewsPresentation';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/discovery/discoverySessionListCrewsOpen';
+import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
+import { CrewsTabBody } from '@/discovery/discoveryPortListCrewsPresentation';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListCrewsOpen';
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
-import { BrowseCompactRow } from '@/discovery/discoverySessionListFeed';
+import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';
 import {
   EXPLORE_SEARCH_MATCHES_TITLE,
   ExploreGuestSignInCard,
@@ -16,7 +16,7 @@ import {
   resolveExploreSearchDetectedWhereQuery,
   resolveExploreSearchJoinableTripCards,
   useExploreSearchCommunityGroups,
-} from '@/discovery/discoverySessionExploreSearch';
+} from '@/discovery/discoveryPortExploreSearch';
 import { FEATURE_FLAGS } from '@/config/platform';
 import { FindCrewMainTabs } from './FindCrewMainTabs';
 import {

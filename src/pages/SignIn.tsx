@@ -31,7 +31,7 @@ import { sessionExpiredLandingPath } from '../utils/authSessionLanding';
 import { buildAuthGateUrls, clearAuthReturnContext } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
-import { resolveWelcomeFinishExplorePath } from '@/discovery/discoverySessionExploreWelcomeNavigation';
+import { resolveWelcomeFinishExplorePath } from '@/discovery/discoveryPortExploreWelcomeNavigation';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import {
   fetchDemoLoginCatalog,

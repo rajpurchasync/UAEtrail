@@ -7,7 +7,7 @@ import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
 import type { ComponentProps, ReactNode } from 'react';
 
 const ListDiscoveryExperience = lazy(() =>
-  import('../../discovery/discoverySessionListExperience').then((module) => ({
+  import('../../discovery/discoveryPortListExperience').then((module) => ({
     default: module.ListDiscoveryExperience,
   }))
 );

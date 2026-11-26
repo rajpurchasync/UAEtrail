@@ -1,6 +1,6 @@
 import { Link, type LinkProps } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { planWishlistEntityLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { planWishlistEntityLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { capturePlanWishlistViewReturn } from '../../plan/planWishlistReturnCapture';
 
 type PlanWishlistDetailLinkProps = Omit<LinkProps, 'state'> & {

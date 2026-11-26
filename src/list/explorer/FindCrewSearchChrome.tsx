@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import {
   ExploreSearchBookingHero,
   resolveExploreSearchDetectedWhereQuery,
-} from '@/discovery/discoverySessionExploreSearch';
-import type { BrowseListFilterState } from '@/discovery/discoverySessionListFilters';
+} from '@/discovery/discoveryPortExploreSearch';
+import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
 import { FIND_CREW_WHERE_PLACEHOLDER, FIND_CREW_WHEN_PICK_LABEL } from './findCrewSearchCopy';
 
 type FindCrewSearchChromeProps = {

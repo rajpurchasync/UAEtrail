@@ -3,8 +3,8 @@ import { ConsumerDetailSection } from '../../detail/shell/ConsumerDetailSection'
 import { HorizontalDragScroll } from '../ui/HorizontalDragScroll';
 import type { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
 import { activityDetailPath, placeDetailPath } from '@uaetrail/shared-types';
-import { activityCompose, placeCompose } from '@/discovery/discoverySessionExploreCompose';
-import { explorePath, exploreShopsPath } from '@/discovery/discoverySessionExploreRouting';
+import { activityCompose, placeCompose } from '@/discovery/discoveryPortExploreCompose';
+import { explorePath, exploreShopsPath } from '@/discovery/discoveryPortExploreRouting';
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import { communityShopPlaceToView } from '../../utils/communityShopPlace';
 import {

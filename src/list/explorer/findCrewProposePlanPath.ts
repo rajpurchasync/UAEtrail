@@ -1,10 +1,10 @@
 import type { ActivityComposeKind } from '@uaetrail/shared-types';
 import { LIST_DISCOVERY_PATH } from '@/config/platform';
-import { activityCompose, formatComposeQuery } from '@/discovery/discoverySessionExploreCompose';
+import { activityCompose, formatComposeQuery } from '@/discovery/discoveryPortExploreCompose';
 import {
   LIST_AVAILABILITY_SLOT_QUERY_KEY,
   LIST_PLAN_WITH_QUERY_KEY,
-} from '@/discovery/discoverySessionListComposeQuery';
+} from '@/discovery/discoveryPortListComposeQuery';
 
 const defaultComposeKind = (modalities: string[] | undefined): ActivityComposeKind => {
   const first = modalities?.[0]?.toLowerCase();

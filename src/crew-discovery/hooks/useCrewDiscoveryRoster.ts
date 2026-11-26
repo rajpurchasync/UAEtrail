@@ -1,4 +1,4 @@
-import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import { useCrewDiscoverFeed } from '../discover/useCrewDiscoverFeed';
 
 type Args = {

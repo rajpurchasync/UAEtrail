@@ -184,7 +184,7 @@ export {
   type ActivityListFilterKey,
   type VenueListFilterKey,
   type DetailBackKind,
-} from '../discovery/discoverySessionExploreRouting';
+} from '../discovery/discoveryPortExploreRouting';
 
 export {
   EXPLORE_SEARCH_RESULTS_PATH,
@@ -193,7 +193,7 @@ export {
   exploreSearchListPathFromMapSearch,
   exploreSearchMapViewPathFromListSearch,
   type ExploreSearchScope,
-} from '../discovery/discoverySessionExploreSearchRouting';
+} from '../discovery/discoveryPortExploreSearchRouting';
 
 export {
   crewsHubHomePath,

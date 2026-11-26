@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { useExploreDesktopListDrawerChrome } from '../../discovery/discoverySessionExploreListDrawer';
-import { useExplorePublishedDestinations } from '../../discovery/discoverySessionExplorePublishedDestinations';
+import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreListDrawer';
+import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExplorePublishedDestinations';
 import { buildBrowseCollapsedRailLabels } from '../browse/browseCollapsedRailLabels';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
 import { BrowsePanelCollapsedRail } from './BrowsePanelCollapsedRail';
@@ -11,14 +11,14 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type {
   ExploreSearchScopeCounts,
   ExploreSearchScopeKey,
-} from '../../discovery/discoverySessionExploreBrowseTaxonomy';
+} from '../../discovery/discoveryPortExploreBrowseTaxonomy';
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browse/browseListCopy';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { ExplorePriceFilter } from '../../discovery/discoverySessionExploreOptionalFilters';
+import type { ExplorePriceFilter } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
-import type { ExploreActivityDatePreset } from '../../discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
 import { ListExplorerCalendar } from './ListExplorerCalendar';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';

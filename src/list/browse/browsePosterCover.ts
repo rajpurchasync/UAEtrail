@@ -1,7 +1,7 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel, DiscoveryCardTone } from '../../discovery/discoveryCardModel';
-import { resolveExploreCoverImage } from '../../discovery/discoverySessionExploreRuntime';
+import { resolveExploreCoverImage } from '../../discovery/discoveryPortExploreRuntime';
 
 /** Venue id → first real cover URL from explore map venue pins (same feed as list). */
 export const buildVenueCoverByLocationId = (items: ExploreMapItemDTO[]): Map<string, string> => {

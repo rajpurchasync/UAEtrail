@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin } from 'lucide-react';
 import { DETAIL_SCROLL_PANEL } from '../../../components/mobile/detailScrollSectionStyles';
-import { activityPlaceReturnState } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { activityPlaceReturnState } from '@/discovery/discoveryPortExploreMapPeekNav';
 
 type ActivityDetailLinkedPlaceLinkProps = {
   name: string;

@@ -7,7 +7,7 @@ import { resolveActivityPeekTwoSlot } from '../../activity/activityEngagementCta
 import {
   activityMapPeekActionLabel,
   type ActivityMapPeekActionLabelContext,
-} from '../../discovery/discoverySessionExploreRuntime';
+} from '../../discovery/discoveryPortExploreRuntime';
 import { discoveryCardHasMapCoords } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ACTIVITY_CTA_MESSAGE_HOST, ACTIVITY_PEEK_MANAGE_LABEL } from '../../content/activityParticipationCopy';

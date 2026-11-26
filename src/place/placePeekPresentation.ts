@@ -7,7 +7,7 @@ import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   browseCatalogEntityName,
   browseCatalogNormalize,
-} from '../discovery/discoverySessionListCatalogLabels';
+} from '../discovery/discoveryPortListCatalogLabels';
 
 const normalize = browseCatalogNormalize;
 

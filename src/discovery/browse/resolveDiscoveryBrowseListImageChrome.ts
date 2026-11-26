@@ -3,8 +3,8 @@ import { isGeographyMapSource } from '@uaetrail/shared-types';
 import {
   resolveBrowsePosterActivityTypeLabel,
   resolveListFeedPosterRequirementLabels,
-} from '../discoverySessionListPosterPresentation';
-import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../discoverySessionExploreRequirementBadges';
+} from '../discoveryPortListPosterPresentation';
+import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../discoveryPortExploreRequirementBadges';
 
 const POLICY_CHIP_CAP = 4;
 

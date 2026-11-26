@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GuestFeatureUnlockPanel } from '../discovery/discoverySessionExploreGuestUnlock';
+import { GuestFeatureUnlockPanel } from '../discovery/discoveryPortExploreGuestUnlock';
 import { Compass, LayoutGrid, Layers, MapPin, Droplets } from 'lucide-react';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import type { GeoCountsDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
@@ -11,7 +11,7 @@ import { ConsumerEntityTabBar } from '../components/mobile/ConsumerEntityTabBar'
 import { PageMeta } from '../components/seo/PageMeta';
 import { DetailHeroPhotoStrip } from '../detail/shared/DetailHeroPhotoStrip';
 import { GeoAncestorEyebrow } from '../detail/shared/GeoAncestorEyebrow';
-import type { BrowseListBucket } from '../discovery/discoverySessionListBucketWire';
+import type { BrowseListBucket } from '../discovery/discoveryPortListBucketWire';
 import type { GeoAncestorLink } from './geoAncestorLinks';
 import { GeoChildCards } from './GeoChildCards';
 import { GeoGuestDrillLink } from './GeoGuestDrillLink';
@@ -27,7 +27,7 @@ import { useGeoPagedActivities, useGeoPagedFacilities, useGeoPagedPlaces } from 
 import {
   consumerDetailChildLinkState,
   readDetailBackToFromLocation,
-} from '../discovery/discoverySessionExploreMapPeekNav';
+} from '../discovery/discoveryPortExploreMapPeekNav';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { resolveGeoConsumerDetailHeaderChrome } from './resolveGeoConsumerDetailHeaderChrome';
 import { destinationGuideLinkLabel } from './destinationGuideLinkLabel';

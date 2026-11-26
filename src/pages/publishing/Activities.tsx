@@ -44,7 +44,7 @@ import { activityKindChromeEmoji } from '../../activity/activityKindChrome';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
-import { consumerDetailChildLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 import {
   AdminTablePager,

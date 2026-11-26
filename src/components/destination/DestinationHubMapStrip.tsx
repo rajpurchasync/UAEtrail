@@ -4,7 +4,7 @@ import type { DestinationCenter, DestinationBoundsRing } from '@uaetrail/shared-
 import { placeDetailPath } from '@uaetrail/shared-types';
 import type { LocationDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../ui/placesMapTypes';
-import { explorePath } from '@/discovery/discoverySessionExploreRouting';
+import { explorePath } from '@/discovery/discoveryPortExploreRouting';
 import { placeDetailRouteKindForRow } from './destinationHubPlaceGroups';
 
 const LazyPlacesMap = lazy(() =>

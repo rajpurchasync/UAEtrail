@@ -36,10 +36,10 @@ import {
   resolveEsriExploreStylePreset,
   resolveExploreMapTiles,
   type ExploreMapStyle,
-} from '../discovery/discoverySessionExploreMapBasemap';
+} from '../discovery/discoveryPortExploreMapBasemap';
 
-export type { ExploreMapStyle, ExploreMapTileSet } from '../discovery/discoverySessionExploreMapBasemap';
-export { resolveExploreMapTiles } from '../discovery/discoverySessionExploreMapBasemap';
+export type { ExploreMapStyle, ExploreMapTileSet } from '../discovery/discoveryPortExploreMapBasemap';
+export { resolveExploreMapTiles } from '../discovery/discoveryPortExploreMapBasemap';
 
 export {
   ADMIN_PLACES_PATH,

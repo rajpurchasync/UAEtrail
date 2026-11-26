@@ -45,12 +45,12 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(count).toBeLessThanOrEqual(max);
   });
 
-  it('DISC-03-06: GW-7 browse leaves use discoverySessionExploreRuntime facade', () => {
-    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoverySessionExploreRuntime/);
-    expect(read('src/discovery/discoverySessionExploreRuntime.ts')).toMatch(/discoveryRuntime/);
+  it('DISC-03-06: GW-7 browse leaves use discoveryPortExploreRuntime facade', () => {
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExploreRuntime/);
+    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 
-  it('W20 config prod routes explore via discoverySessionExplore facades (incl routingCatalog)', () => {
+  it('W20 config prod routes explore via discoveryPortExplore facades (incl routingCatalog)', () => {
     const allow = new Set(['src/config/routingCatalogLite.ts']);
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];
@@ -63,7 +63,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W18 geo prod routes explore UI/routing via discoverySessionExplore facades', () => {
+  it('W18 geo prod routes explore UI/routing via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];
     const walkGeo = (dir: string) => {
@@ -82,7 +82,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W22–W23 activity/place + content + my-crew social prod route explore via discoverySessionExplore facades', () => {
+  it('W22–W23 activity/place + content + my-crew social prod route explore via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const roots = ['src/activity', 'src/place', 'src/content', 'src/components/social'];
     const violations: string[] = [];
@@ -129,7 +129,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W27 destination, detail shared, consumer pages prod route explore via discoverySessionExplore facades', () => {
+  it('W27 destination, detail shared, consumer pages prod route explore via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const roots = ['src/components/destination', 'src/detail/shared'];
     const violations: string[] = [];
@@ -162,7 +162,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W26 availability + mobile + layout prod route explore via discoverySessionExplore facades', () => {
+  it('W26 availability + mobile + layout prod route explore via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const roots = ['src/availability', 'src/components/mobile', 'src/components/layout'];
     const violations: string[] = [];
@@ -182,7 +182,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W25 plan + auth prod route explore via discoverySessionExplore facades', () => {
+  it('W25 plan + auth prod route explore via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const roots = ['src/components/plan', 'src/components/auth'];
     const violations: string[] = [];
@@ -202,7 +202,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W24 components/activity prod routes explore via discoverySessionExplore facades', () => {
+  it('W24 components/activity prod routes explore via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];
     const walk = (dir: string) => {
@@ -221,7 +221,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W21 crew-discovery prod routes explore via discoverySessionExplore facades', () => {
+  it('W21 crew-discovery prod routes explore via discoveryPortExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];
     const walkCrew = (dir: string) => {
@@ -240,7 +240,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('W16–W17 cross-context surfaces route list browse via discoverySessionList facades', () => {
+  it('W16–W17 cross-context surfaces route list browse via discoveryPortList facades', () => {
     const allowDirect = /list\//;
     const roots = [
       'src/activity',

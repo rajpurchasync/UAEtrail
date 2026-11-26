@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, Map, Maximize2, Minimize2, PanelLeftClose, Search, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { useExploreDesktopListDrawerChrome } from '../../discovery/discoverySessionExploreListDrawer';
+import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreListDrawer';
 import { Link, useNavigate } from 'react-router-dom';
-import { ExploreMapProjectionToggle } from '../../discovery/discoverySessionExploreListDrawer';
+import { ExploreMapProjectionToggle } from '../../discovery/discoveryPortExploreListDrawer';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type {
   ExploreSearchScopeCounts,
   ExploreSearchScopeKey,
-} from '../../discovery/discoverySessionExploreBrowseTaxonomy';
+} from '../../discovery/discoveryPortExploreBrowseTaxonomy';
 import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../browse/listChromeTheme';
 import { ListDiscoverySearchField } from './ListDiscoverySearchField';
 import { ListExplorerBucketToggle } from './ListExplorerBucketToggle';
@@ -22,10 +22,10 @@ import type { BrowseListSortMode } from '../browse/listBrowseSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { ExplorePriceFilter } from '../../discovery/discoverySessionExploreOptionalFilters';
+import type { ExplorePriceFilter } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
-import type { ExploreActivityDatePreset } from '../../discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
 import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerGeoScopeChip } from './ListExplorerGeoScopeChip';

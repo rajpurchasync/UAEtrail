@@ -1,7 +1,7 @@
 import { PageMeta } from '../components/seo/PageMeta';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import { CreateFlowProvider } from '../create/CreateFlowProvider';
-import { ExploreSearchInboundRedirectHost } from '../discovery/discoverySessionExploreSearch';
+import { ExploreSearchInboundRedirectHost } from '../discovery/discoveryPortExploreSearch';
 import { ListDiscoveryExperience } from './ListDiscoveryExperience';
 import '../styles/explore-map-chrome.css';
 

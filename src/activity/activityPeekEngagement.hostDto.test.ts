@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { pickActivityPeekTwoSlotActions } from '@uaetrail/shared-types';
 import { resolveActivityMapPeekActionsForHostDto } from './activityPeekEngagement';
-import { resolveListFeedFooterFromMapPeekWire } from '../discovery/discoverySessionListFeedEngagement';
+import { resolveListFeedFooterFromMapPeekWire } from '../discovery/discoveryPortListFeedEngagement';
 
 const baseActivity = (overrides: Partial<ActivityDTO> = {}): ActivityDTO =>
   ({

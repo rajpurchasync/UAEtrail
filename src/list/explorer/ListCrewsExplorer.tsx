@@ -5,16 +5,16 @@ import type {
   CrewPeopleFacet,
   CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseState';
-import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
-import type { BrowseListFilterState } from '@/discovery/discoverySessionListFilters';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
+import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
-import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoverySessionListChrome';
+import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoveryPortListChrome';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
-import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoverySessionExploreSearch';
+import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoveryPortExploreSearch';
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';
 import { FindCrewSearchChrome } from './FindCrewSearchChrome';
 import { FindCrewResultsSection } from './FindCrewResultsSection';
-import type { CrewsAvailableOpenLens } from '@/discovery/discoverySessionListCrewsOpen';
+import type { CrewsAvailableOpenLens } from '@/discovery/discoveryPortListCrewsOpen';
 
 type ListCrewsExplorerProps = {
   isSignedIn: boolean;

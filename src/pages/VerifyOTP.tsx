@@ -5,7 +5,7 @@ import { resendEmailVerification } from '../hooks/accountAuthClientApi';
 import { requestPasswordReset } from '../hooks/accountPasswordClientApi';
 import { OtpInput } from '../components/auth/OtpInput';
 import { SIGNIN_PATH } from '../config/routingCatalog';
-import { resolveWelcomeFinishExplorePath } from '@/discovery/discoverySessionExploreWelcomeNavigation';
+import { resolveWelcomeFinishExplorePath } from '@/discovery/discoveryPortExploreWelcomeNavigation';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import {

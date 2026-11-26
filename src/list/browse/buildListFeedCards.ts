@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { hostedOutingSummariesByPlaceId } from '../../discovery/discoverySessionExploreRuntime';
+import { hostedOutingSummariesByPlaceId } from '../../discovery/discoveryPortExploreRuntime';
 import { buildDiscoveryEnrichedCard } from '../../discovery/buildDiscoveryEnrichedCard';
 import { buildVenueCoverByLocationId, enrichBrowsePosterCover } from './browsePosterCover';
 

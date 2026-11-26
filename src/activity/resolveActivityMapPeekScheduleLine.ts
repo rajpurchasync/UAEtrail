@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { resolveTripBrowseCardCopy } from '../discovery/discoverySessionListPeek';
+import { resolveTripBrowseCardCopy } from '../discovery/discoveryPortListPeek';
 
 /** Map trip peek — schedule under host (date · time), not a duplicate meta block under title. */
 export const resolveActivityMapPeekScheduleLine = (card: DiscoveryCardModel): string | null => {

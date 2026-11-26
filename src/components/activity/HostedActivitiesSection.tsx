@@ -22,7 +22,7 @@ import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/types';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import type { ActivityMapPeekActionHandlers } from '../../activity/executeActivityMapPeekAction';
-import { profileHistoryEntityLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { profileHistoryEntityLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { viewReturnPathKey } from '../../utils/viewReturnMemory';
 
 type ActivityTab = 'upcoming' | 'past';

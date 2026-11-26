@@ -23,8 +23,8 @@ import { CREW_BROWSE_LIST_STACK } from '@/crew-discovery/panel/crewBrowse/crewBr
 import { useMeCommunityDiscoverList } from '@/crew-discovery/hooks/useMeCommunityDiscoverList';
 import { useLeaveDiscoverableCommunity } from '@/crew-discovery/hooks/useCommunityDiscoverDetail';
 import { buildDiscoveryCardModelFromCommunityDiscover } from '@/discovery/buildCommunityDiscoverCardModel';
-import { BrowseCompactRow } from '@/discovery/discoverySessionListFeed';
-import { ExploreGuestSignInCard } from '@/discovery/discoverySessionExploreGuestSignIn';
+import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
 import { Dialog } from '@/components/ui/Dialog';
 import { useAuth } from '@/context/AuthContext';
 import { useMeFriendsNetwork, useMeFollowingMembers } from '@/hooks/useMeFriendsNetwork';

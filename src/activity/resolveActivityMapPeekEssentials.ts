@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { resolveTripBrowseCardCopy } from '../discovery/discoverySessionListPeek';
+import { resolveTripBrowseCardCopy } from '../discovery/discoveryPortListPeek';
 import { resolveActivityMapPeekJoinModeLabel } from './resolveActivityMapPeekJoinModeLabel';
 
 export type ActivityMapPeekEssentials = {

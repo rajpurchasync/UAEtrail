@@ -3,7 +3,7 @@ import {
   GuestCatalogPreviewBanner,
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
-} from '../../discovery/discoverySessionExploreGuestPreview';
+} from '../../discovery/discoveryPortExploreGuestPreview';
 
 type Props = {
   className?: string;

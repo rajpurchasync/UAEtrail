@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../../discovery/discoverySessionExploreRequirementBadges';
+import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../../discovery/discoveryPortExploreRequirementBadges';
 import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
 import { LIST_FEED_CTA_CARPOOL } from './listFeedCtaCopy';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';

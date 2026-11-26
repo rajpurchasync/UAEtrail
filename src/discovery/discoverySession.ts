@@ -12,7 +12,7 @@ export {
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
   serializeBrowseListSearchParams,
-} from './discoverySessionListUrl';
+} from './discoveryPortListUrl';
 export {
   BROWSE_GEO_PARAM,
   exploreItemMatchesBrowseGeoPath,
@@ -32,7 +32,7 @@ export {
   listPeopleDiscoveryPath,
   tripsListHomePath,
   venuesListHomePath,
-} from './discoverySessionListRouting';
+} from './discoveryPortListRouting';
 export {
   PEOPLE_FACET_URL_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
@@ -44,28 +44,28 @@ export {
   BROWSE_LIST_CREATE_VENUE,
   resolveBrowseListCreateFabLabel,
   type BrowseListCreateFabHints,
-} from './discoverySessionListCopy';
+} from './discoveryPortListCopy';
 export {
   readStoredViewerFix,
   useBrowseGeoScopeHydration,
   useBrowseListFeed,
   useBrowseViewerLocation,
-} from './discoverySessionListHooks';
-export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoverySessionListChrome';
+} from './discoveryPortListHooks';
+export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoveryPortListChrome';
 export type {
   BrowseAudienceFilter,
   BrowseListFilterState,
   BrowsePriceFilter,
   BrowseWhenFilter,
-} from './discoverySessionListFilters';
-export { filterExploreMapItemsForList } from './discoverySessionListFilters';
-export type { BrowseListBucket, BrowseTripTopicKey, ListVenuePlaceTopicKey } from './discoverySessionListQuickFilters';
+} from './discoveryPortListFilters';
+export { filterExploreMapItemsForList } from './discoveryPortListFilters';
+export type { BrowseListBucket, BrowseTripTopicKey, ListVenuePlaceTopicKey } from './discoveryPortListQuickFilters';
 export {
   LIST_BROWSE_DATE_FILTER_OPTIONS,
   LIST_QUICK_FILTER_REGION_LABEL,
   LIST_QUICK_TRIP_TOPIC_PILLS,
   LIST_QUICK_VENUE_TOPIC_PILLS,
-} from './discoverySessionListQuickFilters';
+} from './discoveryPortListQuickFilters';
 export {
   BROWSE_CARD_CHIP,
   BrowseCompactRow,
@@ -76,7 +76,7 @@ export {
   browseRowWhenDisplay,
   sortBrowseListCards,
   type BrowseCardMeta,
-} from './discoverySessionListFeed';
+} from './discoveryPortListFeed';
 export {
   BROWSE_LIST_HERO_TYPE,
   BROWSE_LIST_HERO_TYPE_WRAP,
@@ -90,4 +90,4 @@ export {
   resolveTripBrowseCardCopy,
   type ListFeedFooterButton,
   type ViewerFix,
-} from './discoverySessionListPeek';
+} from './discoveryPortListPeek';

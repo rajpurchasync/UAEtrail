@@ -1,7 +1,7 @@
 import {
   EXPLORE_RIDESHARE_AVAILABLE_BADGE,
   extractExploreRequirementBadges,
-} from '@/discovery/discoverySessionExploreRequirementBadges';
+} from '@/discovery/discoveryPortExploreRequirementBadges';
 
 const LOGISTICS_OR_DIFFICULTY = new Set([
   'Easy',

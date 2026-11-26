@@ -1,4 +1,4 @@
-import type { MapPeekDetailNavState } from '../../discovery/discoverySessionExploreMapPeekNav';
+import type { MapPeekDetailNavState } from '../../discovery/discoveryPortExploreMapPeekNav';
 import { mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
 
 export type BrowseListEntityLinkState = MapPeekDetailNavState & MobileBackNavState;

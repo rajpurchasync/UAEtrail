@@ -21,7 +21,7 @@ import {
   serializePlaceMapTopicsParam,
   serializeTripMapTopicsParam,
   type ExploreActivityDatePreset,
-} from '../../discovery/discoverySessionExploreRuntime';
+} from '../../discovery/discoveryPortExploreRuntime';
 import {
   parseCrewPeopleSurface,
   serializeCrewPeopleSurface,

@@ -17,7 +17,7 @@ import { crewDataLaneFromState } from '@/crew-discovery/crewBrowseState';
 import { CrewBrowseTabContent } from '@/crew-discovery/panel/crewBrowse';
 import { CrewsCommunityBody } from './CrewsCommunityBody';
 import { CrewsProfessionalBody } from './CrewsProfessionalBody';
-import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from './crewsOpenSegment';
 
 type CrewsTabBodyProps = {

@@ -1,9 +1,9 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
-import { browseCatalogEntityName } from '../discovery/discoverySessionListCatalogLabels';
+import { browseCatalogEntityName } from '../discovery/discoveryPortListCatalogLabels';
 import { resolvePlaceRegistryCoverUrl } from './peek/resolvePlaceRegistryCoverImage';
 import { resolvePlacePeekCuratedDestination } from './placePeekPresentation';
-import type { ViewerFix } from '../discovery/discoverySessionListPlaceDistance';
+import type { ViewerFix } from '../discovery/discoveryPortListPlaceDistance';
 import { resolvePlaceMapPeekKindLabel } from './resolvePlaceMapPeekKindLabel';
 import { resolvePlaceMapPeekMetaLine } from './resolvePlaceMapPeekMetaLine';
 import { resolvePlaceMapPeekAmenityChips } from './resolvePlaceMapPeekAmenityChips';

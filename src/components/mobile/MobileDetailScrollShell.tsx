@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { readDetailBackPrefersDeclared } from '@/discovery/discoverySessionExploreMapPeekNav';
+import { readDetailBackPrefersDeclared } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileBackButton } from './MobileBackButton';
 import { DetailHeaderTypeMark, type DetailHeaderMark } from './DetailHeaderChrome';

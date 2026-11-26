@@ -1,8 +1,8 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardIsAvailabilityPin } from '../discovery/discoveryCardModel';
 import { truncateMapPeekChipLabel } from './resolveActivityMapPeekChipLabels';
-import { resolveTripBrowseCardCopy } from '../discovery/discoverySessionListPeek';
-import { LIST_FEED_CTA_CARPOOL } from '../discovery/discoverySessionListFeedCta';
+import { resolveTripBrowseCardCopy } from '../discovery/discoveryPortListPeek';
+import { LIST_FEED_CTA_CARPOOL } from '../discovery/discoveryPortListFeedCta';
 
 export type ActivityMapPeekStatChipTone = 'neutral' | 'accent' | 'sky';
 

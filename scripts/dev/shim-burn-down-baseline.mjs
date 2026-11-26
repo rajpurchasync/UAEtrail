@@ -123,7 +123,7 @@ for (const file of walkFiles(feSrc)) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
   const rel = file.slice(root.length + 1).replace(/\\/g, '/');
   if (rel.startsWith('src/list/browse/')) continue;
-  if (rel === 'src/discovery/discoverySessionListUrl.ts') continue;
+  if (rel === 'src/discovery/discoveryPortListUrl.ts') continue;
   if (listBrowseUrlStateImportRe.test(readFileSync(file, 'utf8'))) {
     browseListUrlStateImportViolations.push(rel);
   }
@@ -139,7 +139,7 @@ const importsBrowseListUrlStateFrom = (dirRel) =>
   countFilesMatching(join(root, dirRel), /\.(ts|tsx)$/).filter((rel) => {
     const text = readFileSync(join(root, rel), 'utf8');
     if (!/from ['"].*list\/browse\/browseListUrlState['"]/.test(text)) return false;
-    if (/discoverySessionListUrl/.test(text)) return false;
+    if (/discoveryPortListUrl/.test(text)) return false;
     return true;
   });
 
@@ -213,7 +213,7 @@ for (const rel of [
 const nonListBrowseListRoutingAllowPrefix = [
   'src/list/',
   'src/my-crew/',
-  'src/discovery/discoverySessionListRouting.ts',
+  'src/discovery/discoveryPortListRouting.ts',
 ];
 const consumerBrowseListRoutingViolations = [];
 for (const file of walkFiles(feSrc)) {
@@ -550,13 +550,13 @@ const baseline = {
       : []),
     ...(useSafeAsyncEffectHookExists ? ['W6d: delete src/hooks/useSafeAsyncEffect.ts after MIG-CLIENT-QUERY'] : []),
     ...(browseListUrlStateImportViolations.length > 0
-      ? ['W4d: import browseListUrlState only from list/browse or discoverySessionListUrl facade']
+      ? ['W4d: import browseListUrlState only from list/browse or discoveryPortListUrl facade']
       : []),
     ...(listBrowseSpineFromUrlStateReexport.length > 0
       ? ['W4e: list/browse must import spine keys from discoverySessionParams/Parsers']
       : []),
     ...(browseListUrlStateReexportsSpineKeys
-      ? ['W4f: stop re-exporting spine keys from browseListUrlState — use discoverySessionListUrl']
+      ? ['W4f: stop re-exporting spine keys from browseListUrlState — use discoveryPortListUrl']
       : []),
     ...(exploreUrlSpineGeoViolations.length > 0
       ? ['W4g: explore browse URL hydrate/sync import geo via discoverySessionGeoUrl']
@@ -565,10 +565,10 @@ const baseline = {
       ? ['W4h: explore/search uses discoverySessionMapHandoff for list state scoping']
       : []),
     ...(exploreImportsBrowseListRouting.length > 0
-      ? ['W4i: explore imports /list routing via discoverySessionListRouting']
+      ? ['W4i: explore imports /list routing via discoveryPortListRouting']
       : []),
     ...(w4jBrowseListRoutingViolations.length > 0
-      ? ['W4j: routingCatalog + GeoBrowsePane use discoverySessionListRouting']
+      ? ['W4j: routingCatalog + GeoBrowsePane use discoveryPortListRouting']
       : []),
     ...(consumerBrowseListRoutingViolations.length > 0
       ? ['W4k: list/browse routing only in list|my-crew — use discoverySession* facades elsewhere']
@@ -595,34 +595,34 @@ const baseline = {
       ? ['W4r: explore imports browse geo/FAB copy via discoverySession facades']
       : []),
     ...(exploreImportsBrowseListHooks.length > 0
-      ? ['W4s: explore imports list browse hooks via discoverySessionListHooks']
+      ? ['W4s: explore imports list browse hooks via discoveryPortListHooks']
       : []),
     ...(exploreImportsBrowseListFilters.length > 0
-      ? ['W4t: explore imports browse list filter types via discoverySessionListFilters']
+      ? ['W4t: explore imports browse list filter types via discoveryPortListFilters']
       : []),
     ...(exploreImportsListChromeTheme.length > 0
-      ? ['W4u: explore imports list chrome via discoverySessionListChrome']
+      ? ['W4u: explore imports list chrome via discoveryPortListChrome']
       : []),
     ...(exploreImportsBrowseListFeed.length > 0
-      ? ['W7a: explore imports list feed rows via discoverySessionListFeed (map peek exempt)']
+      ? ['W7a: explore imports list feed rows via discoveryPortListFeed (map peek exempt)']
       : []),
     ...(exploreImportsListPeek.length > 0
-      ? ['W7b: explore map peek imports list chrome via discoverySessionListPeek']
+      ? ['W7b: explore map peek imports list chrome via discoveryPortListPeek']
       : []),
     ...(exploreImportsBrowseListQuickFilters.length > 0
-      ? ['W8: explore imports list quick filters via discoverySessionListQuickFilters']
+      ? ['W8: explore imports list quick filters via discoveryPortListQuickFilters']
       : []),
     ...(exploreImportsListPresentation.length > 0
       ? ['W9: explore imports list explorer/shell via discoverySession list presentation facades']
       : []),
     ...(listImportsExploreSearch.length > 0
-      ? ['W10: list imports explore search via discoverySessionExploreSearch']
+      ? ['W10: list imports explore search via discoveryPortExploreSearch']
       : []),
     ...(listImportsExploreActivityDate.length > 0
-      ? ['W11: list imports explore activity date via discoverySessionExploreActivityDate']
+      ? ['W11: list imports explore activity date via discoveryPortExploreActivityDate']
       : []),
     ...(listImportsDiscoveryRuntime.length > 0
-      ? ['W12: list imports map catalog via discoverySessionExploreRuntime']
+      ? ['W12: list imports map catalog via discoveryPortExploreRuntime']
       : []),
     ...(listImportsExploreDirect.length > 0
       ? [

@@ -80,8 +80,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerFabSnap.ts'))).toBe(false);
     expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browseListLayout'/);
     expect(read('src/list/explorer/ListExplorerFilterFab.tsx')).toMatch(/browse\/listFilterFabSnap/);
-    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoverySessionListLayout/);
-    expect(read('src/discovery/discoverySessionListLayout.ts')).toMatch(/browse\/browseListLayout/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoveryPortListLayout/);
+    expect(read('src/discovery/discoveryPortListLayout.ts')).toMatch(/browse\/browseListLayout/);
   });
 
   it('BROWSE-NAME-01e: list sort implementation lives in listBrowseSort (not explorer)', () => {
@@ -89,8 +89,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerSort.ts'))).toBe(false);
     expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortBrowseListCards/);
     expect(read('src/list/browse/listBrowseSort.ts')).not.toMatch(/from '\.\.\/explorer\/listExplorerSort'/);
-    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoverySessionListSort/);
-    expect(read('src/discovery/discoverySessionListSort.ts')).toMatch(/browse\/listBrowseSort/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoveryPortListSort/);
+    expect(read('src/discovery/discoveryPortListSort.ts')).toMatch(/browse\/listBrowseSort/);
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
@@ -139,8 +139,8 @@ describe('listBrowseNamingGuard', () => {
   it('BROWSE-NAME-01s: list feed card pipeline lives under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/buildListFeedCards.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/buildListFeedCards.ts'))).toBe(false);
-    expect(read('src/discovery/buildDiscoveryEnrichedCard.ts')).toMatch(/discoverySessionListFeedEnrich/);
-    expect(read('src/discovery/discoverySessionListFeedEnrich.ts')).toMatch(/browse\/enrichListFeedCard/);
+    expect(read('src/discovery/buildDiscoveryEnrichedCard.ts')).toMatch(/discoveryPortListFeedEnrich/);
+    expect(read('src/discovery/discoveryPortListFeedEnrich.ts')).toMatch(/browse\/enrichListFeedCard/);
     expect(read('src/list/browse/useBrowseListFeed.ts')).toMatch(/from '\.\/buildListFeedCards'/);
   });
 
@@ -161,12 +161,12 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/@\/crew-discovery\/crewBrowseTab/);
   });
 
-  it('BROWSE-NAME-01p: GW-7 — list imports map catalog via discoverySessionExploreRuntime', () => {
+  it('BROWSE-NAME-01p: GW-7 — list imports map catalog via discoveryPortExploreRuntime', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(false);
-    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoverySessionExploreRuntime/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExploreRuntime/);
     expect(read('src/list/browse/browseListFilters.ts')).not.toMatch(/explore\/discoveryRuntime/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
-      /discovery\/discoverySessionExploreRuntime/
+      /discovery\/discoveryPortExploreRuntime/
     );
   });
 
@@ -234,8 +234,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerBucket.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerDateSections.ts'))).toBe(false);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/browse\/browseListBucket/);
-    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoverySessionListBucketWire/);
-    expect(read('src/discovery/discoverySessionListBucketWire.ts')).toMatch(/browse\/browseListBucket/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoveryPortListBucketWire/);
+    expect(read('src/discovery/discoveryPortListBucketWire.ts')).toMatch(/browse\/browseListBucket/);
   });
 
   it('BROWSE-NAME-01h: browse list bucket API uses browse-prefixed exports (not listExplorerBucket*)', () => {
@@ -409,8 +409,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.test.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.ts'))).toBe(false);
     expect(read('src/list/browse/VenueBrowseCard.tsx')).not.toMatch(/listVenuePosterPresentation/);
-    expect(read('src/discovery/discoveryCardViewModel.test.ts')).toMatch(/discoverySessionListVenueBrowseFacts/);
-    expect(read('src/discovery/discoverySessionListVenueBrowseFacts.ts')).toMatch(/browse\/venueBrowseCardCopy/);
+    expect(read('src/discovery/discoveryCardViewModel.test.ts')).toMatch(/discoveryPortListVenueBrowseFacts/);
+    expect(read('src/discovery/discoveryPortListVenueBrowseFacts.ts')).toMatch(/browse\/venueBrowseCardCopy/);
     expect(read('src/discovery/discoveryCardViewModel.test.ts')).not.toMatch(/listVenuePosterPresentation/);
   });
 
@@ -439,7 +439,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const allowed = new Set([
       'src/discovery/DiscoveryCardWireEngagementFooter.tsx',
-      'src/discovery/discoverySessionListFeedEngagement.ts',
+      'src/discovery/discoveryPortListFeedEngagement.ts',
       'src/list/browse/ListFeedWireFooterButtons.tsx',
     ]);
     const violations: string[] = [];

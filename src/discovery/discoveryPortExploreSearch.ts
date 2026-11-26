@@ -13,7 +13,7 @@ export {
   isExploreSearchHomeState,
   parseExploreSearchBrowseState,
   parseExploreSearchScopeFromParams,
-} from './discoverySessionExploreSearchRouting';
+} from './discoveryPortExploreSearchRouting';
 export {
   resolveExploreSearchJoinableTripCards,
   resolveExploreSearchTripPool,

@@ -16,11 +16,10 @@
       "src/discovery": "Shared card/read models + import ports (discoveryPort*) + URL spine (discoverySession*)."
     },
     "filenamePattern": {
-      "discoverySession*": "URL browse session spine only — params, parsers, geo URL (shared /explore + /list).",
-      "discoveryPortExplore*": "Cross-context port to src/explore/** (preferred for all new ports).",
-      "discoveryPortList*": "Cross-context port to src/list/** (preferred for all new ports).",
-      "discoverySessionExplore*": "Legacy port name — migrate to discoveryPortExplore* in W29 (no new files).",
-      "discoverySessionList*": "Legacy port name — migrate to discoveryPortList* in W29 (no new files)."
+      "discoverySession*": "URL browse session spine only — params, parsers, geo URL, discoverySession.ts barrel.",
+      "discoveryPortExplore*": "Cross-context port to src/explore/**.",
+      "discoveryPortList*": "Cross-context port to src/list/**.",
+      "codemod": "scripts/dev/rename-discovery-ports.mjs (W29 — one-time; do not re-run on clean tree)."
     },
     "notAllowed": [
       "Fat barrels (e.g. discoverySession.ts re-exporting React trees).",
@@ -38,7 +37,7 @@
       "title": "discoverySession list hooks facade",
       "branch": "burn-down/w4s-list-hooks",
       "owns": [
-        "src/discovery/discoverySessionListHooks.ts",
+        "src/discovery/discoveryPortListHooks.ts",
         "src/discovery/discoverySession.ts",
         "src/explore/shell/useExploreExperienceModel.ts",
         "src/explore/search/ExploreSearchResults.tsx",
@@ -54,12 +53,12 @@
       "title": "discoverySession filter types facade (explore search)",
       "branch": "burn-down/w4t-list-filters",
       "owns": [
-        "src/discovery/discoverySessionListFilters.ts",
+        "src/discovery/discoveryPortListFilters.ts",
         "src/explore/ui/exploreMapQuickFiltersState.ts",
         "src/explore/search/ExploreSearchRecommendedSection.tsx",
         "src/explore/search/exploreSearchUpcomingTrips.ts"
       ],
-      "avoid": ["src/discovery/discoverySessionListHooks.ts", "src/list/browse/browseListUrlState.ts"]
+      "avoid": ["src/discovery/discoveryPortListHooks.ts", "src/list/browse/browseListUrlState.ts"]
     },
     {
       "id": "W4u",
@@ -68,7 +67,7 @@
       "title": "discoverySession list chrome facade (explore search layout)",
       "branch": "burn-down/w4u-list-chrome",
       "owns": [
-        "src/discovery/discoverySessionListChrome.ts",
+        "src/discovery/discoveryPortListChrome.ts",
         "src/explore/search/ExploreSearchPageLayout.tsx",
         "src/explore/search/ExploreSearchResultsPage.tsx",
         "src/explore/search/ExploreSearchResultsChrome.tsx",
@@ -104,7 +103,7 @@
       "title": "discoverySession list feed facade (explore search + map rows)",
       "branch": "burn-down/w7a-list-feed",
       "owns": [
-        "src/discovery/discoverySessionListFeed.ts",
+        "src/discovery/discoveryPortListFeed.ts",
         "src/discovery/discoverySession.ts",
         "src/explore/ui/ExploreMapRecommendationRow.tsx",
         "src/explore/search/exploreSearchUpcomingTrips.ts",
@@ -121,7 +120,7 @@
       "title": "discoverySession list peek facade (explore map peek)",
       "branch": "burn-down/w7b-list-peek",
       "owns": [
-        "src/discovery/discoverySessionListPeek.ts",
+        "src/discovery/discoveryPortListPeek.ts",
         "src/discovery/discoverySession.ts",
         "src/explore/ui/peek/**",
         "src/explore/ui/map-peek/**",
@@ -147,7 +146,7 @@
       "title": "discoverySession list quick filters (explore map + search pick sheets)",
       "branch": "burn-down/w8-list-quick-filters",
       "owns": [
-        "src/discovery/discoverySessionListQuickFilters.ts",
+        "src/discovery/discoveryPortListQuickFilters.ts",
         "src/explore/ui/exploreMapQuickFiltersState.ts",
         "src/explore/ui/ExploreMapMobileLayerChrome.tsx",
         "src/explore/ui/ExploreOptionalFilterRow.tsx",
@@ -162,8 +161,8 @@
       "title": "list explorer / discovery shell / find-crew prefill facades (explore batch)",
       "branch": "burn-down/w9-list-presentation",
       "owns": [
-        "src/discovery/discoverySessionListExplorer.ts",
-        "src/discovery/discoverySessionListExperience.ts",
+        "src/discovery/discoveryPortListExplorer.ts",
+        "src/discovery/discoveryPortListExperience.ts",
         "src/discovery/discoverySessionFindCrewPrefill.ts",
         "src/explore/ui/ExploreMapStage.tsx",
         "src/explore/ui/ExploreMapMobileLayerChrome.tsx",
@@ -178,10 +177,10 @@
     {
       "id": "W10",
       "status": "done",
-      "title": "discoverySessionExploreSearch — list/find-crew → explore search bridge",
+      "title": "discoveryPortExploreSearch — list/find-crew → explore search bridge",
       "branch": "burn-down/w10-list-explore-search",
       "owns": [
-        "src/discovery/discoverySessionExploreSearch.ts",
+        "src/discovery/discoveryPortExploreSearch.ts",
         "src/list/shell/useListDiscoveryExploreSearchFeedModel.ts",
         "src/list/browse/useListDiscoveryUrlState.ts",
         "src/list/explorer/FindCrewResultsSection.tsx",
@@ -194,10 +193,10 @@
     {
       "id": "W11",
       "status": "done",
-      "title": "discoverySessionExploreActivityDate — list activity-date preset facade",
+      "title": "discoveryPortExploreActivityDate — list activity-date preset facade",
       "branch": "burn-down/w11-activity-date",
       "owns": [
-        "src/discovery/discoverySessionExploreActivityDate.ts",
+        "src/discovery/discoveryPortExploreActivityDate.ts",
         "src/list/explorer/**",
         "src/list/crews/CrewsTabBody.tsx",
         "src/list/shell/useListDiscoveryCrewsCategoryModel.ts"
@@ -207,49 +206,49 @@
     {
       "id": "W12",
       "status": "done",
-      "title": "discoverySessionExploreRuntime — list browse map catalog facade",
+      "title": "discoveryPortExploreRuntime — list browse map catalog facade",
       "branch": "burn-down/w12-discovery-runtime",
-      "owns": ["src/discovery/discoverySessionExploreRuntime.ts", "src/list/browse/**", "src/list/shell/**"],
+      "owns": ["src/discovery/discoveryPortExploreRuntime.ts", "src/list/browse/**", "src/list/shell/**"],
       "avoid": ["src/explore/discoveryRuntime.ts impl changes"]
     },
     {
       "id": "W13",
       "status": "done",
-      "title": "discoverySessionExplore* wire facades (W14 defers list UI/compose imports)",
+      "title": "discoveryPortExplore* wire facades (W14 defers list UI/compose imports)",
       "branch": "burn-down/w13-list-explore-facades",
-      "owns": ["src/discovery/discoverySessionExplore*.ts", "src/list/**"],
+      "owns": ["src/discovery/discoveryPortExplore*.ts", "src/list/**"],
       "avoid": ["src/explore/** impl"]
     },
     {
       "id": "W14",
       "status": "done",
-      "title": "Split discoverySessionExplore* UI/compose/map facades for list prod",
+      "title": "Split discoveryPortExplore* UI/compose/map facades for list prod",
       "branch": "burn-down/w14-list-explore-ui-facades",
-      "owns": ["src/discovery/discoverySessionExplore*.ts", "src/list/**"],
+      "owns": ["src/discovery/discoveryPortExplore*.ts", "src/list/**"],
       "avoid": ["src/discovery/discoverySession.ts barrel"]
     },
     {
       "id": "W15",
       "status": "done",
-      "title": "discoverySessionList* browse facades — discovery prod off direct list/",
+      "title": "discoveryPortList* browse facades — discovery prod off direct list/",
       "branch": "burn-down/w15-discovery-list-facades",
-      "owns": ["src/discovery/discoverySessionList*.ts", "src/discovery/**"],
+      "owns": ["src/discovery/discoveryPortList*.ts", "src/discovery/**"],
       "avoid": ["src/list/** impl"]
     },
     {
       "id": "W16",
       "status": "done",
-      "title": "Consumer peek/chat/auth — discoverySessionList facades",
+      "title": "Consumer peek/chat/auth — discoveryPortList facades",
       "branch": "burn-down/w16-consumer-list-facades",
-      "owns": ["src/discovery/discoverySessionList*.ts", "src/activity/**", "src/place/**", "src/components/chat/**"],
+      "owns": ["src/discovery/discoveryPortList*.ts", "src/activity/**", "src/place/**", "src/components/chat/**"],
       "avoid": ["src/list/**"]
     },
     {
       "id": "W17",
       "status": "done",
-      "title": "Geo hub + crew-discovery — discoverySessionList facades",
+      "title": "Geo hub + crew-discovery — discoveryPortList facades",
       "branch": "burn-down/w17-geo-crew-list-facades",
-      "owns": ["src/discovery/discoverySessionList*.ts", "src/geo/**", "src/crew-discovery/**"],
+      "owns": ["src/discovery/discoveryPortList*.ts", "src/geo/**", "src/crew-discovery/**"],
       "avoid": ["src/list/**"]
     },
     {
@@ -257,13 +256,13 @@
       "status": "done",
       "title": "Geo explore facades + config hooks off direct explore/list",
       "branch": "burn-down/w18-geo-explore-facades",
-      "owns": ["src/discovery/discoverySessionExplore*.ts", "src/geo/**", "src/config/use*Explore*"],
+      "owns": ["src/discovery/discoveryPortExplore*.ts", "src/geo/**", "src/config/use*Explore*"],
       "avoid": ["src/explore/routing.ts impl churn"]
     },
     {
       "id": "W19",
       "status": "done",
-      "title": "Config nav + find-crew chrome via discoverySessionExplore/List facades",
+      "title": "Config nav + find-crew chrome via discoveryPortExplore/List facades",
       "branch": "burn-down/w19-config-nav-facades",
       "owns": ["src/config/desktopNav.ts", "src/config/mobileFiveTabNav.ts", "src/list/explorer/FindCrew*"],
       "avoid": ["src/config/routingCatalog.ts aggregate"]
@@ -271,20 +270,20 @@
     {
       "id": "W20",
       "status": "done",
-      "title": "routingCatalog + remaining cross-context explore via discoverySessionExplore facades",
+      "title": "routingCatalog + remaining cross-context explore via discoveryPortExplore facades",
       "branch": "burn-down/w20-routing-catalog-facades",
-      "owns": ["src/config/routingCatalog.ts", "src/discovery/discoverySessionExplore*.ts"],
+      "owns": ["src/config/routingCatalog.ts", "src/discovery/discoveryPortExplore*.ts"],
       "avoid": ["src/explore/routing.ts impl"]
     },
     {
       "id": "W21",
       "status": "done",
-      "title": "crew-discovery + list compose query via discoverySessionExplore/List facades",
+      "title": "crew-discovery + list compose query via discoveryPortExplore/List facades",
       "branch": "burn-down/w21-crew-explore-facades",
       "owns": [
-        "src/discovery/discoverySessionExploreBrowseUrlState.ts",
-        "src/discovery/discoverySessionExploreListSkeleton.ts",
-        "src/discovery/discoverySessionListComposeQuery.ts",
+        "src/discovery/discoveryPortExploreBrowseUrlState.ts",
+        "src/discovery/discoveryPortExploreListSkeleton.ts",
+        "src/discovery/discoveryPortListComposeQuery.ts",
         "src/crew-discovery/**"
       ],
       "avoid": ["src/explore/ui/useExploreBrowseUrlState impl"]
@@ -292,7 +291,7 @@
     {
       "id": "W22",
       "status": "done",
-      "title": "Activity, place, content, my-crew social — discoverySessionExplore facades",
+      "title": "Activity, place, content, my-crew social — discoveryPortExplore facades",
       "branch": "burn-down/w22-consumer-explore-facades",
       "owns": [
         "src/activity/activityDetailAudienceBadges.ts",
@@ -300,30 +299,30 @@
         "src/place/placePlanList.tsx",
         "src/content/guest*Copy.ts",
         "src/components/social/MyCrewSurfacePanel.tsx",
-        "src/discovery/discoverySessionExploreLinkRideshareOffer.ts"
+        "src/discovery/discoveryPortExploreLinkRideshareOffer.ts"
       ],
       "avoid": ["src/components/activity bulk UI migration"]
     },
     {
       "id": "W23",
       "status": "done",
-      "title": "Activity/place detail + place peek — discoverySessionExplore facades",
+      "title": "Activity/place detail + place peek — discoveryPortExplore facades",
       "branch": "burn-down/w23-detail-peek-facades",
       "owns": [
         "src/activity/detail/**",
         "src/place/detail/**",
         "src/place/peek/**",
-        "src/discovery/discoverySessionExplorePrivateActivityMapItem.ts",
-        "src/discovery/discoverySessionExploreLinkRideshareUi.ts"
+        "src/discovery/discoveryPortExplorePrivateActivityMapItem.ts",
+        "src/discovery/discoveryPortExploreLinkRideshareUi.ts"
       ],
       "avoid": ["src/components/activity/**"]
     },
     {
       "id": "W24",
       "status": "done",
-      "title": "components/activity — sheets, manage, packing via discoverySessionExplore facades",
+      "title": "components/activity — sheets, manage, packing via discoveryPortExplore facades",
       "branch": "burn-down/w24-components-activity-facades",
-      "owns": ["src/components/activity/**", "src/discovery/discoverySessionExploreResponsiveSheet.ts"],
+      "owns": ["src/components/activity/**", "src/discovery/discoveryPortExploreResponsiveSheet.ts"],
       "avoid": ["src/components/plan", "src/components/ui/PlacesMap"]
     },
     {
@@ -354,7 +353,7 @@
     {
       "id": "W27",
       "status": "done",
-      "title": "Destination hub, detail pages, auth welcome via discoverySessionExplore facades",
+      "title": "Destination hub, detail pages, auth welcome via discoveryPortExplore facades",
       "branch": "burn-down/w27-destination-detail-facades",
       "owns": [
         "src/components/destination/**",
@@ -384,12 +383,12 @@
     },
     {
       "id": "W29",
-      "status": "planned",
-      "title": "Rename legacy discoverySessionExplore/List ports → discoveryPortExplore/List",
+      "status": "done",
+      "title": "Rename discoverySessionExplore/List ports → discoveryPortExplore/List",
       "branch": "burn-down/w29-port-rename",
-      "owns": ["src/discovery/discoverySessionExplore*.ts", "src/discovery/discoverySessionList*.ts"],
+      "owns": ["src/discovery/discoveryPortExplore*.ts", "src/discovery/discoveryPortList*.ts", "scripts/dev/rename-discovery-ports.mjs"],
       "avoid": ["src/explore/**", "src/list/** impl"],
-      "notes": "Mechanical rename + import codemod; guards unchanged. No new discoverySessionExplore* after W28."
+      "notes": "Mechanical rename + import codemod; discoveryPortNamingGuard W29 legacy check."
     }
   ],
   "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29"],

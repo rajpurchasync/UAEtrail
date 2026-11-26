@@ -12,8 +12,8 @@ import {
   EXPLORE_CREWS_FRIENDS_GOING_EMPTY,
   EXPLORE_CREWS_LOADING,
 } from '../../../content/exploreCrewsCopy';
-import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
-import type { CrewsAvailabilityShapeFilter } from '@/discovery/discoverySessionListCrewsOpen';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
+import type { CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListCrewsOpen';
 import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
@@ -24,13 +24,13 @@ import {
   sortAvailabilityPeopleNetworkFirst,
   type MemberBrowseRowVm,
 } from '../../memberBrowseRowModel';
-import { FIND_CREW_PEOPLE_EMPTY } from '@/discovery/discoverySessionListFindCrewCopy';
-import type { CrewsAvailabilityGuideFilter } from '@/discovery/discoverySessionListCrewsOpen';
+import { FIND_CREW_PEOPLE_EMPTY } from '@/discovery/discoveryPortListFindCrewCopy';
+import type { CrewsAvailabilityGuideFilter } from '@/discovery/discoveryPortListCrewsOpen';
 import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
 import { CrewBrowseListEmpty, CrewBrowseListError, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
-import { ExploreGuestSignInCard } from '@/discovery/discoverySessionExploreGuestSignIn';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
 import { crewBrowseHrefForGuest } from '@/crew-discovery/crewGuestBrowse';
 import { messagesToUserPath } from '@/config/routingCatalog';
 

@@ -9,7 +9,7 @@ import {
   EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
   EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL,
 } from '../content/exploreCrewsCopy';
-import type { ExploreActivityDatePreset } from '../discovery/discoverySessionExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../discovery/discoveryPortExploreActivityDate';
 import {
   availabilityMatchesFindCrewSearchDates,
   crewBrowseAvailabilityDetailFromPerson,
@@ -18,7 +18,7 @@ import {
   sortAvailabilityPeopleNetworkFirst,
 } from './availabilityBrowseCardCopy';
 export { sortAvailabilityPeopleNetworkFirst } from './availabilityBrowseCardCopy';
-import type { CrewsAvailabilityShapeFilter } from '../discovery/discoverySessionListCrewsOpen';
+import type { CrewsAvailabilityShapeFilter } from '../discovery/discoveryPortListCrewsOpen';
 import type {
   DiscoverCrewRecommendationBucket,
   ExploreAvailablePersonDTO,
@@ -36,10 +36,10 @@ import {
 import { memberProfileLink } from '../member/memberProfileLink';
 import { memberProfileRoleBadgeLabel } from '../member/memberProfileRoleBadge';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
-import { exploreMapItemPathFromAvailabilityRow } from '../discovery/discoverySessionExploreMemberDiscoveryRow';
-import { explorePath } from '../discovery/discoverySessionExploreRouting';
+import { exploreMapItemPathFromAvailabilityRow } from '../discovery/discoveryPortExploreMemberDiscoveryRow';
+import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import { findCrewAvailabilityNarrativeFromDetail } from './findCrewAvailabilityNarrative';
-import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoverySessionListFindCrewPlan';
+import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoveryPortListFindCrewPlan';
 import type { CrewBrowseMemberRowProps } from './panel/crewBrowse/CrewBrowseMemberRow';
 /** L1 projection for people-browse list rows (panel + list `listCat=people`). */
 export type MemberBrowseRowVm = CrewBrowseMemberRowProps & {
