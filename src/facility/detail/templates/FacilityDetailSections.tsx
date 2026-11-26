@@ -41,7 +41,7 @@ import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetail
 import { resolveFacilityDetailDestinationHero } from '../../../detail/shared/resolveConsumerDetailDestinationHero';
 import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
 import { useExplorePublishedDestinations } from '@/discovery/discoveryPortExploreBrowse';
-import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreRouting';
 import { amenityConditionLabel } from '../../amenityConditionLabels';
 import { FacilityDetailHeroParentLine } from '../FacilityDetailHeroParentLine';
 

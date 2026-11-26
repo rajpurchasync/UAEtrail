@@ -56,12 +56,12 @@ import type { ActivityDetailPlanSectionsComponent } from '../composers';
 import { ActivityDetailPlanColumn } from '../../../components/activity/detail/ActivityDetailPlanColumn';
 import { activityDetailFriendsGoingLabel } from '../../../activity/activityDetailFriendsGoingLabel';
 import { activityCrewPath, activityDetailPath } from '../../../config/routingCatalog';
-import { activityPlaceReturnState } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { activityPlaceReturnState } from '@/discovery/discoveryPortExploreRouting';
 import { buildActivityDetailPageShellCard } from '../activityDetailPageShellCard';
 import { resolveActivityDetailGeoHero } from '../resolveActivityDetailGeoHero';
 import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
 import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
-import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreRouting';
 import { resolveActivityDetailHeaderChrome } from '../../activityDetailHeaderChrome';
 import {
   extractActivityTransportReachLines,

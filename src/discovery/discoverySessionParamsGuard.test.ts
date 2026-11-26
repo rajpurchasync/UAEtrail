@@ -294,7 +294,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/browseListNavState.ts',
-        facade: /discoveryPortExploreMapPeekNav/,
+        facade: /discoveryPortExploreRouting/,
       },
       {
         rel: 'src/list/browse/listVenuePlaceTopics.ts',
@@ -306,7 +306,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/ListFeedActionsProvider.tsx',
-        facade: /discoveryPortExploreMapPeekNav/,
+        facade: /discoveryPortExploreRouting/,
         avoidDirect: /explore\/mapPeekDetailNavState/,
       },
       {
@@ -370,6 +370,8 @@ describe('discoverySessionParamsGuard', () => {
       /from '\.\.\/explore\/exploreOptionalFilters'/
     );
     expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(/parseMapFilter/);
+    expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(/buildMapPeekReturnPath/);
+    expect(read('src/explore/mapPeekDetailNavState.ts')).not.toMatch(/config\/routingCatalog/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);

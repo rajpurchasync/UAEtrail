@@ -12,7 +12,7 @@ import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
 import { activityCrewPath, activityDetailPath, detailBackPath } from '../config/routingCatalog';
-import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreRouting';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,

@@ -21,7 +21,7 @@ import {
   StatTile,
 } from '../../detail/shell';
 import { detailBackPath } from '../../config/routingCatalog';
-import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreRouting';
 import { parseMobileBackNavState } from '../../utils/mobileBackNav';
 import { resolveDestinationConsumerDetailHeaderChrome } from '../../destinationDetail/detail/resolveDestinationConsumerDetailHeaderChrome';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';

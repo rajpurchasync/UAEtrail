@@ -1,4 +1,16 @@
-/** W18–W20 — explore path builders aggregated for routingCatalog. */
+/** W18–W20/W75 — explore path builders + map peek return/nav wire (no routingCatalog in impl). */
+export {
+  activityPlaceReturnState,
+  buildMapPeekReturnPath,
+  consumerDetailChildLinkState,
+  mapPeekDetailNavState,
+  planUpcomingEntityLinkState,
+  planWishlistEntityLinkState,
+  profileHistoryEntityLinkState,
+  readDetailBackPrefersDeclared,
+  readDetailBackToFromLocation,
+  type MapPeekDetailNavState,
+} from '../explore/mapPeekDetailNavState';
 export {
   detailBackPath,
   discoveryToExploreSearch,

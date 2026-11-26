@@ -1,6 +1,6 @@
 import type { Location } from 'react-router-dom';
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
-import { detailBackPath } from '../config/routingCatalog';
+import { detailBackPath } from './routing';
 import { planWishlistTabPath } from '../plan/planTab';
 import { EXPLORE_JOIN_INVITE_QUERY_KEY, exploreSavedPinPath } from './routing';
 import type { MobileBackNavState } from '../utils/mobileBackNav';

@@ -27,7 +27,7 @@ import { useGeoPagedActivities, useGeoPagedFacilities, useGeoPagedPlaces } from 
 import {
   consumerDetailChildLinkState,
   readDetailBackToFromLocation,
-} from '../discovery/discoveryPortExploreMapPeekNav';
+} from '../discovery/discoveryPortExploreRouting';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { resolveGeoConsumerDetailHeaderChrome } from './resolveGeoConsumerDetailHeaderChrome';
 import { destinationGuideLinkLabel } from './destinationGuideLinkLabel';

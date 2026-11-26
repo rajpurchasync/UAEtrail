@@ -26,7 +26,7 @@ import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
 import {
   buildMapPeekReturnPath,
   mapPeekDetailNavState,
-} from '../../discovery/discoveryPortExploreMapPeekNav';
+} from '../../discovery/discoveryPortExploreRouting';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';

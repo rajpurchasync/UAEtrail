@@ -10,7 +10,7 @@ import { geoKindLabel } from '../geo/geoKindLabel';
 import { useGeoDetailTab } from '../geo/useGeoDetailTab';
 import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
 import { DETAIL_LOADING_GEO } from '../content/detailLoadingCopy';
-import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreRouting';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import {
   GEO_TREE_HEADER_CHROME,

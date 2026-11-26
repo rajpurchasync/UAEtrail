@@ -8,7 +8,7 @@ import {
   type ActivityDTO,
 } from '@uaetrail/shared-types';
 import { activityDetailPath } from '../config/routingCatalog';
-import { mapPeekDetailNavState } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { mapPeekDetailNavState } from '@/discovery/discoveryPortExploreRouting';
 import { DETAIL_SCROLL_SECTION_TITLE } from '../components/mobile/detailScrollSectionStyles';
 
 const isRide = (activity: ActivityDTO): boolean => activity.activityType === 'rideshare';

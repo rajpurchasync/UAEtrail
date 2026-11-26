@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useMemo } from 'react';
-import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreRouting';
 import { destinationHubPath } from '@uaetrail/shared-types';
 import type { GeoAncestorLink } from '../../geo/geoAncestorLinks';
 import { GeoAncestorEyebrow } from './GeoAncestorEyebrow';

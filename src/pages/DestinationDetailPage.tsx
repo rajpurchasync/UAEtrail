@@ -20,7 +20,7 @@ import {
 } from '../destinationDetail/destinationDetailTab';
 import { DETAIL_LOADING_AREA } from '../content/detailLoadingCopy';
 import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
-import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreMapPeekNav';
+import { readDetailBackToFromLocation } from '@/discovery/discoveryPortExploreRouting';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 
 /** Curated destination hub — tabbed shell + explore deep links (MIG-DESTINATION-GEO). */
