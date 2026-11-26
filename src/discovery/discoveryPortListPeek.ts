@@ -4,6 +4,10 @@
 export { browseCatalogEntityName } from '../list/browse/browseCatalogLabels';
 export { resolveListFeedPosterRequirementLabels } from '../list/browse/listFeedPosterStandard';
 export { resolveBrowsePosterActivityTypeLabel } from '../list/browse/listPosterPresentation';
+export {
+  LIST_FEED_CTA_CARPOOL,
+  LIST_FEED_CTA_VIEW_DETAILS,
+} from '../list/browse/listFeedCtaCopy';
 export { browseCardTitle } from '../list/browse/browseCardMeta';
 export { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../list/browse/browsePosterCover';
 export type { ViewerFix } from '../list/browse/placeDistance';

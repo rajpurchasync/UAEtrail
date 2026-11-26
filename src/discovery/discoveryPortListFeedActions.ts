@@ -1,4 +1,4 @@
-/** W15 — list feed footer actions + wire/map peek footer buttons for discovery cards. */
+/** W63 — list feed wire/map peek footer actions (CTA copy on discoveryPortListPeek — thin import path). */
 export { useListFeedActionsOptional } from '../list/browse/ListFeedActionsProvider';
 export {
   ListFeedWireFooterButtons,

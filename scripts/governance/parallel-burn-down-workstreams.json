@@ -829,7 +829,7 @@
       "title": "Bundle list geo browse + feed enrich discoveryPortList micro-ports",
       "branch": "burn-down/w57-list-geo-feed-ports",
       "owns": [
-        "src/discovery/discoveryPortListGeoBrowse.ts",
+        "src/discovery/discoveryPortListGeoHub.ts",
         "src/discovery/discoveryPortListFeed.ts",
         "scripts/dev/consolidate-discovery-ports-w57.mjs",
         "src/geo/GeoBrowsePane.tsx",
@@ -904,8 +904,23 @@
         "src/discovery/discoverySession.ts"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w62 on clean tree"]
+    },
+    {
+      "id": "W63",
+      "status": "done",
+      "title": "FeedActions + peek CTA list port bundle",
+      "branch": "burn-down/w63-feed-actions",
+      "owns": [
+        "src/discovery/discoveryPortListFeedActions.ts",
+        "src/discovery/discoveryPortListPeek.ts",
+        "scripts/dev/consolidate-discovery-ports-w63.mjs"
+      ],
+      "avoid": [
+        "re-run consolidate-discovery-ports-w63 on clean tree",
+        "fold GeoBrowse wire into GeoHub (type-only imports pull ListExplorer cycle)"
+      ]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

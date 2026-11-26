@@ -443,7 +443,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const allowed = new Set([
       'src/discovery/DiscoveryCardWireEngagementFooter.tsx',
-      'src/discovery/discoveryPortListFeedEngagement.ts',
+      'src/discovery/discoveryPortListFeedActions.ts',
       'src/list/browse/ListFeedWireFooterButtons.tsx',
     ]);
     const violations: string[] = [];
