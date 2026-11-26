@@ -10,7 +10,7 @@ import {
   parseBrowseListGeoPath,
   scopeBrowseListStateForListCat,
 } from '../../discovery/discoverySession';
-import { ListDiscoveryExperience } from '../../discovery/discoveryPortListExperience';
+import { ListDiscoveryExperience } from '../../discovery/discoveryPortListEmbed';
 import { resolveEffectiveBrowseVenueRegions } from '../../discovery/discoverySession';
 import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';
 import {

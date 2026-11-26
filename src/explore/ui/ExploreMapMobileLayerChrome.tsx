@@ -12,7 +12,7 @@ import type { BrowseTripTopicKey, ListVenuePlaceTopicKey } from '../../discovery
 import {
   ListExplorerGeoScopeChip,
   ListExplorerQuickFilters,
-} from '../../discovery/discoveryPortListExplorer';
+} from '../../discovery/discoveryPortListEmbed';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {

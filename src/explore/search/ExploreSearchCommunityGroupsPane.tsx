@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useCommunityDiscoverList } from '@/crew-discovery/hooks/useCommunityDiscoverList';
-import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListExperience';
+import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListEmbed';
 import { FEATURE_FLAGS } from '../../config/platform';
 import { filterCommunityDiscoverCards } from './filterCommunityDiscoverCards';
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';

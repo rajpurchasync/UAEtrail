@@ -96,8 +96,7 @@
         "src/discovery/discoveryPortListCopy.ts",
         "src/discovery/discoveryPortListFindCrew.ts",
         "src/discovery/discoveryPortListFindCrew.ts",
-        "src/discovery/discoveryPortListExperience.ts",
-        "src/discovery/discoveryPortListExplorer.ts",
+        "src/discovery/discoveryPortListEmbed.ts",
         "src/discovery/discoveryPortListMapShell.ts",
         "src/discovery/discoveryPortListFeed.ts",
         "src/discovery/discoveryPortListFeedCta.ts",
@@ -112,14 +111,14 @@
         "src/discovery/discoveryPortListLayout.ts",
         "src/discovery/discoveryPortListMapShell.ts",
         "src/discovery/discoveryPortListPeek.ts",
-        "src/discovery/discoveryPortListPlaceDistance.ts",
+        "src/discovery/discoveryPortListBrowseFacts.ts",
         "src/discovery/discoveryPortListPosterPresentation.ts",
         "src/discovery/discoveryPortListQuickFilters.ts",
         "src/discovery/discoveryPortListRouting.ts",
         "src/discovery/discoveryPortListSearchCommit.ts",
         "src/discovery/discoveryPortListSort.ts",
         "src/discovery/discoveryPortListUrl.ts",
-        "src/discovery/discoveryPortListVenueBrowseFacts.ts"
+        "src/discovery/discoveryPortListBrowseFacts.ts"
       ]
     },
     "w6": {

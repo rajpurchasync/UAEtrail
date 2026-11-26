@@ -408,8 +408,8 @@ describe('discoverySessionParamsGuard', () => {
       if (listPresentationImport.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoveryPortListExplorer.ts')).toMatch(/ListExplorerGeoScopeChip/);
-    expect(read('src/discovery/discoveryPortListExperience.ts')).toMatch(/ListDiscoveryExperience/);
+    expect(read('src/discovery/discoveryPortListEmbed.ts')).toMatch(/ListExplorerGeoScopeChip/);
+    expect(read('src/discovery/discoveryPortListEmbed.ts')).toMatch(/ListDiscoveryExperience/);
     expect(read('src/discovery/discoverySessionFindCrewPrefill.ts')).toMatch(/findCrewPlanAnchor/);
   });
 
