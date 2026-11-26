@@ -21,7 +21,7 @@ import {
 import { ComposeHost } from '../discovery/discoveryPortExploreComposeSurface';
 import { useComposeRoute } from '../discovery/discoveryPortExploreComposeSurface';
 import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExploreComposeSurface';
-import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreDestination';
+import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreBrowse';
 import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreComposeGuest';
 import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHosting';
 import type { AvailabilityFixedSubmitResult } from '../discovery/discoveryPortExploreIntentFixedFlow';

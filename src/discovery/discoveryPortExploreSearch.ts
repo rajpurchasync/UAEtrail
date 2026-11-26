@@ -1,5 +1,5 @@
 /**
- * W10 — list / find-crew surfaces that share explore search routing + feed helpers.
+ * W10/W42 — list / find-crew surfaces: search scope UI + feed helpers (wire → SearchRouting port).
  */
 export {
   EXPLORE_SEARCH_RESULTS_PATH,
@@ -14,6 +14,8 @@ export {
   parseExploreSearchBrowseState,
   parseExploreSearchScopeFromParams,
 } from './discoveryPortExploreSearchRouting';
+export { exploreSearchScopesForQuery } from '../explore/exploreSearchScopeUi';
+export { ExploreSearchScopeHints } from '../explore/ui/ExploreSearchScopeHints';
 export {
   resolveExploreSearchJoinableTripCards,
   resolveExploreSearchTripPool,

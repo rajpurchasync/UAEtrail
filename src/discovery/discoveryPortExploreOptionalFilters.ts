@@ -13,3 +13,4 @@ export {
   type ExploreVenueFilterPatch,
 } from '../explore/exploreOptionalFilters';
 export type { PlaceMapTopicKey, TripMapTopicKey } from '../explore/exploreMapQuickTopicFilters';
+export { ExploreOptionalFilterRow } from '../explore/ui/ExploreOptionalFilterRow';

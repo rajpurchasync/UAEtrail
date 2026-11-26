@@ -319,7 +319,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
-        facade: /discoveryPortExploreDestination/,
+        facade: /discoveryPortExploreBrowse/,
       },
     ];
     for (const { rel, facade, avoidDirect } of expectations) {

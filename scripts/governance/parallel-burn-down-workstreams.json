@@ -579,8 +579,26 @@
         "src/components/layout/MobileMenu.tsx"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w41 on clean tree", "discoveryPortExploreRuntime destinations re-export removal"]
+    },
+    {
+      "id": "W42",
+      "status": "done",
+      "title": "Bundle search scope UI into Search; optional filter row; destination → Browse (wire SearchRouting kept)",
+      "branch": "burn-down/w42-search-filters",
+      "owns": [
+        "src/discovery/discoveryPortExploreSearch.ts",
+        "src/discovery/discoveryPortExploreOptionalFilters.ts",
+        "src/discovery/discoveryPortExploreBrowse.ts",
+        "scripts/dev/consolidate-discovery-ports-w42.mjs",
+        "src/config/desktopNav.ts",
+        "src/config/routingCatalog.ts",
+        "src/config/mobileFiveTabNav.ts",
+        "src/list/explorer/ListDiscoverySearchField.tsx",
+        "src/list/explorer/ListExplorerQuickFilters.tsx"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w42 on clean tree", "routingCatalog deep explore imports"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

@@ -8,8 +8,8 @@ import {
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
 } from '../../discovery/discoveryPortExploreBrowse';
-import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearchUi';
-import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearchScopeHints';
+import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearch';
+import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearch';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
 import { LIST_SEARCH } from '../browse/listChromeTheme';
 

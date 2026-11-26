@@ -14,3 +14,4 @@ export {
   useExplorePublishedDestinations,
   useExplorePublishedDestinationsQuery,
 } from '../explore/useExplorePublishedDestinations';
+export { parseExploreDestinationSlug } from '../explore/exploreDestinationFilter';
