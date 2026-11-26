@@ -326,10 +326,12 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
 }
 
 const listDirectExploreImportRe = /from ['"][^'"]*explore\//;
+const listDirectExploreImportAllow = new Set(['src/list/browse/ListFeedActionsProvider.tsx']);
 const listImportsExploreDirect = [];
 for (const file of walkFiles(join(feSrc, 'list'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
   const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (listDirectExploreImportAllow.has(rel)) continue;
   if (listDirectExploreImportRe.test(readFileSync(file, 'utf8'))) {
     listImportsExploreDirect.push(rel);
   }

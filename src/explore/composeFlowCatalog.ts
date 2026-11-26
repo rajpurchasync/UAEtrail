@@ -112,7 +112,7 @@ export type ComposeFlowSpec = {
 
 
 
-export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpec> = {
+const buildComposeFlowCatalog = (): Record<CanonicalComposeFlowId, ComposeFlowSpec> => ({
 
   'activity.hiking': {
 
@@ -456,13 +456,27 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
+});
+
+let composeFlowCatalogCache: Record<CanonicalComposeFlowId, ComposeFlowSpec> | null = null;
+
+const getComposeFlowCatalogRecord = (): Record<CanonicalComposeFlowId, ComposeFlowSpec> => {
+  if (!composeFlowCatalogCache) composeFlowCatalogCache = buildComposeFlowCatalog();
+  return composeFlowCatalogCache;
 };
 
+/** Lazy init — avoids loading step registries while `addFlow` / `intentFixedFlowEngine` are still initializing. */
+export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpec> = new Proxy(
+  {} as Record<CanonicalComposeFlowId, ComposeFlowSpec>,
+  {
+    get(_target, prop) {
+      if (prop === 'then' || typeof prop === 'symbol') return undefined;
+      return getComposeFlowCatalogRecord()[prop as CanonicalComposeFlowId];
+    },
+  }
+);
 
-
-export const composeFlowSpec = (id: ComposeFlowId): ComposeFlowSpec =>
-
-  COMPOSE_FLOW_CATALOG[id];
+export const composeFlowSpec = (id: ComposeFlowId): ComposeFlowSpec => getComposeFlowCatalogRecord()[id];
 
 
 
