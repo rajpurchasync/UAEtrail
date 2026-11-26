@@ -16,8 +16,8 @@ const DELETE = [
 const REPLACEMENTS = [
   ['discoveryPortListExplorer', 'discoveryPortListEmbed'],
   ['discoveryPortListExperience', 'discoveryPortListEmbed'],
-  ['discoveryPortListPlaceDistance', 'discoveryPortListBrowseFacts'],
-  ['discoveryPortListVenueBrowseFacts', 'discoveryPortListBrowseFacts'],
+  ['discoveryPortListPlaceDistance', 'discoveryPortListPeek'],
+  ['discoveryPortListVenueBrowseFacts', 'discoveryPortListPeek'],
 ];
 
 for (const name of DELETE) {

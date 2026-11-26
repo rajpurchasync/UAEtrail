@@ -5,7 +5,6 @@ export type {
   CrewsAvailableOpenLens,
 } from '../list/crews/crewsOpenSegment';
 export { BrowseListSectionHeader } from '../list/browse/BrowseListSectionHeader';
-export { CommunityDiscoverBrowseList } from '../list/crews/CommunityDiscoverBrowseList';
 export { CrewsGuidesRail } from '../list/crews/CrewsGuidesRail';
 export { CrewsStatsTabs } from '../list/crews/CrewsStatsTabs';
 export { CrewsTabBody } from '../list/crews/CrewsTabBody';

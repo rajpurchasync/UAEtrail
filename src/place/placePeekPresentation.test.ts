@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { resolveVenueCatalogFactLabels } from '../discovery/discoveryPortListBrowseFacts';
+import { resolveVenueCatalogFactLabels } from '../discovery/discoveryPortListPeek';
 import {
   resolvePlacePeekCuratedDestination,
   resolvePlacePeekLocalLabel,

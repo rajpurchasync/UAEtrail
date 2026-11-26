@@ -90,7 +90,7 @@
         "src/discovery/discoveryPortListBrowseCard.ts",
         "src/discovery/discoveryPortListBrowseCard.ts",
         "src/discovery/discoveryPortListBucketWire.ts",
-        "src/discovery/discoveryPortListBrowseFacts.ts",
+        "src/discovery/discoveryPortListPeek.ts",
         "src/discovery/discoveryPortListChrome.ts",
         "src/discovery/discoveryPortListBrowseCard.ts",
         "src/discovery/discoveryPortListChrome.ts",
@@ -111,14 +111,14 @@
         "src/discovery/discoveryPortListLayout.ts",
         "src/discovery/discoveryPortListMapShell.ts",
         "src/discovery/discoveryPortListPeek.ts",
-        "src/discovery/discoveryPortListBrowseFacts.ts",
+        "src/discovery/discoveryPortListPeek.ts",
         "src/discovery/discoveryPortListPeek.ts",
         "src/discovery/discoveryPortListBrowseFilters.ts",
         "src/discovery/discoveryPortListUrl.ts",
         "src/discovery/discoveryPortListSearchCommit.ts",
         "src/discovery/discoveryPortListSort.ts",
         "src/discovery/discoveryPortListUrl.ts",
-        "src/discovery/discoveryPortListBrowseFacts.ts"
+        "src/discovery/discoveryPortListPeek.ts"
       ]
     },
     "w6": {

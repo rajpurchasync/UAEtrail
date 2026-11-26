@@ -1,7 +1,18 @@
 /**
- * W7b+W62 — list/browse + discovery browse chrome for explore map peek (not list explorer shell).
+ * W7b+W62+W67 — map peek + browse facts/catalog labels (not list explorer shell).
  */
-export { browseCatalogEntityName } from '../list/browse/browseCatalogLabels';
+export {
+  browseCatalogEntityName,
+  browseCatalogHeaderLocationLine,
+  browseCatalogHubLabel,
+  browseCatalogNormalize,
+} from '../list/browse/browseCatalogLabels';
+export {
+  distanceMeters,
+  formatPlaceDistance,
+} from '../list/browse/placeDistance';
+export { resolveVenueCatalogFactLabels } from '../list/browse/venueBrowseFacts';
+export { resolveVenueBrowsePosterCopy } from '../list/browse/venueBrowseCardCopy';
 export { resolveListFeedPosterRequirementLabels } from '../list/browse/listFeedPosterStandard';
 export { resolveBrowsePosterActivityTypeLabel } from '../list/browse/listPosterPresentation';
 export {

@@ -413,8 +413,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.test.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.ts'))).toBe(false);
     expect(read('src/list/browse/VenueBrowseCard.tsx')).not.toMatch(/listVenuePosterPresentation/);
-    expect(read('src/discovery/discoveryCardViewModel.test.ts')).toMatch(/discoveryPortListBrowseFacts/);
-    expect(read('src/discovery/discoveryPortListBrowseFacts.ts')).toMatch(/browse\/venueBrowseCardCopy/);
+    expect(read('src/discovery/discoveryCardViewModel.test.ts')).toMatch(/discoveryPortListPeek/);
+    expect(read('src/discovery/discoveryPortListPeek.ts')).toMatch(/browse\/venueBrowseCardCopy/);
     expect(read('src/discovery/discoveryCardViewModel.test.ts')).not.toMatch(/listVenuePosterPresentation/);
   });
 

@@ -16,7 +16,7 @@ import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
 import { BrowseListSectionHeader } from '@/discovery/discoveryPortListFindCrew';
 import { CrewBrowseListEmpty, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { useCommunityDiscoverList } from '@/crew-discovery/hooks/useCommunityDiscoverList';
-import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListFindCrew';
+import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListEmbed';
 import { FEATURE_FLAGS } from '@/config/platform';
 import {
   CrewsGuidesRail,

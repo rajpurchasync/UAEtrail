@@ -16,7 +16,7 @@ const DELETE = [
 const REPLACEMENTS = [
   ['discoveryPortListQuickFilters', 'discoveryPortListBrowseFilters'],
   ['discoveryPortListFilters', 'discoveryPortListBrowseFilters'],
-  ['discoveryPortListCatalogLabels', 'discoveryPortListBrowseFacts'],
+  ['discoveryPortListCatalogLabels', 'discoveryPortListPeek'],
   ['discoveryPortListPosterPresentation', 'discoveryPortListPeek'],
 ];
 

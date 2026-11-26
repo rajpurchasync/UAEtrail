@@ -8,7 +8,7 @@ import {
   seekingExploreMapItem,
   venueExploreMapItem,
 } from '../explore/exploreMapItemFixtures';
-import { resolveVenueBrowsePosterCopy } from './discoveryPortListBrowseFacts';
+import { resolveVenueBrowsePosterCopy } from './discoveryPortListPeek';
 import { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
 import { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
 
