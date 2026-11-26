@@ -400,6 +400,16 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/parseExploreDestinationSlug/);
     expect(read('src/list/browse/ListFeedActionsProvider.tsx')).not.toMatch(/routingCatalog/);
     expect(read('src/list/browse/ListFeedActionsProvider.tsx')).toMatch(/activityDetailPath/);
+    expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(
+      /EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES/
+    );
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(
+      /EXPLORE_GUEST_MAP_PREVIEW_NOTICE/
+    );
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(
+      /EXPLORE_SEARCH_OPEN_PLACEHOLDER/
+    );
+    expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);

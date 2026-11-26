@@ -17,4 +17,9 @@ export {
   type ExploreSearchScope,
 } from '../explore/search/exploreSearchRouting';
 export { countExploreSearchScopes, exploreItemMatchesQuery } from '../explore/exploreSearchMatches';
-export { EXPLORE_SEARCH_SCOPES_SHIPPED, type ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
+export {
+  EXPLORE_SEARCH_OPEN_PLACEHOLDER,
+  EXPLORE_SEARCH_PROMPT,
+  EXPLORE_SEARCH_SCOPES_SHIPPED,
+  type ExploreSearchScopeKey,
+} from '../explore/exploreBrowseTaxonomy';

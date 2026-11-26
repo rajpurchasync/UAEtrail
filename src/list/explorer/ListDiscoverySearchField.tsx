@@ -2,12 +2,11 @@ import type { ReactNode } from 'react';
 import { Map, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreBrowse';
 import {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,
-  type ExploreSearchScopeCounts,
-  type ExploreSearchScopeKey,
-} from '../../discovery/discoveryPortExploreBrowse';
+} from '../../discovery/discoveryPortExploreSearchRouting';
 import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearch';
 import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearch';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
