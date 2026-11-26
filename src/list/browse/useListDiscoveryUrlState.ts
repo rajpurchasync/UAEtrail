@@ -11,7 +11,7 @@ import {
   exploreSearchListCatForScope,
   exploreSearchScopeForListCat,
   parseExploreSearchBrowseState,
-} from '../../discovery/discoveryPortExploreSearch';
+} from '../../discovery/discoveryPortExploreSearchRouting';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';

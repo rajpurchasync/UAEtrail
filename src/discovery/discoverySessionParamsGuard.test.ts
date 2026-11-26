@@ -420,6 +420,11 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/list/browse/browseListTaxonomy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
     expect(read('src/list/browse/listVenuePlaceTopics.ts')).toMatch(/discoveryPortExploreRouting/);
     expect(read('src/list/browse/listVenuePlaceTopics.ts')).not.toMatch(/routingCatalog/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/discoveryPortExploreSearchRouting/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).not.toMatch(/discoveryPortExploreSearch['"]/);
+    expect(read('src/list/explorer/FindCrewCommunityCard.tsx')).not.toMatch(/routingCatalog/);
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreSearchScopesForQuery/);
+    expect(read('src/list/explorer/ListDiscoverySearchField.tsx')).toMatch(/exploreSearchScopesForQuery/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/exploreMapItemPathFromAvailabilityRow/);

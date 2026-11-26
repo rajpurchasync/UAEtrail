@@ -7,7 +7,7 @@ import {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,
 } from '../../discovery/discoveryPortExploreSearchRouting';
-import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearch';
+import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearch';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
 import { LIST_SEARCH } from '../browse/listChromeTheme';
