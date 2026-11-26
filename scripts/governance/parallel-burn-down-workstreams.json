@@ -440,8 +440,27 @@
         "src/discovery/discoveryPortExploreEligibleRideshareParents.ts"
       ],
       "avoid": ["src/services/**", "src/activity-discovery/**"]
+    },
+    {
+      "id": "W33",
+      "status": "done",
+      "title": "discoveryCardModel, catalog publish services, routing — ports + shared-types",
+      "branch": "burn-down/w33-card-services-routing",
+      "owns": [
+        "src/discovery/discoveryCardModel.ts",
+        "src/services/hostingActivityPublish.ts",
+        "src/services/catalogPlaceSubmit.ts",
+        "src/services/catalogFacilitySubmit.ts",
+        "src/routing/AppRoutes.tsx",
+        "src/routing/planBrowseRoute.tsx",
+        "src/discovery/discoveryPortExploreHostingPublishDestination.ts",
+        "src/discovery/discoveryPortExploreHostingScheduleDraft.ts",
+        "src/discovery/discoveryPortExploreHostingFlowEngine.ts",
+        "src/discovery/discoveryPortExploreAddFacilityFlow.ts"
+      ],
+      "avoid": ["src/activity-discovery/**", "src/places-discovery/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

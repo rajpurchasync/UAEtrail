@@ -1,2 +1,5 @@
-/** W23 — compose flow id wire for place-card host launch. */
-export { composeFlowIdFromRoute } from '../explore/composeFlowCatalog';
+/** W23/W33 — compose flow id + host-kind spec for place launch and publish. */
+export {
+  composeFlowIdFromRoute,
+  composeFlowSpecForHostKind,
+} from '../explore/composeFlowCatalog';

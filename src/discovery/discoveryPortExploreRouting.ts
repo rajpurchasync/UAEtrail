@@ -7,6 +7,7 @@ export {
   exploreCrewsPath,
   exploreDiscoverBrowsePath,
   exploreHostPath,
+  exploreMapItemSharePath,
   explorePath,
   explorePlacesPath,
   explorePlanWithFriendPath,

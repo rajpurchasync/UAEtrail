@@ -1,10 +1,12 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { submitMemberFacility } from '../hooks/memberCatalogSubmitClientApi';
 import { subdivisionNoun } from '../config/regions';
-import { resolveRequiredEmirate } from '../explore/hostingPublishDestination';
-import type { FacilityAddDraft } from '../explore/ui/addFacilityFlow';
-import { validateFacilityAddDraft } from '../explore/ui/addFacilityFlow';
-import type { AddSubmitResult } from '../explore/ui/addFlow';
+import {
+  validateFacilityAddDraft,
+  type FacilityAddDraft,
+} from '../discovery/discoveryPortExploreAddFacilityFlow';
+import type { AddSubmitResult } from '../discovery/discoveryPortExploreAddFlow';
+import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHostingPublishDestination';
 
 /** Member facility submit from Add on map — single `POST /me/facilities`. */
 export const submitCatalogFacilityFromAddDraft = async (

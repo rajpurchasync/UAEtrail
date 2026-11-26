@@ -1,15 +1,15 @@
 import type { LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { subdivisionNoun } from '../config/regions';
-import { resolveRequiredEmirate } from '../explore/hostingPublishDestination';
-import { formatE164Phone } from '../utils/phone';
-import type { AddDraft } from '../explore/ui/addFlow';
 import {
   buildVenueAccessibleBy,
   validateAddDraft,
+  type AddDraft,
   type AddSubmitResult,
-} from '../explore/ui/addFlow';
-import type { ActivityDifficulty } from '../explore/ui/hostingFlowEngine';
+} from '../discovery/discoveryPortExploreAddFlow';
+import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHostingPublishDestination';
+import type { ActivityDifficulty } from '../discovery/discoveryPortExploreHostingFlowEngine';
+import { formatE164Phone } from '../utils/phone';
 
 const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>
   value === 'medium' ? 'moderate' : value;

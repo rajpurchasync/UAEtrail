@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Route, Routes, type Location } from 'react-router-dom';
 import { LIST_DISCOVERY_PATH } from '../config/routingCatalogLite';
 import { COMMUNITY_CLUB_PATH_PREFIX } from '../config/routingCatalog';
-import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoveryPortExploreSearchRouting';
 import {
   PLAN_PATH,
   PROFILE_BADGES_PATH,

@@ -14,15 +14,12 @@ import {
   resolveCustomproposedDestinationName,
   resolvePublishedDestinationForPoint,
   resolvePublishedDestinationIdForPoint,
-} from '../explore/hostingPublishDestination';
+} from '../discovery/discoveryPortExploreHostingPublishDestination';
 import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
 } from '../utils/activityPublishPayload';
-import type { CreateActivityDraft } from '../explore/ui/hostingFlowEngine';
-import { normalizeHostingEndDate } from '../explore/ui/hostingScheduleDraft';
-import { composeFlowSpecForHostKind } from '../explore/composeFlowCatalog';
-import { linkParentToRideshareActivity } from '../explore/linkActivityRideshareOffer';
+import { composeFlowSpecForHostKind } from '../discovery/discoveryPortExploreComposeFlowCatalog';
 import {
   buildHostingActivityRequirements,
   defaultDescription,
@@ -33,7 +30,10 @@ import {
   resolveActivityTitle,
   resolveActivityType,
   usesGoingFromHostingStep,
-} from '../explore/ui/hostingFlowEngine';
+  type CreateActivityDraft,
+} from '../discovery/discoveryPortExploreHostingFlowEngine';
+import { normalizeHostingEndDate } from '../discovery/discoveryPortExploreHostingScheduleDraft';
+import { linkParentToRideshareActivity } from '../discovery/discoveryPortExploreLinkRideshareOffer';
 
 const formatCoord = (value: number): string => Number(value.toFixed(6)).toString();
 

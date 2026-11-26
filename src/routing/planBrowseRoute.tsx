@@ -3,7 +3,11 @@ import { Navigate, useSearchParams } from 'react-router-dom';
 import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
 import { useAuth } from '../context/AuthContext';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
-import { explorePath, inboundCreateParamToHostPath, parseActivityListFilter } from '../explore/routing';
+import {
+  explorePath,
+  inboundCreateParamToHostPath,
+  parseActivityListFilter,
+} from '../discovery/discoveryPortExploreRouting';
 import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 
 const PlanPage = lazy(() => import('../plan/PlanPage').then((m) => ({ default: m.PlanPage })));

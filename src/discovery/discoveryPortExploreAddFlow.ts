@@ -1,2 +1,7 @@
-/** W31 — add-place submit result type for create flow bridge. */
-export type { AddSubmitResult } from '../explore/ui/addFlow';
+/** W31/W33 — add-place draft wire for create flow bridge and catalog submit. */
+export {
+  buildVenueAccessibleBy,
+  validateAddDraft,
+  type AddDraft,
+  type AddSubmitResult,
+} from '../explore/ui/addFlow';

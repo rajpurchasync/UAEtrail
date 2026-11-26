@@ -1,2 +1,5 @@
-/** W22 — linked rideshare eligibility for activity manage surfaces. */
-export { canLinkRideshareToActivity } from '../explore/linkActivityRideshareOffer';
+/** W22/W33 — linked rideshare eligibility and parent graph write after publish. */
+export {
+  canLinkRideshareToActivity,
+  linkParentToRideshareActivity,
+} from '../explore/linkActivityRideshareOffer';

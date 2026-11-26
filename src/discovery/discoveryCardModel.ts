@@ -29,12 +29,13 @@ import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter'
 import {
   buildExploreRouteLabel,
   buildExploreWhenSegment,
+  resolveExplorePrice,
   type DiscoveryCardSections,
-} from '../explore/exploreCopy';
-import { resolveExplorePrice, type ExplorePriceInfo } from '../explore/explorePriceLabel';
-import { enrichExploreActivityRequirementBadges } from '../explore/exploreRequirementBadges';
-import { exploreMapItemSharePath } from '../explore/routing';
-import { resolveExploreCoverImage } from '../explore/exploreCoverImage';
+  type ExplorePriceInfo,
+} from '@uaetrail/shared-types';
+import { enrichExploreActivityRequirementBadges } from './discoveryPortExploreRequirementBadges';
+import { exploreMapItemSharePath } from './discoveryPortExploreRouting';
+import { resolveExploreCoverImage } from './discoveryPortExploreRuntime';
 
 export type { DiscoveryCardKind, DiscoveryCardSource } from '@uaetrail/shared-types';
 

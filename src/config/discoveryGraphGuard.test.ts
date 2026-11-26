@@ -102,6 +102,20 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W33 discoveryCardModel, services, routing import explore only via ports or shared-types', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const targets = [
+      'src/discovery/discoveryCardModel.ts',
+      'src/services/hostingActivityPublish.ts',
+      'src/services/catalogPlaceSubmit.ts',
+      'src/services/catalogFacilitySubmit.ts',
+      'src/routing/AppRoutes.tsx',
+      'src/routing/planBrowseRoute.tsx',
+    ];
+    const violations = targets.filter((rel) => directExplore.test(read(rel)));
+    expect(violations).toEqual([]);
+  });
+
   it('W32 src/hooks (non-explore) imports explore only via discoveryPortExplore', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];
