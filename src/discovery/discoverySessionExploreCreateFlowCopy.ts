@@ -1,2 +1,8 @@
-/** W20 — hosting / create flow labels for crew-discovery panels. */
-export { HOSTING_OFFER_RIDESHARE_LABEL } from '../explore/createFlowCopy';
+/** W20/W23 — hosting / create flow labels for cross-context detail surfaces. */
+export {
+  ACTIVITY_DETAIL_RIDESHARE_UNLINKED_GUEST,
+  EXPLORE_RIDESHARE_AVAILABLE_LABEL,
+  HOSTING_LINK_RIDESHARE_CREATE,
+  HOSTING_OFFER_RIDESHARE_LABEL,
+  HOSTING_RIDESHARE_LINKED_NOTICE,
+} from '../explore/createFlowCopy';

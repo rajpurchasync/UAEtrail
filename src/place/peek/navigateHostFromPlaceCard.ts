@@ -2,12 +2,12 @@ import type { NavigateFunction } from 'react-router-dom';
 import { isPlaceMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { launchHostWizard } from '../../create/launchHostWizard';
-import { composeFlowIdFromRoute } from '../../explore/composeFlowCatalog';
-import { activityCompose } from '../../explore/compose';
+import { activityCompose } from '@/discovery/discoverySessionExploreCompose';
+import { composeFlowIdFromRoute } from '@/discovery/discoverySessionExploreComposeFlowCatalog';
 import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
-} from '../../explore/ui/hostingFromPlace';
+} from '@/discovery/discoverySessionExploreHostingFromPlace';
 import { fetchPublishedDestinations } from '../../hooks/destinationHubClientApi';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { Place } from '../../types/place';

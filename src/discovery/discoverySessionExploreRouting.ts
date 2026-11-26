@@ -2,6 +2,7 @@
 export {
   detailBackPath,
   discoveryToExploreSearch,
+  exploreAddFacilityOnPlacePath,
   exploreActivitiesPath,
   exploreCrewsPath,
   exploreDiscoverBrowsePath,

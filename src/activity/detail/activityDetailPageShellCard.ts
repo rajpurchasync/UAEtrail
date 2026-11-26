@@ -7,7 +7,7 @@ import type {
 import { buildExploreActivityDisplay } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { buildExploreMapItemFromActivity } from '../../explore/privateActivityExploreItem';
+import { buildExploreMapItemFromActivity } from '@/discovery/discoverySessionExplorePrivateActivityMapItem';
 import { activityDetailPath } from '../../config/routingCatalog';
 
 const linkedRidesharesFromDetail = (

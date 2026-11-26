@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Car } from 'lucide-react';
 import type { ActivityDetailDTO, ActivityViewerAccessDTO } from '@uaetrail/shared-types';
-import { LinkRidesharePanel } from '../../../explore/ui/LinkRidesharePanel';
-import { canLinkRideshareToActivity } from '../../../explore/linkActivityRideshareOffer';
-import { HOSTING_LINK_RIDESHARE_CREATE } from '../../../explore/createFlowCopy';
+import { LinkRidesharePanel } from '@/discovery/discoverySessionExploreLinkRideshareUi';
+import { canLinkRideshareToActivity } from '@/discovery/discoverySessionExploreLinkRideshareOffer';
+import { HOSTING_LINK_RIDESHARE_CREATE } from '@/discovery/discoverySessionExploreCreateFlowCopy';
 
 export type ActivityDetailOfferRideshareProps = {
   activity: ActivityDetailDTO;

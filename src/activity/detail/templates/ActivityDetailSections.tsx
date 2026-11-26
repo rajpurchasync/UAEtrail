@@ -56,12 +56,12 @@ import type { ActivityDetailPlanSectionsComponent } from '../composers';
 import { ActivityDetailPlanColumn } from '../../../components/activity/detail/ActivityDetailPlanColumn';
 import { activityDetailFriendsGoingLabel } from '../../../activity/activityDetailFriendsGoingLabel';
 import { activityCrewPath, activityDetailPath } from '../../../config/routingCatalog';
-import { activityPlaceReturnState } from '../../../explore/mapPeekDetailNavState';
+import { activityPlaceReturnState } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { buildActivityDetailPageShellCard } from '../activityDetailPageShellCard';
 import { resolveActivityDetailGeoHero } from '../resolveActivityDetailGeoHero';
 import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
 import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
-import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
+import { consumerDetailChildLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { resolveActivityDetailHeaderChrome } from '../../activityDetailHeaderChrome';
 import {
   extractActivityTransportReachLines,
@@ -72,10 +72,8 @@ import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import {
   ActivityPeekLinkedTransport,
   activityPeekHasLinkedTransportAffordance,
-} from '../../../explore/ui/peek/activity/ActivityPeekLinkedTransport';
-import {
-  EXPLORE_RIDESHARE_AVAILABLE_LABEL,
-} from '../../../explore/createFlowCopy';
+} from '@/discovery/discoverySessionExplorePeekLinkedTransport';
+import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '@/discovery/discoverySessionExploreCreateFlowCopy';
 import { capitalize } from '../../../utils';
 import { activityRegistryPlacePath } from '../../../utils/activityRegistryPlacePath';
 import { activityHostAvatar, showTenantBrand } from '../../../utils/hostLabels';

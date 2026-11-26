@@ -276,8 +276,22 @@
         "src/discovery/discoverySessionExploreLinkRideshareOffer.ts"
       ],
       "avoid": ["src/components/activity bulk UI migration"]
+    },
+    {
+      "id": "W23",
+      "status": "done",
+      "title": "Activity/place detail + place peek — discoverySessionExplore facades",
+      "branch": "burn-down/w23-detail-peek-facades",
+      "owns": [
+        "src/activity/detail/**",
+        "src/place/detail/**",
+        "src/place/peek/**",
+        "src/discovery/discoverySessionExplorePrivateActivityMapItem.ts",
+        "src/discovery/discoverySessionExploreLinkRideshareUi.ts"
+      ],
+      "avoid": ["src/components/activity/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }
