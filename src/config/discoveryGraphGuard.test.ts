@@ -102,6 +102,17 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W32 src/hooks (non-explore) imports explore only via discoveryPortExplore', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const violations: string[] = [];
+    for (const ent of readdirSync(join(process.cwd(), 'src/hooks'), { withFileTypes: true })) {
+      if (!ent.isFile() || !/\.(ts|tsx)$/.test(ent.name) || ent.name.endsWith('.test.ts')) continue;
+      const rel = `src/hooks/${ent.name}`.replace(/\\/g, '/');
+      if (directExplore.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('W31 src/create bounded context imports explore only via discoveryPortExplore', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];

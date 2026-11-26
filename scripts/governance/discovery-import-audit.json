@@ -25,7 +25,7 @@
     "src/discovery": {
       "discovery": 4,
       "components": 4,
-      "explore": 105,
+      "explore": 109,
       "discoveryPortListBrowseLink": 3,
       "discoveryPortListBrowseCardChrome": 1,
       "discoveryCardModel": 3,
@@ -70,7 +70,7 @@
     "discovery": 10,
     "styles": 1,
     "explorer": 1,
-    "explore": 105,
+    "explore": 109,
     "discoveryPortListBrowseLink": 3,
     "discoveryPortListBrowseCardChrome": 1,
     "discoveryCardModel": 3,

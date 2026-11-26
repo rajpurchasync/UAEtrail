@@ -2,7 +2,7 @@ import type { ExploreMapItemDTO, ExploreMapOverlayDTO } from '@uaetrail/shared-t
 import { api } from '../api/index';
 import { apiRequestConditional, getStoredSession } from '../api/client';
 import { type ExploreMapQueryParams, exploreMapHttpPath } from '../api/domains/explore';
-import { applyExploreMapOverlay } from '../explore/applyExploreMapOverlay';
+import { applyExploreMapOverlay } from '../discovery/discoveryPortExploreMapOverlay';
 
 export type ConditionalCatalog<T> =
   | { notModified: true; etag: string | null }

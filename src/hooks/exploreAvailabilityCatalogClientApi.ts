@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { BWL_EXPLORE_MAP_SOURCE } from '@uaetrail/shared-types';
-import { applyExploreMapOverlay } from '../explore/applyExploreMapOverlay';
+import { applyExploreMapOverlay } from '../discovery/discoveryPortExploreMapOverlay';
 import { fetchExploreMapItems, fetchExploreMapOverlayIfSignedIn, type ConditionalCatalog } from './exploreMapClientApi';
 
 /** Fixed crew availability for People **Looking for** (explore map slice). */

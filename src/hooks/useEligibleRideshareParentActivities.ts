@@ -4,7 +4,7 @@ import {
   mergeEligibleRideshareParents,
   type RideshareParentCandidate,
   type SelfRideshareCandidate,
-} from '../explore/eligibleRideshareParentActivities';
+} from '../discovery/discoveryPortExploreEligibleRideshareParents';
 import { usePublishingTenantActivities } from './publishingWorkspaceQueries';
 
 export function useEligibleRideshareParentActivities(input: {

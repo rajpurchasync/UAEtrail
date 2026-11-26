@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
-import { invalidateActivityEngagementQueries } from '../explore/exploreMapEngagementFreshness';
+import { isExploreMapBboxEnabled } from '../discovery/discoveryPortExploreMapBbox';
+import { invalidateActivityEngagementQueries } from '../discovery/discoveryPortExploreMapEngagementFreshness';
 import { coordinationAttentionQueryKey, memberAvailabilityQueryKey, myJoinedActivitiesQueryKey } from './clientQueryKeys';
 import { reloadExploreMap } from './useExploreMap';
 

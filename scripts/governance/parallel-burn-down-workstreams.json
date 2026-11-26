@@ -420,8 +420,28 @@
         "src/discovery/discoveryPortExploreLinkRidesharePrefill.ts"
       ],
       "avoid": ["src/explore/** impl churn", "src/hooks/exploreMap*"]
+    },
+    {
+      "id": "W32",
+      "status": "done",
+      "title": "Explore map hooks — bbox, overlay, engagement freshness, rideshare parents",
+      "branch": "burn-down/w32-explore-map-hooks",
+      "owns": [
+        "src/hooks/exploreMapClientApi.ts",
+        "src/hooks/exploreAvailabilityCatalogClientApi.ts",
+        "src/hooks/exploreMapQuery.ts",
+        "src/hooks/useExploreMap.ts",
+        "src/hooks/activityJoinClientEffects.ts",
+        "src/hooks/hostingPublishClientEffects.ts",
+        "src/hooks/useEligibleRideshareParentActivities.ts",
+        "src/discovery/discoveryPortExploreMapBbox.ts",
+        "src/discovery/discoveryPortExploreMapOverlay.ts",
+        "src/discovery/discoveryPortExploreMapEngagementFreshness.ts",
+        "src/discovery/discoveryPortExploreEligibleRideshareParents.ts"
+      ],
+      "avoid": ["src/services/**", "src/activity-discovery/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

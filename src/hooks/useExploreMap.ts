@@ -3,8 +3,10 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { catalogFreshQueryOptions, catalogSnapshots, loadCachedCatalog } from '../lib/catalogSnapshot';
 import { fetchExploreMapItems } from './exploreMapClientApi';
-import type { ExploreMapFetchScope } from '../explore/exploreMapBbox';
-import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
+import {
+  isExploreMapBboxEnabled,
+  type ExploreMapFetchScope,
+} from '../discovery/discoveryPortExploreMapBbox';
 import { crewDiscoveryAvailabilityCatalogQueryKey } from '../crew-discovery/hooks/useCrewDiscoveryAvailabilityCatalog';
 import { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
 

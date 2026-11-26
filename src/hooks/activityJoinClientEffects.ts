@@ -1,10 +1,10 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
+import { isExploreMapBboxEnabled } from '../discovery/discoveryPortExploreMapBbox';
 import {
   invalidateActivityEngagementQueries,
   invalidateExploreMapQueries,
   refreshExploreMapAfterActivityEngagement,
-} from '../explore/exploreMapEngagementFreshness';
+} from '../discovery/discoveryPortExploreMapEngagementFreshness';
 import {
   invalidateMyActivityJoinRequestsQueries,
   invalidateMyJoinedActivitiesQueries,
