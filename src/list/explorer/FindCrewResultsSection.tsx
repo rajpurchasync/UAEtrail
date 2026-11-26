@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { ExploreClockStyle, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
-import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
+import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { CrewsTabBody } from '@/discovery/discoveryPortListFindCrew';
 import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListFindCrew';
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';

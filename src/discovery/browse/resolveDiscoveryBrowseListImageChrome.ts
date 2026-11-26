@@ -3,7 +3,7 @@ import { isGeographyMapSource } from '@uaetrail/shared-types';
 import {
   resolveBrowsePosterActivityTypeLabel,
   resolveListFeedPosterRequirementLabels,
-} from '../discoveryPortListPosterPresentation';
+} from '../discoveryPortListPeek';
 import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../discoveryPortExploreCardChrome';
 
 const POLICY_CHIP_CAP = 4;

@@ -1,7 +1,9 @@
 /**
- * W7b — list/browse + discovery browse chrome for explore map peek (not list explorer shell).
+ * W7b+W62 — list/browse + discovery browse chrome for explore map peek (not list explorer shell).
  */
 export { browseCatalogEntityName } from '../list/browse/browseCatalogLabels';
+export { resolveListFeedPosterRequirementLabels } from '../list/browse/listFeedPosterStandard';
+export { resolveBrowsePosterActivityTypeLabel } from '../list/browse/listPosterPresentation';
 export { browseCardTitle } from '../list/browse/browseCardMeta';
 export { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../list/browse/browsePosterCover';
 export type { ViewerFix } from '../list/browse/placeDistance';

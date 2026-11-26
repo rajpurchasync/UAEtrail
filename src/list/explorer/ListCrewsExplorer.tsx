@@ -6,7 +6,7 @@ import type {
   CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseState';
 import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
-import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
+import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoveryPortListChrome';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';

@@ -598,7 +598,7 @@ const baseline = {
       ? ['W4s: explore imports list browse hooks via discoveryPortListGeoHub']
       : []),
     ...(exploreImportsBrowseListFilters.length > 0
-      ? ['W4t: explore imports browse list filter types via discoveryPortListFilters']
+      ? ['W4t: explore imports browse list filter types via discoveryPortListBrowseFilters']
       : []),
     ...(exploreImportsListChromeTheme.length > 0
       ? ['W4u: explore imports list chrome via discoveryPortListChrome']
@@ -610,7 +610,7 @@ const baseline = {
       ? ['W7b: explore map peek imports list chrome via discoveryPortListPeek']
       : []),
     ...(exploreImportsBrowseListQuickFilters.length > 0
-      ? ['W8: explore imports list quick filters via discoveryPortListQuickFilters']
+      ? ['W8: explore imports list quick filters via discoveryPortListBrowseFilters']
       : []),
     ...(exploreImportsListPresentation.length > 0
       ? ['W9: explore imports list explorer/shell via discoverySession list presentation facades']

@@ -4,7 +4,7 @@ import {
   ExploreSearchBookingHero,
   resolveExploreSearchDetectedWhereQuery,
 } from '@/discovery/discoveryPortExploreSearch';
-import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
+import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { FIND_CREW_WHERE_PLACEHOLDER, FIND_CREW_WHEN_PICK_LABEL } from './findCrewSearchCopy';
 
 type FindCrewSearchChromeProps = {

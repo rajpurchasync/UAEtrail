@@ -12,7 +12,7 @@ import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
   type BrowseListFilterState,
-} from '../discovery/discoveryPortListFilters';
+} from '../discovery/discoveryPortListBrowseFilters';
 import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPortListGeoHub';
 import {
   ListSideMapResizeHandle,

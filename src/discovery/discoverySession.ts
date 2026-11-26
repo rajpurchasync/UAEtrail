@@ -54,18 +54,20 @@ export {
 export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoveryPortListChrome';
 export type {
   BrowseAudienceFilter,
+  BrowseListBucket,
   BrowseListFilterState,
   BrowsePriceFilter,
+  BrowseTripTopicKey,
   BrowseWhenFilter,
-} from './discoveryPortListFilters';
-export { filterExploreMapItemsForList } from './discoveryPortListFilters';
-export type { BrowseListBucket, BrowseTripTopicKey, ListVenuePlaceTopicKey } from './discoveryPortListQuickFilters';
+  ListVenuePlaceTopicKey,
+} from './discoveryPortListBrowseFilters';
 export {
   LIST_BROWSE_DATE_FILTER_OPTIONS,
   LIST_QUICK_FILTER_REGION_LABEL,
   LIST_QUICK_TRIP_TOPIC_PILLS,
   LIST_QUICK_VENUE_TOPIC_PILLS,
-} from './discoveryPortListQuickFilters';
+  filterExploreMapItemsForList,
+} from './discoveryPortListBrowseFilters';
 export {
   BROWSE_CARD_CHIP,
   BrowseCompactRow,

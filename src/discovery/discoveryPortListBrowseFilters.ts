@@ -1,6 +1,16 @@
 /**
- * W8 — browse list quick filters, topic keys, and date preset copy for explore map/search.
+ * W62 — browse list filter spine + quick filter pills for explore map/search.
  */
+export type {
+  BrowseAudienceFilter,
+  BrowseListFilterState,
+  BrowsePriceFilter,
+  BrowseWhenFilter,
+} from '../list/browse/browseListFilters';
+export {
+  cardMatchesBrowsePrice,
+  filterExploreMapItemsForList,
+} from '../list/browse/browseListFilters';
 export type { BrowseListBucket } from '../list/browse/browseListBucket';
 export type { BrowseTripTopicKey } from '../list/browse/browseListTripTopics';
 export type { ListVenuePlaceTopicKey } from '../list/browse/listVenuePlaceTopics';

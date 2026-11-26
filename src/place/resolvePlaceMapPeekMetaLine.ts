@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { browseCatalogHeaderLocationLine } from '../discovery/discoveryPortListCatalogLabels';
+import { browseCatalogHeaderLocationLine } from '../discovery/discoveryPortListBrowseFacts';
 import {
   distanceMeters,
   formatPlaceDistance,

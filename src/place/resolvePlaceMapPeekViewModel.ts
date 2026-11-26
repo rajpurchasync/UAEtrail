@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
-import { browseCatalogEntityName } from '../discovery/discoveryPortListCatalogLabels';
+import { browseCatalogEntityName } from '../discovery/discoveryPortListBrowseFacts';
 import { resolvePlaceRegistryCoverUrl } from './peek/resolvePlaceRegistryCoverImage';
 import { resolvePlacePeekCuratedDestination } from './placePeekPresentation';
 import type { ViewerFix } from '../discovery/discoveryPortListBrowseFacts';

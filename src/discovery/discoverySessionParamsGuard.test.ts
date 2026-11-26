@@ -75,7 +75,7 @@ describe('discoverySessionParamsGuard', () => {
       if (filterImport.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListFilters/);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListBrowseFilters/);
   });
 
   it('W4s explore imports list hooks via discoverySession barrel', () => {
@@ -276,7 +276,7 @@ describe('discoverySessionParamsGuard', () => {
       if (quickFilterImport.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListQuickFilters/);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListBrowseFilters/);
   });
 
   it('W13 list wire imports explore via discoveryPortExplore* facades', () => {

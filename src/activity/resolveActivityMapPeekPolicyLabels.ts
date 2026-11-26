@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { resolveListFeedPosterRequirementLabels } from '../discovery/discoveryPortListPosterPresentation';
+import { resolveListFeedPosterRequirementLabels } from '../discovery/discoveryPortListPeek';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL as EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../discovery/discoveryPortExploreCreateFlow';
 
 const MAP_PEEK_POLICY_CAP = 5;
