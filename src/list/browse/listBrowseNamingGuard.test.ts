@@ -161,6 +161,12 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/@\/crew-discovery\/crewBrowseTab/);
   });
 
+  it('BROWSE-NAME-01q: browse list copy + hygiene scope wire via discovery ports', () => {
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreSearchRouting/);
+    expect(read('src/list/listModuleHygiene.test.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
+    expect(read('src/list/listModuleHygiene.test.ts')).not.toMatch(/explore\/exploreBrowseTaxonomy/);
+  });
+
   it('BROWSE-NAME-01p: GW-7 — list imports map catalog via discoveryPortExplore facades', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(false);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExplore/);

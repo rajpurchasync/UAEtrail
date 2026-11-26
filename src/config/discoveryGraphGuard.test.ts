@@ -52,6 +52,14 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(existsSync(join(process.cwd(), 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
   });
 
+  it('DISC-03-07: W90 retired discoveryPortExploreBrowse — BrowseHooks + BrowseUrl only', () => {
+    const discovery = join(process.cwd(), 'src/discovery');
+    expect(existsSync(join(discovery, 'discoveryPortExploreBrowse.ts'))).toBe(false);
+    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseHooks.ts'))).toBe(true);
+    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseUrl.ts'))).toBe(true);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreSearchRouting/);
+  });
+
   it('W20 config prod routes explore via discoveryPortExplore facades (incl routingCatalog)', () => {
     const allow = new Set(['src/config/routingCatalogLite.ts']);
     const directExplore = /from ['"][^'"]*explore\//;

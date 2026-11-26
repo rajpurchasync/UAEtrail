@@ -84,5 +84,6 @@ describe('discoveryPortNamingGuard', () => {
       expect(existsSync(join(root, file))).toBe(true);
       expect(existsSync(join(root, file.replace('discoveryPort', 'discoverySession')))).toBe(false);
     }
+    expect(existsSync(join(root, 'discoveryPortExploreBrowse.ts'))).toBe(false);
   });
 });
