@@ -7,6 +7,7 @@ export {
   exploreItemMatchesFacilityKinds,
   exploreItemMatchesPriceFilter,
   explorePlaceHasHostedTrip,
+  hostedOutingSummariesByPlaceId,
   hostedPlaceLocationIdsFromCatalog,
   toggleExploreDestinationPlaceTopic,
   type ExplorePriceFilter,

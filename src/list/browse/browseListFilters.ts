@@ -6,22 +6,24 @@ import {
   mergeListCatalogPlansAndPlaces,
 } from '@/places-discovery/catalog/listCatalog';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
+import { matchesActivityDateFilter } from '../../discovery/discoveryPortExploreActivityDate';
 import {
   EXPLORE_PRICE_FILTER_OPTIONS,
   deriveVenueRegionSortOrder,
-  exploreItemMatchesFacilityKinds,
-  exploreItemMatchesPriceFilter,
   exploreItemMatchesQuery,
-  explorePlaceHasHostedTrip,
-  hostedPlaceLocationIdsFromCatalog,
   isPlacesMapItem,
   isShopListItem,
-  matchesActivityDateFilter,
   matchesUnifiedTopicFilter,
   resolveExploreItemScheduleDate,
-  type ExploreActivityDatePreset,
-  type ExplorePriceFilter,
 } from '../../discovery/discoveryPortExploreRuntime';
+import {
+  exploreItemMatchesFacilityKinds,
+  exploreItemMatchesPriceFilter,
+  explorePlaceHasHostedTrip,
+  hostedPlaceLocationIdsFromCatalog,
+  type ExplorePriceFilter,
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';

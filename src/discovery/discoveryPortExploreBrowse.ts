@@ -1,6 +1,7 @@
 /** Browse / list–map handoff — taxonomy, URL state, destinations, nav chrome. */
 export {
   EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES,
+  EXPLORE_GUEST_MAP_PREVIEW_NOTICE,
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,
   type ExploreSearchScopeCounts,

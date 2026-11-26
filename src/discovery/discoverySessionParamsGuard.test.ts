@@ -332,7 +332,7 @@ describe('discoverySessionParamsGuard', () => {
   });
 
   const discoveryListFacadeRe =
-    /^src\/discovery\/discoverySession(?:List|GeoUrl|MapHandoff|PeopleUrl|FindCrew|Params|Parsers|Taxonomy|Explore)/;
+    /^src\/discovery\/(?:discoveryPortList|discoverySession(?:List|GeoUrl|MapHandoff|PeopleUrl|FindCrew|Params|Parsers|Taxonomy|Explore))/;
 
   it('W15 discovery prod routes list browse through discoveryPortList* facades', () => {
     const directList = /from ['"][^'"]*list\//;
@@ -362,6 +362,8 @@ describe('discoverySessionParamsGuard', () => {
     expect(violations).toEqual([]);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
     expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/useExplorePublishedDestinationsQuery/);
+    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/exploreItemMatchesPriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/exploreItemMatchesPriceFilter/);
   });
 
   it('W11 list module imports activity date preset via discoveryPortExploreActivityDate', () => {
@@ -371,6 +373,7 @@ describe('discoverySessionParamsGuard', () => {
     }
     expect(violations).toEqual([]);
     expect(read('src/discovery/discoveryPortExploreActivityDate.ts')).toMatch(/serializeExploreActivityDatePreset/);
+    expect(read('src/discovery/discoveryPortExploreActivityDate.ts')).toMatch(/parseExploreActivityDatePreset/);
   });
 
   it('W10 list module imports explore search via discoveryPortExploreSearch facade', () => {
@@ -380,7 +383,7 @@ describe('discoverySessionParamsGuard', () => {
       if (exploreSearchImport.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoveryPortExploreSearch.ts')).toMatch(/exploreSearchRouting/);
+    expect(read('src/discovery/discoveryPortExploreSearch.ts')).toMatch(/discoveryPortExploreSearchRouting/);
   });
 
   it('W9 explore imports list explorer / shell / prefill via discoverySession facades', () => {

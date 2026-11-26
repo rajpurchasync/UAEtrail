@@ -166,7 +166,7 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExploreRuntime/);
     expect(read('src/list/browse/browseListFilters.ts')).not.toMatch(/explore\/discoveryRuntime/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
-      /discovery\/discoveryPortExploreRuntime/
+      /discovery\/discoveryPortExploreSearch/
     );
   });
 

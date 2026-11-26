@@ -5,6 +5,7 @@ export type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFi
 export {
   exploreActivityDatePresetToInclusiveRange,
   matchesActivityDateFilter,
+  parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
   todayIso,
 } from '../explore/exploreActivityDateFilter';

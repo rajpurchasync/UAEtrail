@@ -29,3 +29,5 @@ export { useExploreSearchCommunityGroups } from '../explore/search/useExploreSea
 export { ExploreSearchBookingHero } from '../explore/search/ExploreSearchBookingHero';
 export { ExploreSearchInboundRedirectHost } from '../explore/search/ExploreSearchInboundRedirectHost';
 export { EXPLORE_SEARCH_PAGE_COLUMN } from '../explore/search/ExploreSearchPageLayout';
+export { EXPLORE_SEARCH_SCOPES_SHIPPED, type ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
+export { countExploreSearchScopes } from '../explore/exploreSearchMatches';
