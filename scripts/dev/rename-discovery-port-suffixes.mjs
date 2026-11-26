@@ -16,8 +16,8 @@ const RENAME_MAP = {
   'discoveryPortExploreDiscoveryCardTypeIcon.ts': 'discoveryPortExploreCardChrome.ts',
   'discoveryPortExploreDiscoverBrowse.ts': 'discoveryPortExploreBrowse.ts',
   'discoveryPortExploreMemberDiscoveryRow.ts': 'discoveryPortExploreCrewAvailability.ts',
-  'discoveryPortExploreGuestComposeResume.ts': 'discoveryPortExploreComposeGuest.ts',
-  'discoveryPortExploreGuestComposeSignIn.ts': 'discoveryPortExploreComposeGuest.ts',
+  'discoveryPortExploreGuestComposeResume.ts': 'discoveryPortExploreCompose.ts',
+  'discoveryPortExploreGuestComposeSignIn.ts': 'discoveryPortExploreCompose.ts',
 };
 
 const MERGE_DELETE = [
@@ -35,8 +35,8 @@ const IMPORT_REPLACEMENTS = [
   ['discoveryPortExploreDiscoveryCardTypeIcon', 'discoveryPortExploreCardChrome'],
   ['discoveryPortExploreDiscoverBrowse', 'discoveryPortExploreBrowse'],
   ['discoveryPortExploreMemberDiscoveryRow', 'discoveryPortExploreCrewAvailability'],
-  ['discoveryPortExploreGuestComposeResume', 'discoveryPortExploreComposeGuest'],
-  ['discoveryPortExploreGuestComposeSignIn', 'discoveryPortExploreComposeGuest'],
+  ['discoveryPortExploreGuestComposeResume', 'discoveryPortExploreCompose'],
+  ['discoveryPortExploreGuestComposeSignIn', 'discoveryPortExploreCompose'],
   ['discoveryPortExploreLinkRideshareOffer', 'discoveryPortExploreLinkRideshare'],
   ['discoveryPortExploreLinkRidesharePrefill', 'discoveryPortExploreLinkRideshare'],
   ['discoveryPortExploreLinkRideshareUi', 'discoveryPortExploreLinkRideshare'],

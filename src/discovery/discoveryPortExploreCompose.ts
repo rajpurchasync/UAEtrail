@@ -14,3 +14,4 @@ export {
   composeFlowIdFromRoute,
   composeFlowSpecForHostKind,
 } from '../explore/composeFlowCatalog';
+export { buildComposeAuthReturnPath } from '../explore/create/guestComposeResume';

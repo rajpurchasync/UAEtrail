@@ -8,9 +8,9 @@ import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from 
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
 import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
 import {
   EXPLORE_SEARCH_MATCHES_TITLE,
-  ExploreGuestSignInCard,
   exploreSearchComposeFeedMode,
   exploreSearchWhereBrowseQuery,
   resolveExploreSearchDetectedWhereQuery,

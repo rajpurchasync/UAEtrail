@@ -29,4 +29,3 @@ export { useExploreSearchCommunityGroups } from '../explore/search/useExploreSea
 export { ExploreSearchBookingHero } from '../explore/search/ExploreSearchBookingHero';
 export { ExploreSearchInboundRedirectHost } from '../explore/search/ExploreSearchInboundRedirectHost';
 export { EXPLORE_SEARCH_PAGE_COLUMN } from '../explore/search/ExploreSearchPageLayout';
-export { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';

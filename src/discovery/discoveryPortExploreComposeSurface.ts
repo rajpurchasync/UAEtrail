@@ -14,3 +14,4 @@ export {
   writeHostingWizardSession,
   type HostingWizardSession,
 } from '../explore/ui/composeWizardSession';
+export { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
