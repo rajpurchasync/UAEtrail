@@ -261,8 +261,23 @@
         "src/crew-discovery/**"
       ],
       "avoid": ["src/explore/ui/useExploreBrowseUrlState impl"]
+    },
+    {
+      "id": "W22",
+      "status": "done",
+      "title": "Activity, place, content, my-crew social — discoverySessionExplore facades",
+      "branch": "burn-down/w22-consumer-explore-facades",
+      "owns": [
+        "src/activity/activityDetailAudienceBadges.ts",
+        "src/activity/activityManageCapabilities.ts",
+        "src/place/placePlanList.tsx",
+        "src/content/guest*Copy.ts",
+        "src/components/social/MyCrewSurfacePanel.tsx",
+        "src/discovery/discoverySessionExploreLinkRideshareOffer.ts"
+      ],
+      "avoid": ["src/components/activity bulk UI migration"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

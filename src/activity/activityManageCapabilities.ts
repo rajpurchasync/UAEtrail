@@ -3,7 +3,7 @@ import {
   resolveParticipationMode,
   type ActivityDTO,
 } from '@uaetrail/shared-types';
-import { canLinkRideshareToActivity } from '../explore/linkActivityRideshareOffer';
+import { canLinkRideshareToActivity } from '@/discovery/discoverySessionExploreLinkRideshareOffer';
 
 export type ActivityManageCapabilityOptions = {
   /** Wire `viewerAccess.entitlements.canAddLinkedRide` — default false when omitted. */
