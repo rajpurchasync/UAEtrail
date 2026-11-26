@@ -283,7 +283,7 @@ describe('discoverySessionParamsGuard', () => {
     const expectations: Array<{ rel: string; facade: RegExp; avoidDirect?: RegExp }> = [
       {
         rel: 'src/list/browse/browseCatalogLabels.ts',
-        facade: /discoveryPortExploreCatalogLabel/,
+        facade: /discoveryPortExploreListCatalog/,
         avoidDirect: /explore\/exploreCatalogHubLabel|exploreCatalogLabel/,
       },
       {
@@ -297,7 +297,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/listVenuePlaceTopics.ts',
-        facade: /discoveryPortExploreMapTopicUrl/,
+        facade: /discoveryPortExploreListCatalog/,
       },
       {
         rel: 'src/list/browse/tripBrowseCardCopy.ts',

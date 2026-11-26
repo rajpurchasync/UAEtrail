@@ -19,7 +19,7 @@ import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
 } from '../utils/activityPublishPayload';
-import { composeFlowSpecForHostKind } from '../discovery/discoveryPortExploreComposeFlowCatalog';
+import { composeFlowSpecForHostKind } from '../discovery/discoveryPortExploreCompose';
 import {
   buildHostingActivityRequirements,
   defaultDescription,

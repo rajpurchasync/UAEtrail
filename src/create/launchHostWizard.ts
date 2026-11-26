@@ -1,6 +1,6 @@
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreCompose } from '../discovery/discoveryPortExploreCompose';
-import { composeFlowIdFromRoute } from '../discovery/discoveryPortExploreComposeFlowCatalog';
+import { composeFlowIdFromRoute } from '../discovery/discoveryPortExploreCompose';
 import {
   writeHostingWizardSession,
   type HostingWizardSession,

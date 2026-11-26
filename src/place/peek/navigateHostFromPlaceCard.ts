@@ -3,7 +3,7 @@ import { isPlaceMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { launchHostWizard } from '../../create/launchHostWizard';
 import { activityCompose } from '@/discovery/discoveryPortExploreCompose';
-import { composeFlowIdFromRoute } from '@/discovery/discoveryPortExploreComposeFlowCatalog';
+import { composeFlowIdFromRoute } from '@/discovery/discoveryPortExploreCompose';
 import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,

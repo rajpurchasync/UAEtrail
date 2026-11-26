@@ -10,3 +10,7 @@ export {
   placeCompose,
   type ExploreCompose,
 } from '../explore/compose';
+export {
+  composeFlowIdFromRoute,
+  composeFlowSpecForHostKind,
+} from '../explore/composeFlowCatalog';

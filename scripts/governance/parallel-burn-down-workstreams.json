@@ -324,7 +324,7 @@
       "status": "done",
       "title": "components/activity — sheets, manage, packing via discoveryPortExplore facades",
       "branch": "burn-down/w24-components-activity-facades",
-      "owns": ["src/components/activity/**", "src/discovery/discoveryPortExploreResponsiveSheet.ts"],
+      "owns": ["src/components/activity/**", "src/discovery/discoveryPortExploreFlowChrome.ts"],
       "avoid": ["src/components/plan", "src/components/ui/PlacesMap"]
     },
     {
@@ -597,8 +597,24 @@
         "src/list/explorer/ListExplorerQuickFilters.tsx"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w42 on clean tree", "routingCatalog deep explore imports"]
+    },
+    {
+      "id": "W43",
+      "status": "done",
+      "title": "Compose flow catalog wire, flow chrome, list catalog wire",
+      "branch": "burn-down/w43-compose-flow-catalog",
+      "owns": [
+        "src/discovery/discoveryPortExploreCompose.ts",
+        "src/discovery/discoveryPortExploreFlowChrome.ts",
+        "src/discovery/discoveryPortExploreListCatalog.ts",
+        "scripts/dev/consolidate-discovery-ports-w43.mjs",
+        "src/create/**",
+        "src/list/browse/browseCatalogLabels.ts",
+        "src/list/browse/listVenuePlaceTopics.ts"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w43 on clean tree", "fat compose surface barrel"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

@@ -1,5 +1,5 @@
 import { EXPLORE_FLOW } from '../config/exploreTheme';
-import { exploreFlowChoiceCardClass } from '@/discovery/discoveryPortExploreFlowUi';
+import { exploreFlowChoiceCardClass } from '@/discovery/discoveryPortExploreFlowChrome';
 import {
   AVAILABILITY_FIXED_PARTY_PRESETS,
   AVAILABILITY_FIXED_VEHICLE_OPTIONS,
