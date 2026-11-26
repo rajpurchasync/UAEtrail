@@ -1,4 +1,5 @@
-/** W38+W74 — map chrome + list explorer drawer / projection / skeleton. */
+/** W38+W74+W84 — map chrome + list explorer drawer / projection / skeleton. */
+export { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../explore/ui/exploreDesktopBrowseRailChrome';
 import '../explore/ui/exploreMapClusterSpiderAnimation';
 export { useExploreDesktopListDrawerChrome } from '../explore/ui/ExploreDesktopListDrawer';
 export { ExploreMapProjectionToggle } from '../explore/ui/ExploreMapProjectionToggle';

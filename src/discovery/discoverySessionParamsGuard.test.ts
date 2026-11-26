@@ -411,6 +411,15 @@ describe('discoverySessionParamsGuard', () => {
     );
     expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/ExploreSearchScopeCounts/);
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/parseExploreMapFilterPillsParam/);
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL/);
+    expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/parseExploreMapFilterPillsParam/);
+    expect(read('src/discovery/discoveryPortExploreMapChrome.ts')).toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS/);
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/ExploreSearchScopeCounts/);
+    expect(read('src/list/browse/browseListTaxonomy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
+    expect(read('src/list/browse/listVenuePlaceTopics.ts')).toMatch(/discoveryPortExploreRouting/);
+    expect(read('src/list/browse/listVenuePlaceTopics.ts')).not.toMatch(/routingCatalog/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/exploreMapItemPathFromAvailabilityRow/);

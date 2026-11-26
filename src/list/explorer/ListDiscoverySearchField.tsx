@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Map, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreBrowse';
+import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,

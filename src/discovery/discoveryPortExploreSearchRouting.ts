@@ -21,5 +21,6 @@ export {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,
   EXPLORE_SEARCH_SCOPES_SHIPPED,
+  type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
 } from '../explore/exploreBrowseTaxonomy';

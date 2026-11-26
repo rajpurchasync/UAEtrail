@@ -5,6 +5,11 @@ export {
   exploreMapItemMatchesDestinationSlug,
   parseExploreDestinationSlug,
 } from '../explore/exploreDestinationFilter';
+export {
+  parseExploreMapFilterPillsParam,
+  serializeExploreMapFilterPillsParam,
+  type ExploreMapFilterPillKey,
+} from '../explore/exploreBrowseTaxonomy';
 export { exploreCatalogHubLabelFromExploreItem } from '../explore/exploreCatalogHubLabel';
 export { EXPLORE_PLACE_TOPIC_OPTIONS, aliasPlaceMapTopicToList } from '../explore/exploreMapTopicUrlParams';
 export {

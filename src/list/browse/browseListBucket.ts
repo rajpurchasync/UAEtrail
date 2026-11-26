@@ -1,5 +1,5 @@
 import { MOBILE_FIVE_TAB_UI_LABELS } from '../../config/mobileFiveTabNav';
-import type { ExploreSearchScopeCounts } from '../../discovery/discoveryPortExploreBrowse';
+import type { ExploreSearchScopeCounts } from '../../discovery/discoveryPortExploreSearchRouting';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 export type BrowseListBucket = 'events' | 'places';

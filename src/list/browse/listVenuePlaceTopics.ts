@@ -1,4 +1,4 @@
-import type { MapFilterKey } from '../../config/routingCatalog';
+import type { MapFilterKey } from '../../discovery/discoveryPortExploreRouting';
 import {
   EXPLORE_PLACE_TOPIC_OPTIONS,
   aliasPlaceMapTopicToList,
