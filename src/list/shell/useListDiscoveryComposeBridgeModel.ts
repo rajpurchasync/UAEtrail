@@ -17,7 +17,7 @@ import {
   resolveCreateEntryPreset,
   useHostingFromActivity,
   useHostingWizardPrefill,
-} from '../../discovery/discoveryPortExploreComposeHooks';
+} from '../../discovery/discoveryPortExploreComposeSurface';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { parseListPlanWithUserId } from '../browse/listComposeQuery';
 import { resolveBrowseListCreateFabLabel } from '../browse/browseListCopy';

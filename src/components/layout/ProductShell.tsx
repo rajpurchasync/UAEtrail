@@ -20,7 +20,7 @@ import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
 import { AuthUnavailableNotice } from '../auth/AuthUnavailableNotice';
 import { ExploreMapChromeProvider } from '@/discovery/discoveryPortExploreMapChrome';
-import { ComposeImmersiveChromeProvider } from '@/discovery/discoveryPortExploreComposeImmersiveChrome';
+import { ComposeImmersiveChromeProvider } from '@/discovery/discoveryPortExploreComposeSurface';
 import { CreateFlowProvider } from '../../create/CreateFlowProvider';
 import { useAuth } from '../../context/AuthContext';
 import { isConsumerProfilePath, isPlatformAdmin, isPlatformAdminConsolePath } from '../../utils/roles';

@@ -18,9 +18,9 @@ import {
   addVenueKindFromRoute,
   isComposeWizardRoute,
 } from '../discovery/discoveryPortExploreCompose';
-import { ComposeHost } from '../discovery/discoveryPortExploreComposeHost';
-import { useComposeRoute } from '../discovery/discoveryPortExploreComposeHooks';
-import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExploreComposeWizardSession';
+import { ComposeHost } from '../discovery/discoveryPortExploreComposeSurface';
+import { useComposeRoute } from '../discovery/discoveryPortExploreComposeSurface';
+import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExploreComposeSurface';
 import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreDestination';
 import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreComposeGuest';
 import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHostingPrefill';

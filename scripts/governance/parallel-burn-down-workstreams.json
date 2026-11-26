@@ -414,8 +414,8 @@
       "branch": "burn-down/w31-create-ports",
       "owns": [
         "src/create/**",
-        "src/discovery/discoveryPortExploreComposeHost.ts",
-        "src/discovery/discoveryPortExploreComposeWizardSession.ts",
+        "src/discovery/discoveryPortExploreComposeSurface.ts",
+        "src/discovery/discoveryPortExploreComposeSurface.ts",
         "src/discovery/discoveryPortExploreComposeGuest.ts",
         "src/discovery/discoveryPortExploreComposeGuest.ts",
         "src/discovery/discoveryPortExploreAddFlow.ts",
@@ -539,8 +539,19 @@
         "scripts/dev/consolidate-discovery-ports-w38.mjs"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w38 on clean tree"]
+    },
+    {
+      "id": "W39",
+      "status": "done",
+      "title": "Bundle compose surface ports (host, hooks, session, immersive)",
+      "branch": "burn-down/w39-compose-surface",
+      "owns": [
+        "src/discovery/discoveryPortExploreComposeSurface.ts",
+        "scripts/dev/consolidate-discovery-ports-w39.mjs"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w39 on clean tree", "fat discoveryPortExploreCompose barrel"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

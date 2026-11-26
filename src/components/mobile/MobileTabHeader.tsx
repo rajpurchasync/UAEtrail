@@ -4,7 +4,7 @@ import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { resolveMobileTabHeaderLeadingBack } from '../../utils/mobileBackNav';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
-import { useComposeImmersiveChrome } from '@/discovery/discoveryPortExploreComposeImmersiveChrome';
+import { useComposeImmersiveChrome } from '@/discovery/discoveryPortExploreComposeSurface';
 import { isExploreSearchResultsPath } from '@/discovery/discoveryPortExploreSearchRouting';
 import { isFindCrewDiscoveryListPath } from '../../discovery/discoverySession';
 

@@ -4,7 +4,7 @@ import { composeFlowIdFromRoute } from '../discovery/discoveryPortExploreCompose
 import {
   writeHostingWizardSession,
   type HostingWizardSession,
-} from '../discovery/discoveryPortExploreComposeWizardSession';
+} from '../discovery/discoveryPortExploreComposeSurface';
 import { createFlowPath, createFlowPathFromWindow } from './createFlowPath';
 
 /**
