@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import {
   getExploreMapLocationPreference,
   saveExploreMapLocationPreference,
-} from '../discovery/discoveryPortExploreMapLocation';
+} from '../discovery/discoveryPortExploreMapClient';
 import { writeStoredViewerFix } from '../discovery/discoveryPortListHooks';
 
 export type DeviceLocationFix = { lat: number; lng: number };

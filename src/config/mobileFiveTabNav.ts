@@ -10,7 +10,7 @@
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from './platform';
 import { MESSAGES_PATH, PLAN_PATH } from './surfacePaths';
 import { explorePath, parseExplorePanel } from '../discovery/discoveryPortExploreRouting';
-import { parseExplorePinKindFilter } from '../discovery/discoveryPortExplorePinKindFilter';
+import { parseExplorePinKindFilter } from '../discovery/discoveryPortExploreMapClient';
 import {
   LIST_CAT_PARAM,
   crewsHubHomePath,

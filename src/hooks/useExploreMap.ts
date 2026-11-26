@@ -6,7 +6,7 @@ import { fetchExploreMapItems } from './exploreMapClientApi';
 import {
   isExploreMapBboxEnabled,
   type ExploreMapFetchScope,
-} from '../discovery/discoveryPortExploreMapBbox';
+} from '../discovery/discoveryPortExploreMapClient';
 import { crewDiscoveryAvailabilityCatalogQueryKey } from '../crew-discovery/hooks/useCrewDiscoveryAvailabilityCatalog';
 import { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
 
