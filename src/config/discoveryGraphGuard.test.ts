@@ -57,7 +57,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(existsSync(join(discovery, 'discoveryPortExploreBrowse.ts'))).toBe(false);
     expect(existsSync(join(discovery, 'discoveryPortExploreBrowseHooks.ts'))).toBe(true);
     expect(existsSync(join(discovery, 'discoveryPortExploreBrowseUrl.ts'))).toBe(true);
-    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreSearchRouting/);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
   });
 
   it('W20 config prod routes explore via discoveryPortExplore facades (incl routingCatalog)', () => {

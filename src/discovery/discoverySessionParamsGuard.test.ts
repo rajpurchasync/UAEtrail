@@ -417,9 +417,13 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(
       /EXPLORE_GUEST_MAP_PREVIEW_NOTICE/
     );
-    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(
+    expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(
       /EXPLORE_SEARCH_OPEN_PLACEHOLDER/
     );
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).not.toMatch(
+      /exploreBrowseTaxonomy/
+    );
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
     expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
     expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreBrowse.ts'))).toBe(false);
     expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).toMatch(/useExploreBrowseUrlState/);
