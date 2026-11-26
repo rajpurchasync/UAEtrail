@@ -5,12 +5,12 @@ import { useCrewDiscoveryAvailabilityCatalog } from './useCrewDiscoveryAvailabil
 import { useCrewDiscoveryNetworkPreview } from './useCrewDiscoveryNetworkPreview';
 import { useCrewDiscoveryRoster } from './useCrewDiscoveryRoster';
 import { useCrewDiscoveryAvailability } from './useCrewDiscoveryAvailability';
-import type { useExploreBrowseUrlState } from '@/explore/ui/useExploreBrowseUrlState';
+import type { useExploreBrowseUrlState } from '@/discovery/discoverySessionExploreBrowseUrlState';
 import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
 import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommendationsQuery';
-import { serializeExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import { serializeExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
 import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
-import type { MapFilterKey } from '@/explore/routing';
+import type { MapFilterKey } from '@/discovery/discoverySessionExploreRouting';
 import {
   crewBrowseNeedsAvailability,
   crewBrowseOmitDirectory,

@@ -6,8 +6,8 @@ import {
   sanitizeDestinationRegions,
   type ExploreAvailablePersonDTO,
 } from '@uaetrail/shared-types';
-import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
-import { exploreActivityDatePresetToInclusiveRange } from '../explore/exploreActivityDateFilter';
+import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
+import { exploreActivityDatePresetToInclusiveRange } from '@/discovery/discoverySessionExploreActivityDate';
 import {
   EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
   EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL,

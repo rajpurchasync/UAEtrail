@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { EXPLORE_TYPE } from '../../../config/exploreTheme';
-import { ExploreListSkeleton } from '@/explore/ui/ExploreListSkeleton';
+import { ExploreListSkeleton } from '@/discovery/discoverySessionExploreListSkeleton';
 
 /** Empty state — Crews browse lists. */
 export const CrewBrowseListEmpty = ({ children }: { children: ReactNode }) => (

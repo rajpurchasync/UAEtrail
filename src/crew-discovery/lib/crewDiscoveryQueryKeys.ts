@@ -1,5 +1,5 @@
-import type { ExploreActivityDatePreset } from '@/explore/routing';
-import { serializeExploreActivityDatePreset } from '@/explore/routing';
+import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
+import { serializeExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
 
 const CREW_DISCOVERY_ROOT = ['crew-discovery'] as const;
 

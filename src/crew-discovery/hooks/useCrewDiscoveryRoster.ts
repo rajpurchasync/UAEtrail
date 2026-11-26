@@ -1,4 +1,4 @@
-import type { ExploreActivityDatePreset } from '@/explore/routing';
+import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
 import { useCrewDiscoverFeed } from '../discover/useCrewDiscoverFeed';
 
 type Args = {
