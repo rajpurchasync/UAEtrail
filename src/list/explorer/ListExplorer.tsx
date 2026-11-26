@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreMapChrome';
-import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExploreBrowse';
+import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExploreBrowseHooks';
 import { buildBrowseCollapsedRailLabels } from '../browse/browseCollapsedRailLabels';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
 import { BrowsePanelCollapsedRail } from './BrowsePanelCollapsedRail';

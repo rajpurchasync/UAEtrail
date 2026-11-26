@@ -11,7 +11,7 @@ import {
 import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { COUNTRIES } from '../../constants';
 import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithDestinations } from '../../config/regions';
-import { useExplorePublishedDestinationsQuery } from '@/discovery/discoveryPortExploreBrowse';
+import { useExplorePublishedDestinationsQuery } from '@/discovery/discoveryPortExploreBrowseHooks';
 import { MAP_CONFIG } from '../../config/platform';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { PhoneInput } from '../ui/PhoneInput';

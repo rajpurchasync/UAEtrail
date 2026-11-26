@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { CountryCode } from './regions';
 import { DEFAULT_COUNTRY, mergeExploreRegionPillOptionsWithDestinations } from './regions';
-import { useExplorePublishedDestinations } from '../discovery/discoveryPortExploreBrowse';
+import { useExplorePublishedDestinations } from '../discovery/discoveryPortExploreBrowseHooks';
 
 /** Explore emirate scope pills — static catalog + published area regions. */
 export const useExploreRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY) => {

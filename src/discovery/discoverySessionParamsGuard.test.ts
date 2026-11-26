@@ -320,7 +320,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
-        facade: /discoveryPortExploreBrowse|discoveryPortExploreCatalogFilters/,
+        facade: /discoveryPortExploreBrowseHooks|discoveryPortExploreCatalogFilters/,
       },
       {
         rel: 'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
@@ -421,7 +421,10 @@ describe('discoverySessionParamsGuard', () => {
       /EXPLORE_SEARCH_OPEN_PLACEHOLDER/
     );
     expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
-    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
+    expect(read('src/discovery/discoveryPortExploreBrowseHooks.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/useExplorePublishedDestinationsQuery/);
+    expect(read('src/config/useExploreRegionPillOptions.ts')).toMatch(/discoveryPortExploreBrowseHooks/);
+    expect(read('src/config/useExploreRegionPillOptions.ts')).not.toMatch(/discoveryPortExploreBrowse['"]/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/ExploreSearchScopeCounts/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/parseExploreMapFilterPillsParam/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL/);

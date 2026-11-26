@@ -1,6 +1,2 @@
-/** W84 — published destinations hooks + browse URL state type (taxonomy wire elsewhere). */
+/** W84/W89 — explore browse URL state type only (destination hooks → BrowseHooks). */
 export type { useExploreBrowseUrlState } from '../explore/ui/useExploreBrowseUrlState';
-export {
-  useExplorePublishedDestinations,
-  useExplorePublishedDestinationsQuery,
-} from '../explore/useExplorePublishedDestinations';

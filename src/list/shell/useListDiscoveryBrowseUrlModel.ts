@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { parseExploreDestinationSlug } from '../../discovery/discoveryPortExploreCatalogFilters';
-import { useExplorePublishedDestinationsQuery } from '../../discovery/discoveryPortExploreBrowse';
+import { useExplorePublishedDestinationsQuery } from '../../discovery/discoveryPortExploreBrowseHooks';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
 import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
