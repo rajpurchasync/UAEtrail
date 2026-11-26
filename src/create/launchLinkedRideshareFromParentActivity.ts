@@ -2,7 +2,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { activityCompose } from '../discovery/discoveryPortExploreCompose';
 import { composeFlowIdFromRoute } from '../discovery/discoveryPortExploreComposeFlowCatalog';
-import { buildRideshareDraftFromParentActivity } from '../discovery/discoveryPortExploreLinkRidesharePrefill';
+import { buildRideshareDraftFromParentActivity } from '../discovery/discoveryPortExploreLinkRideshare';
 import { launchHostWizard } from './launchHostWizard';
 
 /**

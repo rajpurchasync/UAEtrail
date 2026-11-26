@@ -8,7 +8,7 @@ import {
   DiscoveryCardDetailList,
   DiscoveryCardRequirementBadges,
   ExploreActivityPeekMeta,
-} from './discoveryPortExploreDiscoveryCardPresentation';
+} from './discoveryPortExploreCardPeekBody';
 
 type ActivityDiscoveryPublishedBodyProps = {
   card: DiscoveryCardModel;

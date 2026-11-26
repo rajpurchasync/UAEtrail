@@ -33,7 +33,7 @@ import {
   type CreateActivityDraft,
 } from '../discovery/discoveryPortExploreHostingFlowEngine';
 import { normalizeHostingEndDate } from '../discovery/discoveryPortExploreHostingScheduleDraft';
-import { linkParentToRideshareActivity } from '../discovery/discoveryPortExploreLinkRideshareOffer';
+import { linkParentToRideshareActivity } from '../discovery/discoveryPortExploreLinkRideshare';
 
 const formatCoord = (value: number): string => Number(value.toFixed(6)).toString();
 

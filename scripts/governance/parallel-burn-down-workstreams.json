@@ -19,7 +19,9 @@
       "discoverySession*": "URL browse session spine only — params, parsers, geo URL, discoverySession.ts barrel.",
       "discoveryPortExplore*": "Cross-context port to src/explore/**.",
       "discoveryPortList*": "Cross-context port to src/list/**.",
-      "codemod": "scripts/dev/rename-discovery-ports.mjs (W29 — one-time; do not re-run on clean tree)."
+      "suffixRules": "After discoveryPortExplore|List, suffix names consumer concern — not explore module paths. No Discover*, Discovery*, or second Explore* in suffix. Prefer domain bundle (e.g. discoveryPortExploreLinkRideshare) over mirrors (…LinkedRideshareExplore).",
+      "codemodW29": "scripts/dev/rename-discovery-ports.mjs (one-time; do not re-run on clean tree).",
+      "codemodW36": "scripts/dev/rename-discovery-port-suffixes.mjs (suffix cleanup; idempotent)."
     },
     "notAllowed": [
       "Fat barrels (e.g. discoverySession.ts re-exporting React trees).",
@@ -299,7 +301,7 @@
         "src/place/placePlanList.tsx",
         "src/content/guest*Copy.ts",
         "src/components/social/MyCrewSurfacePanel.tsx",
-        "src/discovery/discoveryPortExploreLinkRideshareOffer.ts"
+        "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
       "avoid": ["src/components/activity bulk UI migration"]
     },
@@ -313,7 +315,7 @@
         "src/place/detail/**",
         "src/place/peek/**",
         "src/discovery/discoveryPortExplorePrivateActivityMapItem.ts",
-        "src/discovery/discoveryPortExploreLinkRideshareUi.ts"
+        "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
       "avoid": ["src/components/activity/**"]
     },
@@ -414,10 +416,10 @@
         "src/create/**",
         "src/discovery/discoveryPortExploreComposeHost.ts",
         "src/discovery/discoveryPortExploreComposeWizardSession.ts",
-        "src/discovery/discoveryPortExploreGuestComposeResume.ts",
-        "src/discovery/discoveryPortExploreGuestComposeSignIn.ts",
+        "src/discovery/discoveryPortExploreComposeGuestResume.ts",
+        "src/discovery/discoveryPortExploreComposeGuestSignIn.ts",
         "src/discovery/discoveryPortExploreAddFlow.ts",
-        "src/discovery/discoveryPortExploreLinkRidesharePrefill.ts"
+        "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
       "avoid": ["src/explore/** impl churn", "src/hooks/exploreMap*"]
     },
@@ -437,7 +439,7 @@
         "src/discovery/discoveryPortExploreMapBbox.ts",
         "src/discovery/discoveryPortExploreMapOverlay.ts",
         "src/discovery/discoveryPortExploreMapEngagementFreshness.ts",
-        "src/discovery/discoveryPortExploreEligibleRideshareParents.ts"
+        "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
       "avoid": ["src/services/**", "src/activity-discovery/**"]
     },
@@ -494,12 +496,30 @@
         "src/discovery/discoveryCardViewModel.ts",
         "src/discovery/ActivityDiscoveryPublishedBody.tsx",
         "src/discovery/discoveryPortExploreBrowseReturnPath.ts",
-        "src/discovery/discoveryPortExploreDiscoveryCardPresentation.ts",
-        "src/discovery/discoveryPortExploreLinkedRideshareExplore.ts"
+        "src/discovery/discoveryPortExploreCardPeekBody.ts",
+        "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
       "avoid": ["discoverySessionExplore legacy duplicates", "src/explore/** impl"]
+    },
+    {
+      "id": "W36",
+      "status": "done",
+      "title": "discoveryPort* suffix cleanup — guard + rideshare bundle",
+      "branch": "burn-down/w36-port-naming",
+      "owns": [
+        "scripts/dev/rename-discovery-port-suffixes.mjs",
+        "src/discovery/discoveryPortExploreLinkRideshare.ts",
+        "src/discovery/discoveryPortExploreCardDirections.ts",
+        "src/discovery/discoveryPortExploreCardPeekBody.ts",
+        "src/discovery/discoveryPortExploreCardTypeIcon.ts",
+        "src/discovery/discoveryPortExploreBrowsePosters.ts",
+        "src/discovery/discoveryPortExploreAvailabilityRowPath.ts",
+        "src/discovery/discoveryPortExploreComposeGuestResume.ts",
+        "src/discovery/discoveryPortExploreComposeGuestSignIn.ts"
+      ],
+      "avoid": ["re-run rename-discovery-port-suffixes on clean tree"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

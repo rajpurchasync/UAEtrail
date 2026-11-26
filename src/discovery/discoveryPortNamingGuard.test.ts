@@ -15,6 +15,26 @@ describe('discoveryPortNamingGuard', () => {
     expect(legacy).toEqual([]);
   });
 
+  it('W36: port suffixes avoid doubled Discover/Explore tokens', () => {
+    const root = join(process.cwd(), 'src/discovery');
+    const ports = readdirSync(root).filter(
+      (f) => f.startsWith('discoveryPort') && f.endsWith('.ts') && !f.endsWith('.test.ts')
+    );
+    const suffixOf = (file: string) => file.replace(/^discoveryPort(Explore|List)/, '').replace(/\.ts$/, '');
+    const hasRedundantExploreToken = (suffix: string): boolean => {
+      if (/ExploreExplore|RideshareExplore/.test(suffix)) return true;
+      return /(?:^|(?<=[a-z]))Explore(?=[A-Z]|$)/.test(suffix);
+    };
+    const violations: string[] = [];
+    for (const file of ports) {
+      const suffix = suffixOf(file);
+      if (suffix.includes('Discovery')) violations.push(file);
+      if (/Discover(?!ory)/.test(suffix)) violations.push(file);
+      if (hasRedundantExploreToken(suffix)) violations.push(file);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('W28 map publish ports use discoveryPortExplore prefix', () => {
     const root = join(process.cwd(), 'src/discovery');
     const ports = [
@@ -24,7 +44,7 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreMapPinTooltip.ts',
       'discoveryPortExploreMapCluster.ts',
       'discoveryPortExploreMapStyleToggle.ts',
-      'discoveryPortExploreDiscoveryCardDirections.ts',
+      'discoveryPortExploreCardDirections.ts',
       'discoveryPortExploreNavigateHost.ts',
       'discoveryPortExploreHostingPublishTenants.ts',
     ];

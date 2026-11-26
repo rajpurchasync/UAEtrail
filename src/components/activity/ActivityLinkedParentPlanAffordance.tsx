@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { activityDetailPath } from '../../config/routingCatalog';
 import { EXPLORE_VIEW_LINKED_PLAN_CTA } from '@/discovery/discoveryPortExploreCreateFlowCopy';
-import { linkedParentRidesharePeekCopy } from '@/discovery/discoveryPortExploreLinkedParentRideshareCopy';
+import { linkedParentRidesharePeekCopy } from '@/discovery/discoveryPortExploreLinkRideshare';
 import { formatActivityDetailLeadDate } from '../../activity/formatActivityDetailLead';
 import type { ActivityLinkagePlanSummary } from '../../activity/resolveActivityLinkageSummaries';
 import { ActivityLinkageAffordanceBody } from './activityLinkageAffordanceLayout';

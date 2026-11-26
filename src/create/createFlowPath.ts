@@ -1,5 +1,5 @@
 import type { ExploreCompose } from '../discovery/discoveryPortExploreCompose';
-import { buildComposeAuthReturnPath } from '../discovery/discoveryPortExploreGuestComposeResume';
+import { buildComposeAuthReturnPath } from '../discovery/discoveryPortExploreComposeGuestResume';
 import { explorePath } from '../discovery/discoveryPortExploreRouting';
 
 /**
