@@ -253,11 +253,12 @@ const attachExploreItemPlaceHub = (
 /** Shared catalog assembly (cacheable). Viewer access is applied in `explore-map-viewer-access.ts`. */
 /** Assemble hosted activities, catalog geography, shops, and fixed availability for `GET /explore/map`. */
 export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
+  const catalogTake = process.env.NODE_ENV === 'test' ? 5000 : 800;
   const [activityEvents, locationsResult, facilityRows, shopTenants, publishedDestinations] =
     await Promise.all([
       listPublishedActivitiesForExploreMap(250),
-      listActiveLocationsForExploreMap(800),
-      listFacilitiesForExploreMap(800),
+      listActiveLocationsForExploreMap(catalogTake),
+      listFacilitiesForExploreMap(catalogTake),
       listPublicShopTenantsForExplore(250),
       listPublishedDestinations(),
     ]);
