@@ -17,6 +17,14 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(runtime).toMatch(/fetchExploreMapItems/);
   });
 
+  it('DISC-03-12: W101 discoveryRuntime omits guest preview copy (GuestWire only)', () => {
+    const runtime = read('src/explore/discoveryRuntime.ts');
+    expect(runtime).not.toMatch(/guestMapPreviewCopy/);
+    expect(runtime).not.toMatch(/EXPLORE_GUEST_MAP_PREVIEW_NOTICE/);
+    expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/EXPLORE_GUEST_MAP_PREVIEW_NOTICE/);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
+  });
+
   it('DISC-03-03: list does not import explore/routing.ts', () => {
     const violations: string[] = [];
     const listRoot = join(process.cwd(), 'src/list');
