@@ -1,6 +1,9 @@
 import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
 import { EXPLORE_CREWS_SEARCH_PLACEHOLDER } from '../../content/exploreCrewsCopy';
-import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE } from '../../discovery/discoveryPortExploreGuestWire';
+import {
+  EXPLORE_GUEST_MAP_PREVIEW_NOTICE,
+  EXPLORE_SEARCH_GUEST_PLACEHOLDER,
+} from '../../discovery/discoveryPortExploreGuestWire';
 import { EXPLORE_SEARCH_OPEN_PLACEHOLDER } from '../../discovery/discoveryPortExploreCatalogFilters';
 import { LIST_CAT_PARAM, parseListCatParam } from '../../discovery/discoverySession';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
@@ -21,7 +24,8 @@ export const BROWSE_LIST_SEARCH_PLACEHOLDER_AGENCIES = 'Search outdoor brands an
 
 export const resolveBrowseListSearchPlaceholder = (
   listCat: BrowseMainCategoryKey | null | undefined,
-  bucket?: BrowseListBucket
+  bucket?: BrowseListBucket,
+  isSignedIn = true
 ): string => {
   if (listCat === 'people') return EXPLORE_CREWS_SEARCH_PLACEHOLDER;
   if (listCat === 'venues') return BROWSE_LIST_SEARCH_PLACEHOLDER_PLACES;
@@ -29,7 +33,7 @@ export const resolveBrowseListSearchPlaceholder = (
   if (listCat === 'activities') return BROWSE_LIST_SEARCH_PLACEHOLDER_TRIPS;
   if (bucket === 'places') return BROWSE_LIST_SEARCH_PLACEHOLDER_PLACES;
   if (bucket === 'events') return BROWSE_LIST_SEARCH_PLACEHOLDER_TRIPS;
-  return EXPLORE_SEARCH_OPEN_PLACEHOLDER;
+  return isSignedIn ? EXPLORE_SEARCH_OPEN_PLACEHOLDER : EXPLORE_SEARCH_GUEST_PLACEHOLDER;
 };
 
 /** Multi-scope search dropdown — only when the list is not pinned to one main category. */

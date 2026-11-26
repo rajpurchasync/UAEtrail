@@ -18,12 +18,14 @@ export type ListDiscoveryBrowseUrlInput = {
   mapOverlay: boolean;
   searchResultsBrowse: boolean;
   searchParams: URLSearchParams;
+  isSignedIn: boolean;
 };
 
 export const useListDiscoveryBrowseUrlModel = ({
   mapOverlay,
   searchResultsBrowse,
   searchParams,
+  isSignedIn,
 }: ListDiscoveryBrowseUrlInput) => {
   const browseUrl = useListDiscoveryUrlState({
     mapOverlay,
@@ -55,8 +57,8 @@ export const useListDiscoveryBrowseUrlModel = ({
   );
 
   const listSearchPlaceholder = useMemo(
-    () => resolveBrowseListSearchPlaceholder(listCat, explorerBucket),
-    [listCat, explorerBucket]
+    () => resolveBrowseListSearchPlaceholder(listCat, explorerBucket, isSignedIn),
+    [listCat, explorerBucket, isSignedIn]
   );
   const listSearchScopeHints = useMemo(() => browseListSearchUsesScopeHints(listCat), [listCat]);
 

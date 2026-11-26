@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { EXPLORE_SEARCH_GUEST_PLACEHOLDER } from '../../discovery/discoveryPortExploreGuestWire';
 import {
   BROWSE_LIST_CREATE_CREW,
   BROWSE_LIST_CREATE_TRIP,
   BROWSE_LIST_CREATE_VENUE,
   resolveBrowseListCreateFabLabel,
+  resolveBrowseListSearchPlaceholder,
 } from './browseListCopy';
 
 describe('resolveBrowseListCreateFabLabel', () => {
@@ -33,5 +35,11 @@ describe('resolveBrowseListCreateFabLabel', () => {
         isPeopleCategory: true,
       })
     ).toBe(BROWSE_LIST_CREATE_CREW);
+  });
+});
+
+describe('resolveBrowseListSearchPlaceholder', () => {
+  it('uses guest placeholder for signed-out multi-scope list search', () => {
+    expect(resolveBrowseListSearchPlaceholder(null, undefined, false)).toBe(EXPLORE_SEARCH_GUEST_PLACEHOLDER);
   });
 });

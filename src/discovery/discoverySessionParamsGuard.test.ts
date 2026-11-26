@@ -428,6 +428,7 @@ describe('discoverySessionParamsGuard', () => {
       /exploreBrowseTaxonomy/
     );
     expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
+    expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/isSignedIn/);
     expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
     expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreBrowse.ts'))).toBe(false);
     expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).toMatch(/useExploreBrowseUrlState/);

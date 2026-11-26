@@ -163,6 +163,7 @@ describe('listBrowseNamingGuard', () => {
 
   it('BROWSE-NAME-01q: browse list copy + hygiene scope wire via discovery ports', () => {
     expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
     expect(read('src/list/listModuleHygiene.test.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
     expect(read('src/list/listModuleHygiene.test.ts')).not.toMatch(/explore\/exploreBrowseTaxonomy/);
   });

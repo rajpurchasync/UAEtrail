@@ -91,6 +91,7 @@ export const useListDiscoveryExperienceModel = ({
     mapOverlay: embeddedOnExplore,
     searchResultsBrowse: searchResultsChrome,
     searchParams,
+    isSignedIn: Boolean(user),
   });
 
   const { handleCreateFabTap, handleOpenMarkAvailability, createFabLabel, offerRideshareForAvailabilityItem } =
