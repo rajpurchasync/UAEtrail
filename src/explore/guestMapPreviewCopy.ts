@@ -1,4 +1,8 @@
 /** Guest catalog preview limits + notice copy (map/list gates). */
+
+/** Guest map search — no member People scope until signed in. */
+export const EXPLORE_SEARCH_GUEST_PLACEHOLDER = 'Activities, places, spots, events, shops…';
+
 export const EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES = 3;
 
 export const EXPLORE_GUEST_MAP_PREVIEW_ALERT_EMOJI = '⚠️';

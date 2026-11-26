@@ -10,8 +10,8 @@ if (/exploreBrowseTaxonomy/.test(guestWire)) {
   console.error('GuestWire still imports exploreBrowseTaxonomy');
   process.exit(1);
 }
-if (/EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES/.test(taxonomy)) {
-  console.error('exploreBrowseTaxonomy still owns guest preview copy');
+if (/EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES|EXPLORE_SEARCH_GUEST_PLACEHOLDER/.test(taxonomy)) {
+  console.error('exploreBrowseTaxonomy still owns guest copy');
   process.exit(1);
 }
 console.log('W94 applied — guest preview copy module');

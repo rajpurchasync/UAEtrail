@@ -60,6 +60,30 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
   });
 
+  it('DISC-03-08: W94/W95 guest preview copy via GuestWire outside explore tree', () => {
+    const directGuestCopy = /from ['"][^'"]*guestMapPreviewCopy['"]/;
+    const roots = ['src/list', 'src/content', 'src/pages', 'src/components'];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      if (!existsSync(join(process.cwd(), dir))) return;
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = full.replace(/\\/g, '/');
+          if (directGuestCopy.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    expect(violations).toEqual([]);
+    expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
+    expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
+  });
+
   it('W20 config prod routes explore via discoveryPortExplore facades (incl routingCatalog)', () => {
     const allow = new Set(['src/config/routingCatalogLite.ts']);
     const directExplore = /from ['"][^'"]*explore\//;

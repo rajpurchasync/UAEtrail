@@ -415,7 +415,9 @@ describe('discoverySessionParamsGuard', () => {
       /EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES/
     );
     expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).not.toMatch(/exploreBrowseTaxonomy/);
+    expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES/);
+    expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
     expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(
       /EXPLORE_GUEST_MAP_PREVIEW_NOTICE/
     );

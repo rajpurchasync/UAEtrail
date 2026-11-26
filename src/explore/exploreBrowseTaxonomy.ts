@@ -24,9 +24,6 @@ export const EXPLORE_SEARCH_PROMPT = 'What are you looking for?';
 
 export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, crews, shops…';
 
-/** Guest map search — no member People scope until signed in. */
-export const EXPLORE_SEARCH_GUEST_PLACEHOLDER = 'Activities, places, spots, events, shops…';
-
 /** Map chrome — multi-select filter pills. */
 export type ExploreMapFilterPillKey = 'trips' | 'spots' | 'shops';
 
