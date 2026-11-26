@@ -283,7 +283,7 @@
       "branch": "burn-down/w21-crew-explore-facades",
       "owns": [
         "src/discovery/discoveryPortExploreBrowse.ts",
-        "src/discovery/discoveryPortExploreListChrome.ts",
+        "src/discovery/discoveryPortExploreBrowse.ts",
         "src/discovery/discoveryPortListBrowseCard.ts",
         "src/crew-discovery/**"
       ],
@@ -313,7 +313,7 @@
         "src/activity/detail/**",
         "src/place/detail/**",
         "src/place/peek/**",
-        "src/discovery/discoveryPortExplorePeekBody.ts",
+        "src/discovery/discoveryPortExploreCardChrome.ts",
         "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["src/components/activity/**"]
@@ -323,7 +323,7 @@
       "status": "done",
       "title": "components/activity — sheets, manage, packing via discoveryPortExplore facades",
       "branch": "burn-down/w24-components-activity-facades",
-      "owns": ["src/components/activity/**", "src/discovery/discoveryPortExploreFlowChrome.ts"],
+      "owns": ["src/components/activity/**", "src/discovery/discoveryPortExploreComposeSurface.ts"],
       "avoid": ["src/components/plan", "src/components/ui/PlacesMap"]
     },
     {
@@ -506,7 +506,7 @@
         "scripts/dev/rename-discovery-port-suffixes.mjs",
         "src/discovery/discoveryPortExploreHosting.ts",
         "src/discovery/discoveryPortExploreBrowse.ts",
-        "src/discovery/discoveryPortExploreCrewAvailability.ts"
+        "src/discovery/discoveryPortExploreCardChrome.ts"
       ],
       "avoid": ["re-run rename-discovery-port-suffixes on clean tree"]
     },
@@ -565,7 +565,7 @@
       "title": "Bundle list chrome + browse handoff ports",
       "branch": "burn-down/w41-list-browse-ports",
       "owns": [
-        "src/discovery/discoveryPortExploreListChrome.ts",
+        "src/discovery/discoveryPortExploreBrowse.ts",
         "src/discovery/discoveryPortExploreBrowse.ts",
         "scripts/dev/consolidate-discovery-ports-w41.mjs",
         "src/list/explorer/**",
@@ -601,7 +601,7 @@
       "branch": "burn-down/w43-compose-flow-catalog",
       "owns": [
         "src/discovery/discoveryPortExploreCompose.ts",
-        "src/discovery/discoveryPortExploreFlowChrome.ts",
+        "src/discovery/discoveryPortExploreComposeSurface.ts",
         "src/discovery/discoveryPortExploreCatalogFilters.ts",
         "scripts/dev/consolidate-discovery-ports-w43.mjs",
         "src/create/**",
@@ -634,7 +634,7 @@
       "branch": "burn-down/w45-peek-filters",
       "owns": [
         "src/discovery/discoveryPortExploreOptionalFilters.ts",
-        "src/discovery/discoveryPortExplorePeekBody.ts",
+        "src/discovery/discoveryPortExploreCardChrome.ts",
         "scripts/dev/consolidate-discovery-ports-w45.mjs",
         "src/activity-discovery/catalog/activities.ts",
         "src/places-discovery/catalog/places.ts",
@@ -650,7 +650,7 @@
       "branch": "burn-down/w46-catalog-crew",
       "owns": [
         "src/discovery/discoveryPortExploreCatalogFilters.ts",
-        "src/discovery/discoveryPortExploreCrewAvailability.ts",
+        "src/discovery/discoveryPortExploreCardChrome.ts",
         "scripts/dev/consolidate-discovery-ports-w46.mjs",
         "src/activity-discovery/catalog/**",
         "src/places-discovery/catalog/**",
@@ -1049,8 +1049,25 @@
         "re-run consolidate-discovery-ports-w72 on clean tree",
         "merge CatalogFilters into OptionalFilters UI barrel"
       ]
+    },
+    {
+      "id": "W73",
+      "status": "done",
+      "title": "Search facade wiring + list hygiene (no port deletes — cycle guard)",
+      "branch": "burn-down/w73-explore-port-batch",
+      "owns": [
+        "src/discovery/discoveryPortExploreSearch.ts",
+        "src/list/listModuleHygiene.test.ts",
+        "src/list/browse/browseListFilters.ts",
+        "scripts/dev/consolidate-discovery-ports-w73.mjs"
+      ],
+      "avoid": [
+        "re-run consolidate-discovery-ports-w73 on clean tree",
+        "point config/nav at discoveryPortExploreSearch (desktopNav cycle)",
+        "re-run consolidate-discovery-ports-w73 on clean tree"
+      ]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70", "W71", "W72"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70", "W71", "W72", "W73"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

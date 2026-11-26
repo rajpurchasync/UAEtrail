@@ -10,7 +10,7 @@ import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseF
 import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoveryPortListBrowseCard';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
-import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoveryPortExploreSearch';
+const EXPLORE_SEARCH_PAGE_COLUMN = `${LIST_CHROME.maxWidth} mx-auto w-full min-w-0`;
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';
 import { FindCrewSearchChrome } from './FindCrewSearchChrome';
 import { FindCrewResultsSection } from './FindCrewResultsSection';

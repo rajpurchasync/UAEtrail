@@ -18,8 +18,8 @@ const DELETE = [
 ];
 
 const REPLACEMENTS = [
-  ['discoveryPortExploreListDrawer', 'discoveryPortExploreListChrome'],
-  ['discoveryPortExploreListSkeleton', 'discoveryPortExploreListChrome'],
+  ['discoveryPortExploreListDrawer', 'discoveryPortExploreBrowse'],
+  ['discoveryPortExploreListSkeleton', 'discoveryPortExploreBrowse'],
   ['discoveryPortExploreBrowseTaxonomy', 'discoveryPortExploreBrowse'],
   ['discoveryPortExploreBrowseUrlState', 'discoveryPortExploreBrowse'],
   ['discoveryPortExploreBrowsePosters', 'discoveryPortExploreBrowse'],

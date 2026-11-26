@@ -15,7 +15,7 @@ const RENAME_MAP = {
   'discoveryPortExploreDiscoveryCardPresentation.ts': 'discoveryPortExploreCardChrome.ts',
   'discoveryPortExploreDiscoveryCardTypeIcon.ts': 'discoveryPortExploreCardChrome.ts',
   'discoveryPortExploreDiscoverBrowse.ts': 'discoveryPortExploreBrowse.ts',
-  'discoveryPortExploreMemberDiscoveryRow.ts': 'discoveryPortExploreCrewAvailability.ts',
+  'discoveryPortExploreMemberDiscoveryRow.ts': 'discoveryPortExploreCardChrome.ts',
   'discoveryPortExploreGuestComposeResume.ts': 'discoveryPortExploreCompose.ts',
   'discoveryPortExploreGuestComposeSignIn.ts': 'discoveryPortExploreCompose.ts',
 };
@@ -34,7 +34,7 @@ const IMPORT_REPLACEMENTS = [
   ['discoveryPortExploreDiscoveryCardPresentation', 'discoveryPortExploreCardChrome'],
   ['discoveryPortExploreDiscoveryCardTypeIcon', 'discoveryPortExploreCardChrome'],
   ['discoveryPortExploreDiscoverBrowse', 'discoveryPortExploreBrowse'],
-  ['discoveryPortExploreMemberDiscoveryRow', 'discoveryPortExploreCrewAvailability'],
+  ['discoveryPortExploreMemberDiscoveryRow', 'discoveryPortExploreCardChrome'],
   ['discoveryPortExploreGuestComposeResume', 'discoveryPortExploreCompose'],
   ['discoveryPortExploreGuestComposeSignIn', 'discoveryPortExploreCompose'],
   ['discoveryPortExploreHostingOffer', 'discoveryPortExploreHosting'],

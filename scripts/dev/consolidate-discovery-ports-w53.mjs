@@ -8,7 +8,7 @@ const root = join(import.meta.dirname, '..', '..');
 const REPLACEMENTS = [
   [
     "import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreRuntime'",
-    "import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting'",
+    "import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearch'",
   ],
   [
     "import { resolveExploreCoverImage } from './discoveryPortExploreRuntime'",

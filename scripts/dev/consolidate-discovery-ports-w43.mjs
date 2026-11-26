@@ -17,9 +17,9 @@ const DELETE = [
 
 const REPLACEMENTS = [
   ['discoveryPortExploreComposeFlowCatalog', 'discoveryPortExploreCompose'],
-  ['discoveryPortExploreFlowSheetChrome', 'discoveryPortExploreFlowChrome'],
-  ['discoveryPortExploreFlowUi', 'discoveryPortExploreFlowChrome'],
-  ['discoveryPortExploreResponsiveSheet', 'discoveryPortExploreFlowChrome'],
+  ['discoveryPortExploreFlowSheetChrome', 'discoveryPortExploreComposeSurface'],
+  ['discoveryPortExploreFlowUi', 'discoveryPortExploreComposeSurface'],
+  ['discoveryPortExploreResponsiveSheet', 'discoveryPortExploreComposeSurface'],
   ['discoveryPortExploreMapTopicUrl', 'discoveryPortExploreCatalogFilters'],
   ['discoveryPortExploreCatalogLabel', 'discoveryPortExploreCatalogFilters'],
 ];

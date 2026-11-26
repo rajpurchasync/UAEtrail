@@ -20,8 +20,8 @@ const REPLACEMENTS = [
   ['discoveryPortExploreActivityModeFilter', 'discoveryPortExploreCatalogFilters'],
   ['discoveryPortExploreOutingTopic', 'discoveryPortExploreCatalogFilters'],
   ['discoveryPortExploreOthersSubtype', 'discoveryPortExploreCatalogFilters'],
-  ['discoveryPortExploreAvailabilityRowPath', 'discoveryPortExploreCrewAvailability'],
-  ['discoveryPortExploreAvailabilityMatchPreview', 'discoveryPortExploreCrewAvailability'],
+  ['discoveryPortExploreAvailabilityRowPath', 'discoveryPortExploreCardChrome'],
+  ['discoveryPortExploreAvailabilityMatchPreview', 'discoveryPortExploreCardChrome'],
 ];
 
 for (const name of DELETE) {

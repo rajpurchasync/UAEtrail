@@ -1,5 +1,5 @@
 /**
- * W10/W42 — list / find-crew surfaces: search scope UI + feed helpers (wire → SearchRouting port).
+ * W10/W42/W73 — search facade: URL wire + scope UI + feed helpers (wire via SearchRouting).
  */
 export {
   EXPLORE_SEARCH_RESULTS_PATH,
@@ -28,7 +28,6 @@ export { exploreSearchWhereBrowseQuery } from '../explore/search/exploreSearchWh
 export { useExploreSearchCommunityGroups } from '../explore/search/useExploreSearchCommunityGroups';
 export { ExploreSearchBookingHero } from '../explore/search/ExploreSearchBookingHero';
 export { ExploreSearchInboundRedirectHost } from '../explore/search/ExploreSearchInboundRedirectHost';
-export { EXPLORE_SEARCH_PAGE_COLUMN } from '../explore/search/ExploreSearchPageLayout';
 export {
   countExploreSearchScopes,
   EXPLORE_SEARCH_SCOPES_SHIPPED,

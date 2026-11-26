@@ -70,13 +70,14 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreHosting.ts',
       'discoveryPortExploreBrowse.ts',
       'discoveryPortExploreListChrome.ts',
+      'discoveryPortExploreFlowChrome.ts',
       'discoveryPortExploreSearch.ts',
+      'discoveryPortExploreSearchRouting.ts',
       'discoveryPortExploreOptionalFilterWire.ts',
       'discoveryPortExploreOptionalFilters.ts',
-      'discoveryPortExploreFlowChrome.ts',
       'discoveryPortExploreMapClient.ts',
-      'discoveryPortExplorePeekBody.ts',
       'discoveryPortExploreCatalogFilters.ts',
+      'discoveryPortExplorePeekBody.ts',
       'discoveryPortExploreCrewAvailability.ts',
     ];
     for (const file of ports) {

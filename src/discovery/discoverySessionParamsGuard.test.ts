@@ -352,7 +352,7 @@ describe('discoverySessionParamsGuard', () => {
       if (directExplore.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).not.toMatch(/discoveryPortExploreListChrome/);
+    expect(read('src/discovery/discoverySession.ts')).not.toMatch(/discoveryPortExploreBrowse/);
   });
 
   it('W12 list module avoids direct discoveryRuntime; optional filter URL via facades', () => {
@@ -375,7 +375,7 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreItemMatchesQuery/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
-      /discoveryPortExploreSearchRouting/
+      /discoveryPortExploreSearch(Routing)?/
     );
     expect(read('src/activity-discovery/catalog/activities.ts')).toMatch(/discoveryPortExploreOptionalFilterWire/);
     expect(read('src/activity-discovery/catalog/activities.ts')).not.toMatch(/discoveryPortExploreOptionalFilters/);

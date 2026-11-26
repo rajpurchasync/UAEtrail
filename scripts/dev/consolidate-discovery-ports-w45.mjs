@@ -16,10 +16,10 @@ const DELETE = [
 
 const REPLACEMENTS = [
   ['discoveryPortExploreMapQuickTopicFilters', 'discoveryPortExploreOptionalFilters'],
-  ['discoveryPortExplorePeekLinkedTransport', 'discoveryPortExplorePeekBody'],
-  ['discoveryPortExplorePrivateActivityMapItem', 'discoveryPortExplorePeekBody'],
-  ['discoveryPortExploreJoinOverlays', 'discoveryPortExplorePeekBody'],
-  ['discoveryPortExploreActivityPeekFooterIcon', 'discoveryPortExplorePeekBody'],
+  ['discoveryPortExplorePeekLinkedTransport', 'discoveryPortExploreCardChrome'],
+  ['discoveryPortExplorePrivateActivityMapItem', 'discoveryPortExploreCardChrome'],
+  ['discoveryPortExploreJoinOverlays', 'discoveryPortExploreCardChrome'],
+  ['discoveryPortExploreActivityPeekFooterIcon', 'discoveryPortExploreCardChrome'],
 ];
 
 for (const name of DELETE) {

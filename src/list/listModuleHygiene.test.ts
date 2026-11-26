@@ -4,8 +4,7 @@ import { join, relative } from 'node:path';
 import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   type ExploreSearchScopeKey,
-} from '../discovery/discoveryPortExploreSearchRouting';
-import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
+} from '../explore/exploreBrowseTaxonomy';
 
 const LIST_ROOT = join(process.cwd(), 'src/list');
 
@@ -196,14 +195,16 @@ describe('list module hygiene', () => {
     expect(violations).toEqual([]);
   });
 
-  it('maps every shipped explore search scope to list categories', () => {
+  it('maps every shipped explore search scope to list categories', async () => {
+    const { browseCategoriesForSearchScope } = await import('./browse/browseListSearchCommit');
     for (const scope of EXPLORE_SEARCH_SCOPES_SHIPPED) {
       expect(browseCategoriesForSearchScope(scope)).not.toBeNull();
     }
     expect(browseCategoriesForSearchScope('facilities' as ExploreSearchScopeKey)).toBeNull();
   });
 
-  it('people search scope opens member discovery list category', () => {
+  it('people search scope opens member discovery list category', async () => {
+    const { browseListFilterPatchForSearchScope } = await import('./browse/browseListSearchCommit');
     expect(browseListFilterPatchForSearchScope('people')).toEqual({
       categories: ['people'],
       tripAvailabilityOnly: false,

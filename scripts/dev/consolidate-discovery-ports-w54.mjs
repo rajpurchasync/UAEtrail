@@ -19,15 +19,15 @@ const REPLACEMENTS = [
   ],
   [
     "import { countExploreSearchScopes } from '../../discovery/discoveryPortExploreSearch'",
-    "import { countExploreSearchScopes } from '../../discovery/discoveryPortExploreSearchRouting'",
+    "import { countExploreSearchScopes } from '../../discovery/discoveryPortExploreSearch'",
   ],
   [
     "import { countExploreSearchScopes } from '../discovery/discoveryPortExploreSearch'",
-    "import { countExploreSearchScopes } from '../discovery/discoveryPortExploreSearchRouting'",
+    "import { countExploreSearchScopes } from '../discovery/discoveryPortExploreSearch'",
   ],
   [
     "import type { ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreSearch'",
-    "import type { ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreSearchRouting'",
+    "import type { ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreSearch'",
   ],
 ];
 

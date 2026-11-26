@@ -1,4 +1,4 @@
-/** W19/W42 — explore search URL helpers (wire only; no search page UI). */
+/** W19/W42/W73 — explore search URL helpers (wire only; no search page UI). */
 export {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
