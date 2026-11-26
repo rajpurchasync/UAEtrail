@@ -35,7 +35,7 @@ import {
 } from '@uaetrail/shared-types';
 import { enrichExploreActivityRequirementBadges } from './discoveryPortExploreCardChrome';
 import { exploreMapItemSharePath } from './discoveryPortExploreRouting';
-import { resolveExploreCoverImage } from './discoveryPortExploreRuntime';
+import { resolveExploreCoverImage } from './discoveryPortExploreCardChrome';
 
 export type { DiscoveryCardKind, DiscoveryCardSource } from '@uaetrail/shared-types';
 

@@ -16,3 +16,8 @@ export {
   useExplorePublishedDestinationsQuery,
 } from '../explore/useExplorePublishedDestinations';
 export { parseExploreDestinationSlug } from '../explore/exploreDestinationFilter';
+export {
+  parseExploreMapFilterPillsParam,
+  serializeExploreMapFilterPillsParam,
+  type ExploreMapFilterPillKey,
+} from '../explore/exploreBrowseTaxonomy';

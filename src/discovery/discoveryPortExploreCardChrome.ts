@@ -12,3 +12,8 @@ export {
   extractExploreRequirementBadges,
 } from '../explore/exploreRequirementBadges';
 export { ExploreWishlistSaveButton } from '../explore/ui/ExploreWishlistSaveButton';
+export { resolveExploreCoverImage } from '../explore/exploreCoverImage';
+export {
+  activityMapPeekActionLabel,
+  type ActivityMapPeekActionLabelContext,
+} from '../explore/exploreMapPeekActionCopy';

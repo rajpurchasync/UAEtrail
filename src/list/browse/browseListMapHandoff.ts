@@ -1,9 +1,9 @@
 import {
-  parseExplorePanel,
   parseExplorePinKindFilter,
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
-} from '../../discovery/discoveryPortExploreRuntime';
+} from '../../discovery/discoveryPortExploreMapClient';
+import { parseExplorePanel } from '../../discovery/discoveryPortExploreRouting';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {

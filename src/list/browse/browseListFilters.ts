@@ -11,12 +11,12 @@ import { matchesActivityDateFilter } from '../../discovery/discoveryPortExploreA
 import {
   EXPLORE_PRICE_FILTER_OPTIONS,
   deriveVenueRegionSortOrder,
-  exploreItemMatchesQuery,
   isPlacesMapItem,
   isShopListItem,
   matchesUnifiedTopicFilter,
   resolveExploreItemScheduleDate,
 } from '../../discovery/discoveryPortExploreRuntime';
+import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
   exploreItemMatchesFacilityKinds,
   exploreItemMatchesPriceFilter,

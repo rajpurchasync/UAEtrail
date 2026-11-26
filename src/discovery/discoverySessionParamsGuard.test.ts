@@ -364,6 +364,13 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/useExplorePublishedDestinationsQuery/);
     expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/exploreItemMatchesPriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/parseExplorePinKindFilter/);
+    expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
+    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/exploreItemMatchesQuery/);
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreItemMatchesQuery/);
+    expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(
+      /from '\.\.\/explore\/exploreSearchMatches'/
+    );
   });
 
   it('W11 list module imports activity date preset via discoveryPortExploreActivityDate', () => {

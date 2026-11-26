@@ -17,7 +17,7 @@ import {
   exploreItemMatchesPriceFilter,
   type ExplorePriceFilter,
 } from '../../discovery/discoveryPortExploreOptionalFilters';
-import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreRuntime';
+import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
   selectAvailabilityFromMapItems,
   type MapAvailabilityFilters,

@@ -16,7 +16,11 @@ export {
   type ExploreMapStyle,
   type ExploreMapTileSet,
 } from '../explore/exploreMapBasemap';
-export { parseExplorePinKindFilter } from '../explore/explorePinKindFilter';
+export {
+  parseExplorePinKindFilter,
+  serializeExplorePinKindFilter,
+  type ExplorePinKindFilter,
+} from '../explore/explorePinKindFilter';
 export {
   invalidateActivityEngagementQueries,
   invalidateExploreMapQueries,

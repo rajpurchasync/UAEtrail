@@ -16,3 +16,5 @@ export {
   parseExploreSearchScopeFromParams,
   type ExploreSearchScope,
 } from '../explore/search/exploreSearchRouting';
+export { countExploreSearchScopes, exploreItemMatchesQuery } from '../explore/exploreSearchMatches';
+export { EXPLORE_SEARCH_SCOPES_SHIPPED, type ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';

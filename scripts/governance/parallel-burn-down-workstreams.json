@@ -746,8 +746,39 @@
         "src/geo/GeoBrowsePane.tsx"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w51 on clean tree"]
+    },
+    {
+      "id": "W52",
+      "status": "done",
+      "title": "List–map handoff pinKind + panel via MapClient and Routing",
+      "branch": "burn-down/w52-map-handoff-ports",
+      "owns": [
+        "src/discovery/discoveryPortExploreMapClient.ts",
+        "src/discovery/discoveryPortExploreRouting.ts",
+        "src/discovery/discoveryPortExploreRuntime.ts",
+        "scripts/dev/consolidate-discovery-ports-w52.mjs",
+        "src/list/browse/browseListMapHandoff.ts"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w52 on clean tree"]
+    },
+    {
+      "id": "W53",
+      "status": "done",
+      "title": "Browse pills, card cover/peek labels, search query off Runtime",
+      "branch": "burn-down/w53-browse-card-search-runtime",
+      "owns": [
+        "src/discovery/discoveryPortExploreBrowse.ts",
+        "src/discovery/discoveryPortExploreCardChrome.ts",
+        "src/discovery/discoveryPortExploreSearch.ts",
+        "src/discovery/discoveryPortExploreRuntime.ts",
+        "scripts/dev/consolidate-discovery-ports-w53.mjs",
+        "src/list/browse/browseListTaxonomy.ts",
+        "src/list/browse/listFeedFooterActions.ts",
+        "src/activity-discovery/catalog/**"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w53 on clean tree"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

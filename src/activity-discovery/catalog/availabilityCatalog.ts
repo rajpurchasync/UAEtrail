@@ -12,7 +12,7 @@ import {
 import type { ExploreOthersSubtypeKey } from '../../discovery/discoveryPortExploreCatalogFilters';
 import type { ExploreOutingTopicKey } from '../../discovery/discoveryPortExploreCatalogFilters';
 import type { MapFilterKey } from '../../discovery/discoveryPortExploreRouting';
-import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreRuntime';
+import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 
 /** Filters for fixed availability (`source: availability`) on the shared map payload. */
 export type MapAvailabilityFilters = {
