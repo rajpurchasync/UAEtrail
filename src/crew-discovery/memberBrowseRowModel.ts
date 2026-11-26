@@ -18,7 +18,7 @@ import {
   sortAvailabilityPeopleNetworkFirst,
 } from './availabilityBrowseCardCopy';
 export { sortAvailabilityPeopleNetworkFirst } from './availabilityBrowseCardCopy';
-import type { CrewsAvailabilityShapeFilter } from '../list/crews/crewsOpenSegment';
+import type { CrewsAvailabilityShapeFilter } from '../discovery/discoverySessionListCrewsOpen';
 import type {
   DiscoverCrewRecommendationBucket,
   ExploreAvailablePersonDTO,
@@ -39,8 +39,7 @@ import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
 import { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
 import { explorePath } from '../explore/routing';
 import { findCrewAvailabilityNarrativeFromDetail } from './findCrewAvailabilityNarrative';
-import { findCrewProposePlanPath } from '../list/explorer/findCrewProposePlanPath';
-import { pickProposePlanAnchorSlot } from '../list/explorer/pickProposePlanAnchorSlot';
+import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoverySessionListFindCrewPlan';
 import type { CrewBrowseMemberRowProps } from './panel/crewBrowse/CrewBrowseMemberRow';
 /** L1 projection for people-browse list rows (panel + list `listCat=people`). */
 export type MemberBrowseRowVm = CrewBrowseMemberRowProps & {

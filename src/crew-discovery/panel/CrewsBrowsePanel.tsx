@@ -16,8 +16,7 @@ import type {
 import type { UserRole } from '@uaetrail/shared-types';
 import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommendationsQuery';
 import { CrewBrowseSearchField } from './crewBrowse';
-import { CrewsTabBody } from '@/list/crews/CrewsTabBody';
-import { CrewsStatsTabs } from '@/list/crews/CrewsStatsTabs';
+import { CrewsStatsTabs, CrewsTabBody } from '@/discovery/discoverySessionListCrewsPresentation';
 
 export interface CrewsBrowsePanelProps {
   isDesktop: boolean;

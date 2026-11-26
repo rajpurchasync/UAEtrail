@@ -50,7 +50,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/discovery/discoverySessionExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 
-  it('W16 consumer peek/chat surfaces route list browse via discoverySessionList facades', () => {
+  it('W16–W17 cross-context surfaces route list browse via discoverySessionList facades', () => {
     const allowDirect = /list\//;
     const roots = [
       'src/activity',
@@ -60,6 +60,8 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
       'src/components/activity',
       'src/content',
       'src/my-crew',
+      'src/geo',
+      'src/crew-discovery',
     ];
     const violations: string[] = [];
     const walk = (dir: string) => {

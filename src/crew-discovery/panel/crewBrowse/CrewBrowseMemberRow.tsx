@@ -27,10 +27,10 @@ import {
   FIND_CREW_CTA_PROPOSE_PLAN,
   FIND_CREW_MATCHES_YOUR_DATES,
   FIND_CREW_PROFILE_PRIVATE,
-} from '@/list/explorer/findCrewSearchCopy';
+} from '@/discovery/discoverySessionListFindCrewCopy';
 import { memberProfileRoleLabel } from '../../../member/memberProfileRoleLabel';
 import type { MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
-import { writeFindCrewPlanAnchorSession } from '@/list/explorer/findCrewPlanAnchor';
+import { writeFindCrewPlanAnchorSession } from '@/discovery/discoverySessionFindCrewPrefill';
 
 export type CrewBrowseMemberBadge = {
   label: string;

@@ -13,7 +13,7 @@ import {
   EXPLORE_CREWS_LOADING,
 } from '../../../content/exploreCrewsCopy';
 import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
-import type { CrewsAvailabilityShapeFilter } from '@/list/crews/crewsOpenSegment';
+import type { CrewsAvailabilityShapeFilter } from '@/discovery/discoverySessionListCrewsOpen';
 import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
@@ -24,8 +24,8 @@ import {
   sortAvailabilityPeopleNetworkFirst,
   type MemberBrowseRowVm,
 } from '../../memberBrowseRowModel';
-import { FIND_CREW_PEOPLE_EMPTY } from '@/list/explorer/findCrewSearchCopy';
-import type { CrewsAvailabilityGuideFilter } from '@/list/crews/crewsOpenSegment';
+import { FIND_CREW_PEOPLE_EMPTY } from '@/discovery/discoverySessionListFindCrewCopy';
+import type { CrewsAvailabilityGuideFilter } from '@/discovery/discoverySessionListCrewsOpen';
 import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
 import { CrewBrowseListEmpty, CrewBrowseListError, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';

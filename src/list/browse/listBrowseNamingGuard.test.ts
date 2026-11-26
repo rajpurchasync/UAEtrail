@@ -80,7 +80,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerFabSnap.ts'))).toBe(false);
     expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browseListLayout'/);
     expect(read('src/list/explorer/ListExplorerFilterFab.tsx')).toMatch(/browse\/listFilterFabSnap/);
-    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/browseListLayout/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoverySessionListLayout/);
+    expect(read('src/discovery/discoverySessionListLayout.ts')).toMatch(/browse\/browseListLayout/);
   });
 
   it('BROWSE-NAME-01e: list sort implementation lives in listBrowseSort (not explorer)', () => {
@@ -88,7 +89,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerSort.ts'))).toBe(false);
     expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortBrowseListCards/);
     expect(read('src/list/browse/listBrowseSort.ts')).not.toMatch(/from '\.\.\/explorer\/listExplorerSort'/);
-    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/listBrowseSort/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoverySessionListSort/);
+    expect(read('src/discovery/discoverySessionListSort.ts')).toMatch(/browse\/listBrowseSort/);
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
@@ -232,7 +234,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerBucket.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerDateSections.ts'))).toBe(false);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/browse\/browseListBucket/);
-    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/browseListBucket/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoverySessionListBucketWire/);
+    expect(read('src/discovery/discoverySessionListBucketWire.ts')).toMatch(/browse\/browseListBucket/);
   });
 
   it('BROWSE-NAME-01h: browse list bucket API uses browse-prefixed exports (not listExplorerBucket*)', () => {

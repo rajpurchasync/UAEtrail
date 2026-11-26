@@ -3,7 +3,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryMapListRowCard } from '@/discovery';
 import type { DiscoveryCardModel } from '@/discovery/discoveryCardModel';
 import { discoverySelectionShowsOfferRideshare } from '@/discovery/discoveryOfferRideshareDispatch';
-import { BrowseCompactRow } from '@/list/browse/BrowseCompactRow';
+import { BrowseCompactRow } from '@/discovery/discoverySessionListFeed';
 import { HOSTING_OFFER_RIDESHARE_LABEL } from '@/explore/createFlowCopy';
 import {
   EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,

@@ -16,7 +16,7 @@ import {
   FIND_CREW_CARD_LABEL_FROM,
   FIND_CREW_CARD_LABEL_TO,
   FIND_CREW_CARD_ACTIVITY_PREFIX,
-} from '@/list/explorer/findCrewSearchCopy';
+} from '@/discovery/discoverySessionListFindCrewCopy';
 
 export type FindCrewAvailabilityCapacityKind = 'crew' | 'guide' | 'mixed';
 

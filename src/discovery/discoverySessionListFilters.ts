@@ -7,4 +7,7 @@ export type {
   BrowsePriceFilter,
   BrowseWhenFilter,
 } from '../list/browse/browseListFilters';
-export { filterExploreMapItemsForList } from '../list/browse/browseListFilters';
+export {
+  cardMatchesBrowsePrice,
+  filterExploreMapItemsForList,
+} from '../list/browse/browseListFilters';

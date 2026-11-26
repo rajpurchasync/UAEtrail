@@ -3,33 +3,31 @@ import { setExploreClockStyle, type ExploreMapItemDTO, type GeoKind } from '@uae
 import { useAuth } from '../context/AuthContext';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
-import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
+import { countExploreSearchScopes } from '../discovery/discoverySessionExploreRuntime';
 import { Link } from 'react-router-dom';
 import { explorePath } from '../explore/routing';
 import { listDiscoveryPath } from '../discovery/discoverySession';
-import { buildListFeedCards } from '../list/browse/buildListFeedCards';
+import { buildListFeedCards } from '../discovery/discoverySessionListFeed';
 import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
   type BrowseListFilterState,
-} from '../list/browse/browseListFilters';
-import { browseListFilterPatchForSearchScope } from '../list/browse/browseListSearchCommit';
-import { ListExplorer } from '../list/explorer/ListExplorer';
-import { ListDiscoveryMapColumn } from '../list/explorer/ListDiscoveryMapColumn';
-import { ListSideMapResizeHandle } from '../list/explorer/ListSideMapResizeHandle';
-import { useListSideMapWidth } from '../list/explorer/useListSideMapWidth';
+} from '../discovery/discoverySessionListFilters';
+import { browseListFilterPatchForSearchScope } from '../discovery/discoverySessionListSearchCommit';
+import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoverySessionListGeoExplorer';
+import {
+  ListSideMapResizeHandle,
+  useListSideMapWidth,
+} from '../discovery/discoverySessionListExplorerMapShell';
 import {
   browseListBucketCategories,
   type BrowseListBucket,
-} from '../list/browse/browseListBucket';
-import {
-  DEFAULT_BROWSE_LIST_SORT,
-  type BrowseListSortMode,
-} from '../list/browse/listBrowseSort';
-import { countBrowseListFilters, type BrowseListLayout } from '../list/browse/browseListLayout';
-import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
-import { useExplorePublishedDestinationsQuery } from '../explore/useExplorePublishedDestinations';
-import { useBrowseGeoScopeHydration } from '../list/browse/useBrowseGeoScopeHydration';
+} from '../discovery/discoverySessionListBucketWire';
+import { DEFAULT_BROWSE_LIST_SORT, type BrowseListSortMode } from '../discovery/discoverySessionListSort';
+import { countBrowseListFilters, type BrowseListLayout } from '../discovery/discoverySessionListLayout';
+import type { ExploreSearchScopeKey } from '../discovery/discoverySessionExploreBrowseTaxonomy';
+import { useExplorePublishedDestinationsQuery } from '../discovery/discoverySessionExploreRuntime';
+import { useBrowseGeoScopeHydration } from '../discovery/discoverySessionListHooks';
 import '../styles/explore-map-chrome.css';
 
 const EMPTY_GEO_IDS: string[] = [];
