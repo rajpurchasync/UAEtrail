@@ -176,8 +176,16 @@
         "src/list/shell/useListDiscoveryCrewsCategoryModel.ts"
       ],
       "avoid": ["src/explore/**"]
+    },
+    {
+      "id": "W12",
+      "status": "done",
+      "title": "discoverySessionExploreRuntime — list browse map catalog facade",
+      "branch": "burn-down/w12-discovery-runtime",
+      "owns": ["src/discovery/discoverySessionExploreRuntime.ts", "src/list/browse/**", "src/list/shell/**"],
+      "avoid": ["src/explore/discoveryRuntime.ts impl changes"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

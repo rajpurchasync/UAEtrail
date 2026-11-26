@@ -6,7 +6,7 @@ import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { BrowseMainCategoryKey } from '../browse/browseListTaxonomy';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from '../browse/browseListMapHandoff';
-import type { ExploreActivityDatePreset, ExploreSearchScopeKey } from '../../explore/discoveryRuntime';
+import type { ExploreActivityDatePreset, ExploreSearchScopeKey } from '../../discovery/discoverySessionExploreRuntime';
 
 export type ListDiscoveryBrowseSyncUrl = (
   patch: Partial<BrowseListFilterState> & {

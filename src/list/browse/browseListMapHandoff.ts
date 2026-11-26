@@ -3,7 +3,7 @@ import {
   parseExplorePinKindFilter,
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
-} from '../../explore/discoveryRuntime';
+} from '../../discovery/discoverySessionExploreRuntime';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {

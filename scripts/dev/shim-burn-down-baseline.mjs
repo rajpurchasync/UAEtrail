@@ -325,6 +325,15 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const listImportsDiscoveryRuntime = [];
+for (const file of walkFiles(join(feSrc, 'list'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/explore\/discoveryRuntime/.test(readFileSync(file, 'utf8'))) {
+    listImportsDiscoveryRuntime.push(rel);
+  }
+}
+
 const listImportsExploreActivityDate = [];
 for (const file of walkFiles(join(feSrc, 'list'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -481,6 +490,8 @@ const baseline = {
       listExploreSearchImportViolations: listImportsExploreSearch,
       listImportsExploreActivityDate: listImportsExploreActivityDate.length,
       listExploreActivityDateImportViolations: listImportsExploreActivityDate,
+      listImportsDiscoveryRuntime: listImportsDiscoveryRuntime.length,
+      listDiscoveryRuntimeImportViolations: listImportsDiscoveryRuntime,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -582,6 +593,9 @@ const baseline = {
       : []),
     ...(listImportsExploreActivityDate.length > 0
       ? ['W11: list imports explore activity date via discoverySessionExploreActivityDate']
+      : []),
+    ...(listImportsDiscoveryRuntime.length > 0
+      ? ['W12: list imports map catalog via discoverySessionExploreRuntime']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

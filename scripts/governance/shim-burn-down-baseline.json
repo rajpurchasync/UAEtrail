@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-11-25",
+  "generated": "2026-11-26",
   "description": "Shim burn-down metrics. Regenerate: npm run shim:baseline",
   "waves": {
     "w0": {
@@ -80,7 +80,9 @@
       "listImportsExploreSearch": 0,
       "listExploreSearchImportViolations": [],
       "listImportsExploreActivityDate": 0,
-      "listExploreActivityDateImportViolations": []
+      "listExploreActivityDateImportViolations": [],
+      "listImportsDiscoveryRuntime": 0,
+      "listDiscoveryRuntimeImportViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

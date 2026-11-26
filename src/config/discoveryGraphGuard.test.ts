@@ -45,8 +45,9 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(count).toBeLessThanOrEqual(max);
   });
 
-  it('DISC-03-06: GW-7 browse leaves may import explore directly', () => {
-    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/explore\/discoveryRuntime/);
+  it('DISC-03-06: GW-7 browse leaves use discoverySessionExploreRuntime facade', () => {
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoverySessionExploreRuntime/);
+    expect(read('src/discovery/discoverySessionExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 
   it('DISC-03-05: verify:discovery-graph wired', () => {

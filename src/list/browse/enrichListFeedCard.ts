@@ -1,7 +1,7 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { enrichDiscoveryPeekSelection } from '../../discovery/enrichDiscoveryPeekSelection';
-import { finalizeDiscoveryCardLinkedRideshare } from '../../explore/discoveryRuntime';
+import { finalizeDiscoveryCardLinkedRideshare } from '../../discovery/discoverySessionExploreRuntime';
 
 /** List feed card — discovery VM + linked rideshare + peek selection flags (same as map). */
 export const enrichListFeedCardModel = (
