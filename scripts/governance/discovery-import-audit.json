@@ -12,7 +12,7 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 221,
+      "..": 223,
       "browse": 83,
       "crews": 2,
       "components": 1,
@@ -37,7 +37,7 @@
       "content": 3,
       "activity": 2,
       "explore": 118,
-      "list": 69,
+      "list": 70,
       "utils": 1
     },
     "src/activity-discovery": {
@@ -60,7 +60,7 @@
     }
   },
   "byTarget": {
-    "..": 271,
+    "..": 273,
     "browse": 83,
     "crews": 2,
     "components": 5,
@@ -79,7 +79,7 @@
     "content": 7,
     "activity": 2,
     "explore": 118,
-    "list": 69,
+    "list": 70,
     "utils": 1,
     "lib": 6,
     "discover": 1,

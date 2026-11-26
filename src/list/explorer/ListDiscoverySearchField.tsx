@@ -8,7 +8,9 @@ import {
   EXPLORE_SEARCH_PROMPT,
 } from '../../discovery/discoveryPortExploreCatalogFilters';
 import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearchRouting';
+import { EXPLORE_SEARCH_GUEST_PLACEHOLDER } from '../../discovery/discoveryPortExploreGuestWire';
 import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearch';
+import { useAuth } from '../../context/AuthContext';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
 import { LIST_SEARCH } from '../browse/listChromeTheme';
 
@@ -47,11 +49,14 @@ export const ListDiscoverySearchField = ({
   hideMapLink = false,
   className = '',
   filterSlot,
-  placeholder = EXPLORE_SEARCH_OPEN_PLACEHOLDER,
+  placeholder,
   enableScopeHints = true,
   autoFocus = false,
   trailingChrome = null,
 }: ListDiscoverySearchFieldProps) => {
+  const { user } = useAuth();
+  const resolvedPlaceholder =
+    placeholder ?? (user ? EXPLORE_SEARCH_OPEN_PLACEHOLDER : EXPLORE_SEARCH_GUEST_PLACEHOLDER);
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -128,7 +133,7 @@ export const ListDiscoverySearchField = ({
                     commitSearch(null);
                   }
                 }}
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 className={LIST_SEARCH.input}
                 enterKeyHint="search"
                 autoComplete="off"

@@ -26,6 +26,7 @@ import {
   type BrowseListBucket,
   type BrowseListLayout,
   type BrowseListSortMode,
+  resolveBrowseListSearchPlaceholder,
 } from '../discovery/discoveryPortListGeoBrowse';
 import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreCatalogFilters';
 import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowseHooks';
@@ -134,6 +135,14 @@ export const GeoBrowsePane = ({
   const searchScopeCounts = useMemo(
     () => countExploreSearchScopes(catalogItems, draftQuery, filters.activityDatePreset, regions),
     [catalogItems, draftQuery, filters.activityDatePreset, regions]
+  );
+
+  const listCatForSearch =
+    bucket === 'places' ? ('venues' as const) : bucket === 'events' ? ('activities' as const) : null;
+  const searchPlaceholder = resolveBrowseListSearchPlaceholder(
+    listCatForSearch,
+    bucket,
+    Boolean(user)
   );
 
   const filterCount = countBrowseListFilters(
@@ -260,6 +269,7 @@ export const GeoBrowsePane = ({
           setFilters((prev) => ({ ...prev, activityDatePreset: next }))
         }
         onVenueRegionsChange={setRegions}
+        searchPlaceholder={searchPlaceholder}
         embedded
         mapColumnVisible={desktopMd}
         onMapHover={desktopMd ? setHighlightedId : undefined}

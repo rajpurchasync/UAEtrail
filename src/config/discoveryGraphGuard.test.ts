@@ -84,6 +84,31 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
   });
 
+  it('DISC-03-09: W77 list direct explore/ui import allowlist (join overlays only)', () => {
+    const directExploreUi = /from ['"][^'"]*explore\/ui\//;
+    const allow = new Set(['src/list/browse/ListFeedActionsProvider.tsx']);
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = full.replace(/\\/g, '/');
+          if (allow.has(rel)) continue;
+          if (directExploreUi.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    walk('src/list');
+    expect(violations).toEqual([]);
+    expect(read('src/list/browse/ListFeedActionsProvider.tsx')).toMatch(
+      /explore\/ui\/ExploreJoinOverlays/
+    );
+    expect(read('src/list/explorer/ListDiscoverySearchField.tsx')).toMatch(/discoveryPortExploreGuestWire/);
+  });
+
   it('W20 config prod routes explore via discoveryPortExplore facades (incl routingCatalog)', () => {
     const allow = new Set(['src/config/routingCatalogLite.ts']);
     const directExplore = /from ['"][^'"]*explore\//;

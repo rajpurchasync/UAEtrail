@@ -4,3 +4,4 @@ export { countBrowseListFilters, type BrowseListLayout } from '../list/browse/br
 export { DEFAULT_BROWSE_LIST_SORT, type BrowseListSortMode } from '../list/browse/listBrowseSort';
 export { browseListFilterPatchForSearchScope } from '../list/browse/browseListSearchCommit';
 export { LIST_BROWSE_MAX_PX, LIST_SIDE_MAP_MIN_PX } from '../list/browse/listDiscoverySideMapSplit';
+export { resolveBrowseListSearchPlaceholder } from '../list/browse/browseListCopy';
