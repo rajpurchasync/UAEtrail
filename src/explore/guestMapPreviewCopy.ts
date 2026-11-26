@@ -3,6 +3,9 @@
 /** Guest map search — no member People scope until signed in. */
 export const EXPLORE_SEARCH_GUEST_PLACEHOLDER = 'Activities, places, spots, events, shops…';
 
+/** Booking search “where” row — guest preview (no crews until signed in). */
+export const EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER = 'Trails, beaches, camps, spots…';
+
 export const EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES = 3;
 
 export const EXPLORE_GUEST_MAP_PREVIEW_ALERT_EMOJI = '⚠️';

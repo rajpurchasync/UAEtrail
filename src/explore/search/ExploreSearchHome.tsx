@@ -9,6 +9,7 @@ import { useExploreBookingSearchState } from './useExploreBookingSearchState';
 import { ExploreBookingRecentSearches } from './ExploreBookingRecentSearches';
 import { exploreSearchComposeFeedMode } from './exploreSearchComposeMode';
 import { ExploreSearchRecommendedSection } from './ExploreSearchRecommendedSection';
+import { resolveExploreSearchBookingWherePlaceholder } from './exploreSearchHomeCopy';
 
 export const ExploreSearchHome = () => {
   const booking = useExploreBookingSearchState();
@@ -50,6 +51,7 @@ export const ExploreSearchHome = () => {
         onDatePresetChange={booking.setActivityDatePreset}
         venueRegions={booking.venueRegions}
         onVenueRegionsChange={booking.setVenueRegions}
+        wherePlaceholder={resolveExploreSearchBookingWherePlaceholder(Boolean(user))}
       />
       <ExploreBookingRecentSearches onPick={() => undefined} refreshKey={recentRefresh} />
       <ExploreSearchRecommendedSection

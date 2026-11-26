@@ -1,6 +1,11 @@
+import { EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER } from '../guestMapPreviewCopy';
+
 /** Consumer explore landing — where/when search (booking-style). */
 export const EXPLORE_SEARCH_WHERE_LABEL = 'Where';
 export const EXPLORE_SEARCH_WHERE_PLACEHOLDER = 'Where to?';
+
+export const resolveExploreSearchBookingWherePlaceholder = (isSignedIn: boolean): string =>
+  isSignedIn ? EXPLORE_SEARCH_WHERE_PLACEHOLDER : EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER;
 export const EXPLORE_SEARCH_WHEN_LABEL = 'When';
 export const EXPLORE_SEARCH_STATE_LABEL = 'State';
 export const EXPLORE_SEARCH_CTA = 'Search';

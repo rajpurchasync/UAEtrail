@@ -84,6 +84,15 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
   });
 
+  it('DISC-03-10: W99 booking search guest where copy via GuestWire', () => {
+    expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER/);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/resolveExploreSearchBookingWherePlaceholder/);
+    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(
+      /resolveExploreSearchBookingWherePlaceholder/
+    );
+    expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER/);
+  });
+
   it('DISC-03-09: W77 list direct explore/ui import allowlist (join overlays only)', () => {
     const directExploreUi = /from ['"][^'"]*explore\/ui\//;
     const allow = new Set(['src/list/browse/ListFeedActionsProvider.tsx']);

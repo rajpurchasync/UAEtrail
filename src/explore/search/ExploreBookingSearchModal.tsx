@@ -6,7 +6,13 @@ import { ExploreGuestPreviewLimitPanel } from '../ui/ExploreGuestPreviewLimitPan
 import { ExploreSearchScopePills } from './ExploreSearchScopePills';
 import { ExploreSearchBookingHero } from './ExploreSearchBookingHero';
 import { ExploreBookingSearchMapMatches } from './ExploreBookingSearchMapMatches';
-import { EXPLORE_SEARCH_MAP_MATCHES_TITLE } from './exploreSearchHomeCopy';
+import {
+  EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE,
+} from '../guestMapPreviewCopy';
+import {
+  EXPLORE_SEARCH_MAP_MATCHES_TITLE,
+  resolveExploreSearchBookingWherePlaceholder,
+} from './exploreSearchHomeCopy';
 import { useExploreBookingSearchState } from './useExploreBookingSearchState';
 import { ExploreBookingRecentSearches } from './ExploreBookingRecentSearches';
 import type { ExploreSearchScopeCounts } from '../exploreBrowseTaxonomy';
@@ -80,12 +86,18 @@ export const ExploreBookingSearchModal = ({
             onDatePresetChange={booking.setActivityDatePreset}
             venueRegions={booking.venueRegions}
             onVenueRegionsChange={booking.setVenueRegions}
+            wherePlaceholder={resolveExploreSearchBookingWherePlaceholder(signedIn)}
           />
           <ExploreBookingRecentSearches onPick={onClose} refreshKey={recentRefresh} />
           {showMapMatches ? (
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 px-3 py-2">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 {EXPLORE_SEARCH_MAP_MATCHES_TITLE}
+                {!signedIn ? (
+                  <span className="mt-0.5 block text-[11px] font-medium normal-case tracking-normal text-neutral-400">
+                    {EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE}
+                  </span>
+                ) : null}
               </p>
               <ExploreBookingSearchMapMatches
                 counts={scopeCounts}
