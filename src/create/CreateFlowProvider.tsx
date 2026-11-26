@@ -22,7 +22,7 @@ import { ComposeHost } from '../discovery/discoveryPortExploreComposeHost';
 import { useComposeRoute } from '../discovery/discoveryPortExploreComposeHooks';
 import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExploreComposeWizardSession';
 import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreDestination';
-import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreComposeGuestSignIn';
+import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreComposeGuest';
 import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHostingPrefill';
 import type { AvailabilityFixedSubmitResult } from '../discovery/discoveryPortExploreIntentFixedFlow';
 import {

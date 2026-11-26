@@ -6,7 +6,7 @@ import { MapTileLayers } from './MapTileLayers';
 import { MapPlacePicker } from './MapPlacePicker';
 import { parseCoord } from '../../utils/coords';
 import { ViewOnMapLink } from './ViewOnMapLink';
-import { ExploreMapStyleToggle } from '@/discovery/discoveryPortExploreMapStyleToggle';
+import { ExploreMapStyleToggle } from '@/discovery/discoveryPortExploreMapChrome';
 import { getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 
 const previewIcon = L.divIcon({

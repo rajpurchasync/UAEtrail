@@ -12,7 +12,7 @@ import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,
 } from '../../discovery/discoveryPortExploreMapQuickTopicFilters';
-import { isFriendMapItem } from '../../discovery/discoveryPortExploreMapPinModel';
+import { isFriendMapItem } from '../../discovery/discoveryPortExploreMapPin';
 import {
   exploreItemMatchesPriceFilter,
   type ExplorePriceFilter,

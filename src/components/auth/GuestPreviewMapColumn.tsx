@@ -7,7 +7,7 @@ import {
   expandMapPins,
   layoutColocatedMapPins,
   ExploreMapLoadingSkeleton,
-} from '../../discovery/discoveryPortExploreMapColumn';
+} from '../../discovery/discoveryPortExploreMapChrome';
 import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoveryPortListMapSplit';
 
 const PlacesMap = lazy(() =>

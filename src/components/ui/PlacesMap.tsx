@@ -59,7 +59,7 @@ import {
   exploreMapClusterSpiderPolylineOptions,
   scheduleExploreMapClusterSpiderExpand,
   syncExploreMapClusterSpiderCollapse,
-} from '@/discovery/discoveryPortExploreMapCluster';
+} from '@/discovery/discoveryPortExploreMapChrome';
 import {
   formatExploreMapClusterTooltipLabel,
   formatExploreMapPinTooltipLabel,

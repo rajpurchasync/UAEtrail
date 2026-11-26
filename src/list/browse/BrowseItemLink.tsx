@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useExploreMapChrome } from '../../discovery/discoveryPortExploreMapChromeContext';
+import { useExploreMapChrome } from '../../discovery/discoveryPortExploreMapChrome';
 import { browseListEntityLinkState } from './browseListNavState';
 
 type BrowseItemLinkProps = {

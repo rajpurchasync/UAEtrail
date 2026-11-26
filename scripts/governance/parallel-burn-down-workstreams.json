@@ -416,8 +416,8 @@
         "src/create/**",
         "src/discovery/discoveryPortExploreComposeHost.ts",
         "src/discovery/discoveryPortExploreComposeWizardSession.ts",
-        "src/discovery/discoveryPortExploreComposeGuestResume.ts",
-        "src/discovery/discoveryPortExploreComposeGuestSignIn.ts",
+        "src/discovery/discoveryPortExploreComposeGuest.ts",
+        "src/discovery/discoveryPortExploreComposeGuest.ts",
         "src/discovery/discoveryPortExploreAddFlow.ts",
         "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
@@ -475,7 +475,7 @@
         "src/discovery/discoveryPortExploreListSort.ts",
         "src/discovery/discoveryPortExploreActivityModeFilter.ts",
         "src/discovery/discoveryPortExploreMapQuickTopicFilters.ts",
-        "src/discovery/discoveryPortExploreMapPinModel.ts",
+        "src/discovery/discoveryPortExploreMapPin.ts",
         "src/discovery/discoveryPortExploreOthersSubtype.ts",
         "src/discovery/discoveryPortExploreOutingTopic.ts"
       ],
@@ -509,13 +509,8 @@
       "owns": [
         "scripts/dev/rename-discovery-port-suffixes.mjs",
         "src/discovery/discoveryPortExploreLinkRideshare.ts",
-        "src/discovery/discoveryPortExploreCardChrome.ts",
-        "src/discovery/discoveryPortExploreCardChrome.ts",
-        "src/discovery/discoveryPortExploreCardChrome.ts",
         "src/discovery/discoveryPortExploreBrowsePosters.ts",
-        "src/discovery/discoveryPortExploreAvailabilityRowPath.ts",
-        "src/discovery/discoveryPortExploreComposeGuestResume.ts",
-        "src/discovery/discoveryPortExploreComposeGuestSignIn.ts"
+        "src/discovery/discoveryPortExploreAvailabilityRowPath.ts"
       ],
       "avoid": ["re-run rename-discovery-port-suffixes on clean tree"]
     },
@@ -531,8 +526,21 @@
         "scripts/dev/consolidate-discovery-ports-w37.mjs"
       ],
       "avoid": ["re-run consolidate script on clean tree"]
+    },
+    {
+      "id": "W38",
+      "status": "done",
+      "title": "Bundle guest, compose guest, map chrome ports",
+      "branch": "burn-down/w38-guest-map-chrome",
+      "owns": [
+        "src/discovery/discoveryPortExploreGuest.ts",
+        "src/discovery/discoveryPortExploreComposeGuest.ts",
+        "src/discovery/discoveryPortExploreMapChrome.ts",
+        "scripts/dev/consolidate-discovery-ports-w38.mjs"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w38 on clean tree"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

@@ -19,7 +19,7 @@ import { MobileTabHeader } from '../mobile/MobileTabHeader';
 import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
 import { AuthUnavailableNotice } from '../auth/AuthUnavailableNotice';
-import { ExploreMapChromeProvider } from '@/discovery/discoveryPortExploreMapChromeContext';
+import { ExploreMapChromeProvider } from '@/discovery/discoveryPortExploreMapChrome';
 import { ComposeImmersiveChromeProvider } from '@/discovery/discoveryPortExploreComposeImmersiveChrome';
 import { CreateFlowProvider } from '../../create/CreateFlowProvider';
 import { useAuth } from '../../context/AuthContext';

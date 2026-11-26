@@ -24,3 +24,7 @@ export {
   resolveColocatedExploreItemIdFromPointer,
   type ColocatedPinIconEntry,
 } from '../explore/mapPinIcons';
+export {
+  isFriendMapItem,
+  matchesOthersMapFilter,
+} from '../explore/ui/exploreMapPinModel';

@@ -8,7 +8,7 @@ import { sortExploreActivities } from '../../discovery/discoveryPortExploreListS
 import {
   isFriendMapItem,
   matchesOthersMapFilter,
-} from '../../discovery/discoveryPortExploreMapPinModel';
+} from '../../discovery/discoveryPortExploreMapPin';
 import type { ExploreOthersSubtypeKey } from '../../discovery/discoveryPortExploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../../discovery/discoveryPortExploreOutingTopic';
 import type { MapFilterKey } from '../../discovery/discoveryPortExploreRouting';

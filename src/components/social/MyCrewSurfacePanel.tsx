@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useMeFriendsNetwork } from '@/hooks/useMeFriendsNetwork';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
-import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
 import { SocialHubIndex } from './SocialHubIndex';
 
 const myCrewListAuthReturn = (): string => crewsHubHomePath();

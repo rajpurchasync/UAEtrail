@@ -24,7 +24,7 @@ import { useMeCommunityDiscoverList } from '@/crew-discovery/hooks/useMeCommunit
 import { useLeaveDiscoverableCommunity } from '@/crew-discovery/hooks/useCommunityDiscoverDetail';
 import { buildDiscoveryCardModelFromCommunityDiscover } from '@/discovery/buildCommunityDiscoverCardModel';
 import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';
-import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
 import { Dialog } from '@/components/ui/Dialog';
 import { useAuth } from '@/context/AuthContext';
 import { useMeFriendsNetwork, useMeFollowingMembers } from '@/hooks/useMeFriendsNetwork';

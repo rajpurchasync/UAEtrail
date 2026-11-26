@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GuestFeatureUnlockPanel } from '../discovery/discoveryPortExploreGuestUnlock';
+import { GuestFeatureUnlockPanel } from '../discovery/discoveryPortExploreGuest';
 import { Compass, LayoutGrid, Layers, MapPin, Droplets } from 'lucide-react';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import type { GeoCountsDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';

@@ -39,8 +39,9 @@ describe('discoveryPortNamingGuard', () => {
     const root = join(process.cwd(), 'src/discovery');
     const ports = [
       'discoveryPortExploreMapPin.ts',
-      'discoveryPortExploreMapCluster.ts',
-      'discoveryPortExploreMapStyleToggle.ts',
+      'discoveryPortExploreMapChrome.ts',
+      'discoveryPortExploreGuest.ts',
+      'discoveryPortExploreComposeGuest.ts',
       'discoveryPortExploreCardChrome.ts',
       'discoveryPortExploreCreateFlow.ts',
       'discoveryPortExploreNavigateHost.ts',

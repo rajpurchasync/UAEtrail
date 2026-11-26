@@ -1,4 +1,4 @@
-import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
 import { canonicalPlaceDetailPath } from '../../../config/routingCatalog';
 
 type PlaceDetailGuestGateProps = {

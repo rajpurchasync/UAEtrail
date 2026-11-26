@@ -36,7 +36,7 @@ import {
   MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
 } from '../content/exploreGoingPanelCopy';
 import { profileHubMobileBackState, resolveMobileBackChrome } from '../utils/mobileBackNav';
-import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
 import {
   browseLensForPresentation,
   memberProfileCanTogglePresentation,

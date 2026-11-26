@@ -30,7 +30,7 @@ import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
 import { CrewBrowseListEmpty, CrewBrowseListError, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
-import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuestSignIn';
+import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
 import { crewBrowseHrefForGuest } from '@/crew-discovery/crewGuestBrowse';
 import { messagesToUserPath } from '@/config/routingCatalog';
 
