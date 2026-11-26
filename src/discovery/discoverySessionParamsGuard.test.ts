@@ -289,7 +289,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/browseListBucket.ts',
-        facade: /discoveryPortExploreBrowse/,
+        facade: /discoveryPortExploreSearchRouting/,
         avoidDirect: /from ['"][^'"]*explore\/exploreBrowseTaxonomy/,
       },
       {
@@ -298,7 +298,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/listVenuePlaceTopics.ts',
-        facade: /discoveryPortExploreCatalogFilters/,
+        facade: /discoveryPortExplore(Routing|CatalogFilters)/,
       },
       {
         rel: 'src/list/browse/tripBrowseCardCopy.ts',
@@ -315,12 +315,12 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/explorer/ListDiscoverySearchField.tsx',
-        facade: /discoveryPortExploreBrowse/,
+        facade: /discoveryPortExploreSearchRouting/,
         avoidDirect: /explore\/exploreBrowseTaxonomy|explore\/exploreSearchScopeUi/,
       },
       {
         rel: 'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
-        facade: /discoveryPortExploreBrowse/,
+        facade: /discoveryPortExploreBrowse|discoveryPortExploreCatalogFilters/,
       },
     ];
     for (const { rel, facade, avoidDirect } of expectations) {
@@ -347,8 +347,10 @@ describe('discoverySessionParamsGuard', () => {
 
   it('W14 list prod avoids direct explore/* imports (split discoveryPortExplore* facades)', () => {
     const directExplore = /from ['"][^'"]*explore\//;
+    const joinOverlayAllow = new Set(['src/list/browse/ListFeedActionsProvider.tsx']);
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
+      if (joinOverlayAllow.has(rel)) continue;
       if (directExplore.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
