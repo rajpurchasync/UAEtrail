@@ -1,5 +1,8 @@
-/** Map chrome — cluster, hover context, column layout, basemap toggle. */
+/** W38+W74 — map chrome + list explorer drawer / projection / skeleton. */
 import '../explore/ui/exploreMapClusterSpiderAnimation';
+export { useExploreDesktopListDrawerChrome } from '../explore/ui/ExploreDesktopListDrawer';
+export { ExploreMapProjectionToggle } from '../explore/ui/ExploreMapProjectionToggle';
+export { ExploreListSkeleton } from '../explore/ui/ExploreListSkeleton';
 export {
   EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM,
   exploreMapClusterRadiusPx,
