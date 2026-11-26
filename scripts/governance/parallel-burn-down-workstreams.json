@@ -389,8 +389,23 @@
       "owns": ["src/discovery/discoveryPortExplore*.ts", "src/discovery/discoveryPortList*.ts", "scripts/dev/rename-discovery-ports.mjs"],
       "avoid": ["src/explore/**", "src/list/** impl"],
       "notes": "Mechanical rename + import codemod; discoveryPortNamingGuard W29 legacy check."
+    },
+    {
+      "id": "W30",
+      "status": "done",
+      "title": "Shop, org host flow, facility detail, mobile nav hooks — discoveryPortExplore",
+      "branch": "burn-down/w30-misc-consumer-ports",
+      "owns": [
+        "src/components/shop/**",
+        "src/components/organisation-console/ProProfileApplicationFlow.tsx",
+        "src/components/place/detail/PlaceDetailGuestGate.tsx",
+        "src/facility/detail/templates/**",
+        "src/hooks/useHostActivityManageActions.ts",
+        "src/hooks/useMobileBottomNav.ts"
+      ],
+      "avoid": ["src/create/**", "src/hooks/exploreMap*"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useProductLocation } from '../routing/useEffectiveLocation';
 import { shouldShowMobileBottomNav } from '../config/platform';
-import { useComposeImmersiveChrome } from '../explore/create/ComposeImmersiveChromeContext';
+import { useComposeImmersiveChrome } from '@/discovery/discoveryPortExploreComposeImmersiveChrome';
 import { useAuth } from '../context/AuthContext';
 
 export const useMobileBottomNav = (): boolean => {

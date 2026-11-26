@@ -40,8 +40,8 @@ import { resolveFacilityConsumerDetailHeaderChrome } from '../resolveFacilityCon
 import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
 import { resolveFacilityDetailDestinationHero } from '../../../detail/shared/resolveConsumerDetailDestinationHero';
 import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
-import { useExplorePublishedDestinations } from '../../../explore/useExplorePublishedDestinations';
-import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
+import { useExplorePublishedDestinations } from '@/discovery/discoveryPortExplorePublishedDestinations';
+import { consumerDetailChildLinkState } from '@/discovery/discoveryPortExploreMapPeekNav';
 import { amenityConditionLabel } from '../../amenityConditionLabels';
 import { FacilityDetailHeroParentLine } from '../FacilityDetailHeroParentLine';
 

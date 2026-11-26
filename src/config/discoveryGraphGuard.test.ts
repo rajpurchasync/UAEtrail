@@ -102,6 +102,20 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W30 shop, org console, place guest, facility detail, select hooks via discoveryPortExplore', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const filePaths = [
+      'src/components/shop/ShopPublicPage.tsx',
+      'src/components/organisation-console/ProProfileApplicationFlow.tsx',
+      'src/components/place/detail/PlaceDetailGuestGate.tsx',
+      'src/facility/detail/templates/FacilityDetailSections.tsx',
+      'src/hooks/useHostActivityManageActions.ts',
+      'src/hooks/useMobileBottomNav.ts',
+    ];
+    const violations = filePaths.filter((rel) => directExplore.test(read(rel)));
+    expect(violations).toEqual([]);
+  });
+
   it('W28 components/ui map + publishing/admin host navigate via ports or shared-types', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const uiTargets = [
