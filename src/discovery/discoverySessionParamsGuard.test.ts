@@ -53,7 +53,7 @@ describe('discoverySessionParamsGuard', () => {
     expect(barrel).toMatch(/discoveryPortListUrl/);
     expect(barrel).toMatch(/discoverySessionGeoUrl/);
     expect(barrel).toMatch(/discoverySessionMapHandoff/);
-    expect(barrel).toMatch(/discoveryPortListRouting/);
+    expect(barrel).toMatch(/discoveryPortListUrl/);
     expect(barrel).toMatch(/discoverySessionPeopleUrl/);
     expect(barrel).not.toMatch(/list\/browse\/browseListUrlState/);
   });
@@ -125,7 +125,7 @@ describe('discoverySessionParamsGuard', () => {
       if (geoCopy.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListCopy/);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListChrome/);
   });
 
   it('W4q explore browse/search spine imports listCat type via discoverySession barrel', () => {
@@ -161,7 +161,7 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
-  it('explore tree imports list routing via discoveryPortListRouting', () => {
+  it('explore tree imports list routing via discoveryPortListUrl', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
       if (/list\/browse\/browseListRouting/.test(read(rel))) violations.push(rel);
@@ -186,11 +186,12 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
-  it('discoveryPortListUrl is the outward facade (spine + list parsers)', () => {
+  it('discoveryPortListUrl is the outward facade (spine + list parsers + routing)', () => {
     const facade = read('src/discovery/discoveryPortListUrl.ts');
     expect(facade).toMatch(/discoverySessionParams/);
     expect(facade).toMatch(/discoverySessionParsers/);
     expect(facade).toMatch(/browseListUrlState/);
+    expect(facade).toMatch(/browseListRouting/);
   });
 
   it('platform nav imports listCat via discoverySession barrel (not browseListUrlState)', () => {

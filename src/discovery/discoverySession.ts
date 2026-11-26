@@ -32,7 +32,7 @@ export {
   listPeopleDiscoveryPath,
   tripsListHomePath,
   venuesListHomePath,
-} from './discoveryPortListRouting';
+} from './discoveryPortListUrl';
 export {
   PEOPLE_FACET_URL_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
@@ -42,16 +42,18 @@ export type { BrowseMainCategoryKey } from './discoverySessionTaxonomy';
 export {
   BROWSE_LIST_CREATE_TRIP,
   BROWSE_LIST_CREATE_VENUE,
+  LIST_CHROME,
+  LIST_HUB_SEARCH_ROW,
+  listChipClass,
   resolveBrowseListCreateFabLabel,
   type BrowseListCreateFabHints,
-} from './discoveryPortListCopy';
+} from './discoveryPortListChrome';
 export {
   readStoredViewerFix,
   useBrowseGeoScopeHydration,
   useBrowseListFeed,
   useBrowseViewerLocation,
 } from './discoveryPortListBrowseHooks';
-export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoveryPortListChrome';
 export type {
   BrowseAudienceFilter,
   BrowseListBucket,

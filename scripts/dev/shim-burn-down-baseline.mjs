@@ -213,7 +213,7 @@ for (const rel of [
 const nonListBrowseListRoutingAllowPrefix = [
   'src/list/',
   'src/my-crew/',
-  'src/discovery/discoveryPortListRouting.ts',
+  'src/discovery/discoveryPortListUrl.ts',
 ];
 const consumerBrowseListRoutingViolations = [];
 for (const file of walkFiles(feSrc)) {
@@ -565,10 +565,10 @@ const baseline = {
       ? ['W4h: explore/search uses discoverySessionMapHandoff for list state scoping']
       : []),
     ...(exploreImportsBrowseListRouting.length > 0
-      ? ['W4i: explore imports /list routing via discoveryPortListRouting']
+      ? ['W4i: explore imports /list routing via discoveryPortListUrl']
       : []),
     ...(w4jBrowseListRoutingViolations.length > 0
-      ? ['W4j: routingCatalog + GeoBrowsePane use discoveryPortListRouting']
+      ? ['W4j: routingCatalog + GeoBrowsePane use discoveryPortListUrl']
       : []),
     ...(consumerBrowseListRoutingViolations.length > 0
       ? ['W4k: list/browse routing only in list|my-crew — use discoverySession* facades elsewhere']
