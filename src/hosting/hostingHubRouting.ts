@@ -3,7 +3,7 @@ import { OPERATOR_OVERVIEW_PATH } from '../config/routingCatalog';
 import {
   listHostingPublishProfiles,
   resolveHostingPublishingProfileKind,
-} from '../discovery/discoveryPortExploreHostingPublishTenants';
+} from '../discovery/discoveryPortExploreHosting';
 import {
   normalizeWorkspaceBrandKind,
   type WorkspaceBrandKind,

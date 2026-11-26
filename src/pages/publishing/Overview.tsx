@@ -10,7 +10,7 @@ import { LoadingRing } from '../../components/ui/loadingPrimitives';
 import { navigateToExploreHost } from '@/discovery/discoveryPortExploreNavigateHost';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { HostingHubView } from '../../hosting/HostingHubView';
-import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortExploreHostingPublishTenants';
+import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortExploreHosting';
 import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 

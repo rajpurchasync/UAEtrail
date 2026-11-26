@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildHostingActivityPublishInput } from './hostingActivityPublish';
-import { emptyCreateActivityDraft } from '../discovery/discoveryPortExploreHostingPrefill';
+import { emptyCreateActivityDraft } from '../discovery/discoveryPortExploreHosting';
 
 describe('buildHostingActivityPublishInput', () => {
   it('sends shared cost amount in pricing.price for shared mode', () => {

@@ -23,7 +23,7 @@ import { useComposeRoute } from '../discovery/discoveryPortExploreComposeSurface
 import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExploreComposeSurface';
 import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreDestination';
 import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreComposeGuest';
-import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHostingPrefill';
+import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHosting';
 import type { AvailabilityFixedSubmitResult } from '../discovery/discoveryPortExploreIntentFixedFlow';
 import {
   parseFacilityOnPlaceId,

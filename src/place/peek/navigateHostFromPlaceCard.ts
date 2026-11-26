@@ -7,7 +7,7 @@ import { composeFlowIdFromRoute } from '@/discovery/discoveryPortExploreComposeF
 import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
-} from '@/discovery/discoveryPortExploreHostingFromPlace';
+} from '@/discovery/discoveryPortExploreHosting';
 import { fetchPublishedDestinations } from '../../hooks/destinationHubClientApi';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { Place } from '../../types/place';

@@ -64,7 +64,7 @@ import {
   CreateHostingActivityFlow,
   hostingFlowForComposeKind,
   resolveHostComposeKindFromActivity,
-} from '@/discovery/discoveryPortExploreHostingActivityUi';
+} from '@/discovery/discoveryPortExploreHosting';
 import { activityCrewPath, joinAuthPath } from '../../config/routingCatalog';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
 
