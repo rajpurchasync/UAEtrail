@@ -14,3 +14,5 @@ export {
   browseRowWhenDisplay,
   type BrowseCardMeta,
 } from '../list/browse/browseCardMeta';
+export { enrichListFeedCardModel } from '../list/browse/enrichListFeedCard';
+export type { ListFeedHostActivityActions } from '../list/browse/ListFeedActionsProvider';

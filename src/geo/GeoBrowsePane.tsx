@@ -13,7 +13,6 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from '../discovery/discoveryPortListFilters';
-import { browseListFilterPatchForSearchScope } from '../discovery/discoveryPortListSearchCommit';
 import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPortListGeoExplorer';
 import {
   ListSideMapResizeHandle,
@@ -21,10 +20,13 @@ import {
 } from '../discovery/discoveryPortListExplorerMapShell';
 import {
   browseListBucketCategories,
+  browseListFilterPatchForSearchScope,
+  countBrowseListFilters,
+  DEFAULT_BROWSE_LIST_SORT,
   type BrowseListBucket,
-} from '../discovery/discoveryPortListBucketWire';
-import { DEFAULT_BROWSE_LIST_SORT, type BrowseListSortMode } from '../discovery/discoveryPortListSort';
-import { countBrowseListFilters, type BrowseListLayout } from '../discovery/discoveryPortListLayout';
+  type BrowseListLayout,
+  type BrowseListSortMode,
+} from '../discovery/discoveryPortListGeoBrowse';
 import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreBrowse';
 import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowse';
 import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListHooks';
