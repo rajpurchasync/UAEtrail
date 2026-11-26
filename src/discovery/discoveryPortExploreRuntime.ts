@@ -20,7 +20,6 @@ export {
   exploreItemMatchesPriceFilter,
   exploreItemMatchesQuery,
   explorePlaceHasHostedTrip,
-  finalizeDiscoveryCardLinkedRideshare,
   hostedOutingSummariesByPlaceId,
   hostedPlaceLocationIdsFromCatalog,
   isPlacesMapItem,

@@ -21,9 +21,9 @@ const RENAME_MAP = {
 };
 
 const MERGE_DELETE = [
-  'discoveryPortExploreLinkRideshareOffer.ts',
-  'discoveryPortExploreLinkRidesharePrefill.ts',
-  'discoveryPortExploreLinkRideshareUi.ts',
+  'discoveryPortExploreHostingOffer.ts',
+  'discoveryPortExploreHostingPrefill.ts',
+  'discoveryPortExploreHostingUi.ts',
   'discoveryPortExploreLinkedParentRideshareCopy.ts',
   'discoveryPortExploreEligibleRideshareParents.ts',
   'discoveryPortExploreLinkedRideshareExplore.ts',
@@ -37,12 +37,12 @@ const IMPORT_REPLACEMENTS = [
   ['discoveryPortExploreMemberDiscoveryRow', 'discoveryPortExploreCrewAvailability'],
   ['discoveryPortExploreGuestComposeResume', 'discoveryPortExploreCompose'],
   ['discoveryPortExploreGuestComposeSignIn', 'discoveryPortExploreCompose'],
-  ['discoveryPortExploreLinkRideshareOffer', 'discoveryPortExploreLinkRideshare'],
-  ['discoveryPortExploreLinkRidesharePrefill', 'discoveryPortExploreLinkRideshare'],
-  ['discoveryPortExploreLinkRideshareUi', 'discoveryPortExploreLinkRideshare'],
-  ['discoveryPortExploreLinkedParentRideshareCopy', 'discoveryPortExploreLinkRideshare'],
-  ['discoveryPortExploreEligibleRideshareParents', 'discoveryPortExploreLinkRideshare'],
-  ['discoveryPortExploreLinkedRideshareExplore', 'discoveryPortExploreLinkRideshare'],
+  ['discoveryPortExploreHostingOffer', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreHostingPrefill', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreHostingUi', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreLinkedParentRideshareCopy', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreEligibleRideshareParents', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreLinkedRideshareExplore', 'discoveryPortExploreHosting'],
 ];
 
 for (const [oldName, newName] of Object.entries(RENAME_MAP)) {

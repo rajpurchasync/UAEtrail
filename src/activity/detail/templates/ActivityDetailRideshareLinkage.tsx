@@ -5,7 +5,7 @@ import {
   ACTIVITY_DETAIL_RIDESHARE_UNLINKED_GUEST,
   HOSTING_RIDESHARE_LINKED_NOTICE,
 } from '@/discovery/discoveryPortExploreCreateFlow';
-import { LinkParentActivityPanel } from '@/discovery/discoveryPortExploreLinkRideshare';
+import { LinkParentActivityPanel } from '@/discovery/discoveryPortExploreHosting';
 import { resolveActivityLinkedParentSummary } from '../../../activity/resolveActivityLinkageSummaries';
 
 export type ActivityDetailRideshareLinkageProps = {

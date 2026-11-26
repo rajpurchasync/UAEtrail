@@ -19,7 +19,7 @@
       "discoverySession*": "URL browse session spine only — params, parsers, geo URL, discoverySession.ts barrel.",
       "discoveryPortExplore*": "Cross-context port to src/explore/**.",
       "discoveryPortList*": "Cross-context port to src/list/**.",
-      "suffixRules": "After discoveryPortExplore|List, suffix names consumer concern — not explore module paths. No Discover*, Discovery*, or second Explore* in suffix. Prefer domain bundle (e.g. discoveryPortExploreLinkRideshare) over mirrors (…LinkedRideshareExplore).",
+      "suffixRules": "After discoveryPortExplore|List, suffix names consumer concern — not explore module paths. No Discover*, Discovery*, or second Explore* in suffix. Prefer domain bundle (e.g. discoveryPortExploreHosting) over mirrors (…LinkedRideshareExplore).",
       "codemodW29": "scripts/dev/rename-discovery-ports.mjs (one-time; do not re-run on clean tree).",
       "codemodW36": "scripts/dev/rename-discovery-port-suffixes.mjs (suffix cleanup; idempotent)."
     },
@@ -301,7 +301,7 @@
         "src/place/placePlanList.tsx",
         "src/content/guest*Copy.ts",
         "src/components/social/MyCrewSurfacePanel.tsx",
-        "src/discovery/discoveryPortExploreLinkRideshare.ts"
+        "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["src/components/activity bulk UI migration"]
     },
@@ -315,7 +315,7 @@
         "src/place/detail/**",
         "src/place/peek/**",
         "src/discovery/discoveryPortExplorePeekBody.ts",
-        "src/discovery/discoveryPortExploreLinkRideshare.ts"
+        "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["src/components/activity/**"]
     },
@@ -419,7 +419,7 @@
         "src/discovery/discoveryPortExploreCompose.ts",
         "src/discovery/discoveryPortExploreCompose.ts",
         "src/discovery/discoveryPortExploreCreateFlow.ts",
-        "src/discovery/discoveryPortExploreLinkRideshare.ts"
+        "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["src/explore/** impl churn", "src/hooks/exploreMap*"]
     },
@@ -439,7 +439,7 @@
         "src/discovery/discoveryPortExploreMapClient.ts",
         "src/discovery/discoveryPortExploreMapClient.ts",
         "src/discovery/discoveryPortExploreMapClient.ts",
-        "src/discovery/discoveryPortExploreLinkRideshare.ts"
+        "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["src/services/**", "src/activity-discovery/**"]
     },
@@ -497,7 +497,7 @@
         "src/discovery/ActivityDiscoveryPublishedBody.tsx",
         "src/discovery/discoveryPortExploreBrowse.ts",
         "src/discovery/discoveryPortExploreCardChrome.ts",
-        "src/discovery/discoveryPortExploreLinkRideshare.ts"
+        "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["discoverySessionExplore legacy duplicates", "src/explore/** impl"]
     },
@@ -508,7 +508,7 @@
       "branch": "burn-down/w36-port-naming",
       "owns": [
         "scripts/dev/rename-discovery-port-suffixes.mjs",
-        "src/discovery/discoveryPortExploreLinkRideshare.ts",
+        "src/discovery/discoveryPortExploreHosting.ts",
         "src/discovery/discoveryPortExploreBrowse.ts",
         "src/discovery/discoveryPortExploreCrewAvailability.ts"
       ],
@@ -684,7 +684,7 @@
     {
       "id": "W48",
       "status": "done",
-      "title": "Compose guest wire into Compose; slim Search guest re-export",
+      "title": "Drop ComposeGuest port (wire→Compose, sheet→Surface); slim Search",
       "branch": "burn-down/w48-compose-search-slim",
       "owns": [
         "src/discovery/discoveryPortExploreCompose.ts",
@@ -695,8 +695,23 @@
         "src/list/explorer/FindCrewResultsSection.tsx"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w48 on clean tree", "ComposeSurface merge"]
+    },
+    {
+      "id": "W49",
+      "status": "done",
+      "title": "LinkRideshare port into Hosting; slim Runtime re-exports",
+      "branch": "burn-down/w49-rideshare-hosting",
+      "owns": [
+        "src/discovery/discoveryPortExploreHosting.ts",
+        "src/discovery/discoveryPortExploreRuntime.ts",
+        "scripts/dev/consolidate-discovery-ports-w49.mjs",
+        "src/list/browse/enrichListFeedCard.ts",
+        "src/discovery/discoveryCardViewModel.ts",
+        "src/discovery/discoveryOfferRideshareDispatch.ts"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w49 on clean tree"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

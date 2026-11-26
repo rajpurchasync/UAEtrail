@@ -12,7 +12,7 @@ import {
   type ActivityViewerAccessDTO,
   type ActivityViewerEntitlementsDTO,
 } from '@uaetrail/shared-types';
-import { LinkRidesharePanel } from '@/discovery/discoveryPortExploreLinkRideshare';
+import { LinkRidesharePanel } from '@/discovery/discoveryPortExploreHosting';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityRollcallView } from './ActivityRollcallView';
