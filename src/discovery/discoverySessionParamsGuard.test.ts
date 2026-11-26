@@ -371,6 +371,11 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(
       /from '\.\.\/explore\/exploreSearchMatches'/
     );
+    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/isPlacesMapItem/);
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/isPlacesMapItem/);
+    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
+      /discoveryPortExploreSearchRouting/
+    );
   });
 
   it('W11 list module imports activity date preset via discoveryPortExploreActivityDate', () => {

@@ -3,7 +3,7 @@ import { setExploreClockStyle, type ExploreMapItemDTO, type GeoKind } from '@uae
 import { useAuth } from '../context/AuthContext';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
-import { countExploreSearchScopes } from '../discovery/discoveryPortExploreSearch';
+import { countExploreSearchScopes } from '../discovery/discoveryPortExploreSearchRouting';
 import { Link } from 'react-router-dom';
 import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import { listDiscoveryPath } from '../discovery/discoverySession';

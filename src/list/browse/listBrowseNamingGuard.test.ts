@@ -161,12 +161,13 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/@\/crew-discovery\/crewBrowseTab/);
   });
 
-  it('BROWSE-NAME-01p: GW-7 — list imports map catalog via discoveryPortExploreRuntime', () => {
+  it('BROWSE-NAME-01p: GW-7 — list imports map catalog via discoveryPortExplore facades', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(false);
-    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExploreRuntime/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExplore/);
     expect(read('src/list/browse/browseListFilters.ts')).not.toMatch(/explore\/discoveryRuntime/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discovery\/discoveryPortExploreRuntime/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
-      /discovery\/discoveryPortExploreSearch/
+      /discovery\/discoveryPortExploreSearchRouting/
     );
   });
 

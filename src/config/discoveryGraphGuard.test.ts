@@ -45,8 +45,9 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(count).toBeLessThanOrEqual(max);
   });
 
-  it('DISC-03-06: GW-7 browse leaves use discoveryPortExploreRuntime facade', () => {
-    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExploreRuntime/);
+  it('DISC-03-06: GW-7 browse leaves use discoveryPortExplore facades', () => {
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExplore/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRuntime/);
     expect(read('src/discovery/discoveryPortExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 

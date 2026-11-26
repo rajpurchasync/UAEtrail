@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   type ExploreSearchScopeKey,
-} from '../discovery/discoveryPortExploreSearch';
+} from '../discovery/discoveryPortExploreSearchRouting';
 import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
 
 const LIST_ROOT = join(process.cwd(), 'src/list');

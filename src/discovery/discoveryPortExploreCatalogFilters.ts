@@ -1,5 +1,10 @@
 /** Discovery catalog wire — sort, activity mode, outing/others topic keys. */
-export { sortExploreActivities, sortExploreVenues } from '../explore/exploreListSort';
+export {
+  deriveVenueRegionSortOrder,
+  sortExploreActivities,
+  sortExploreVenues,
+} from '../explore/exploreListSort';
+export { resolveExploreItemScheduleDate } from '../explore/exploreMapItemSchedule';
 export {
   exploreMapItemMatchesActivityModeFilter,
   type ExploreActivityModeFilter,

@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isFacilityMapSource, isFacilityPlaceKind, isGeographyMapSource } from '@uaetrail/shared-types';
-import { mapItemMatchesShopsPill } from '../../discovery/discoveryPortExploreRuntime';
+import { mapItemMatchesShopsPill } from '../../discovery/discoveryPortExploreBrowse';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import { LIST_VENUE_FACILITIES_TOPIC_SHIPPED } from './listVenuePlaceTopics';
 

@@ -6,7 +6,7 @@ import { useProductLocation, useProductSearchParams } from '../../routing/useEff
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
-import { countExploreSearchScopes } from '../../discovery/discoveryPortExploreSearch';
+import { countExploreSearchScopes } from '../../discovery/discoveryPortExploreSearchRouting';
 import { useBrowseListFeed } from '../browse/useBrowseListFeed';
 import {
   listDiscoveryEmbeddedOnExplore,

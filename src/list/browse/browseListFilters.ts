@@ -8,20 +8,19 @@ import {
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
 import { matchesActivityDateFilter } from '../../discovery/discoveryPortExploreActivityDate';
-import {
-  EXPLORE_PRICE_FILTER_OPTIONS,
-  deriveVenueRegionSortOrder,
-  isPlacesMapItem,
-  isShopListItem,
-  matchesUnifiedTopicFilter,
-  resolveExploreItemScheduleDate,
-} from '../../discovery/discoveryPortExploreRuntime';
 import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
+  deriveVenueRegionSortOrder,
+  resolveExploreItemScheduleDate,
+} from '../../discovery/discoveryPortExploreCatalogFilters';
+import { isPlacesMapItem, isShopListItem } from '../../discovery/discoveryPortExploreBrowse';
+import {
+  EXPLORE_PRICE_FILTER_OPTIONS,
   exploreItemMatchesFacilityKinds,
   exploreItemMatchesPriceFilter,
   explorePlaceHasHostedTrip,
   hostedPlaceLocationIdsFromCatalog,
+  matchesUnifiedTopicFilter,
   type ExplorePriceFilter,
 } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';

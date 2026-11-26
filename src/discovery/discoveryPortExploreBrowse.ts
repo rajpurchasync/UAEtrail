@@ -21,3 +21,8 @@ export {
   serializeExploreMapFilterPillsParam,
   type ExploreMapFilterPillKey,
 } from '../explore/exploreBrowseTaxonomy';
+export {
+  isPlacesMapItem,
+  isShopListItem,
+  mapItemMatchesShopsPill,
+} from '../explore/exploreMapItemKind';
