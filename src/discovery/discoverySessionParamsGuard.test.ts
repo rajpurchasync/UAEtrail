@@ -310,7 +310,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/explorer/ListExplorerFilterPop.tsx',
-        facade: /discoveryPortExploreOptionalFilters/,
+        facade: /discoveryPortExploreOptionalFilterWire/,
       },
       {
         rel: 'src/list/explorer/ListDiscoverySearchField.tsx',
@@ -361,17 +361,23 @@ describe('discoverySessionParamsGuard', () => {
     }
     expect(violations).toEqual([]);
     expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
-    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilters/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilterWire/);
     expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRouting/);
-    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/parseExplorePriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/parseExplorePriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/ExploreOptionalFilterRow/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).not.toMatch(
+      /from '\.\.\/explore\/exploreOptionalFilters'/
+    );
     expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(/parseMapFilter/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
-    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/exploreItemMatchesPriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreItemMatchesQuery/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
       /discoveryPortExploreSearchRouting/
     );
+    expect(read('src/activity-discovery/catalog/activities.ts')).toMatch(/discoveryPortExploreOptionalFilterWire/);
+    expect(read('src/activity-discovery/catalog/activities.ts')).not.toMatch(/discoveryPortExploreOptionalFilters/);
   });
 
   it('W11 list module imports activity date preset via discoveryPortExploreActivityDate', () => {

@@ -11,12 +11,12 @@ import { sortExploreActivities } from '../../discovery/discoveryPortExploreCatal
 import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,
-} from '../../discovery/discoveryPortExploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { isFriendMapItem } from '../../discovery/discoveryPortExploreMapPin';
 import {
   exploreItemMatchesPriceFilter,
   type ExplorePriceFilter,
-} from '../../discovery/discoveryPortExploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
   selectAvailabilityFromMapItems,

@@ -1,10 +1,12 @@
-/** W13/W34 — optional map filters shared with list explorer and discovery catalogs. */
-export { matchesUnifiedTopicFilter } from '../explore/exploreMapTopicFilterMatch';
+/** W13/W34/W56 — optional filter row UI; wire → discoveryPortExploreOptionalFilterWire. */
+export { ExploreOptionalFilterRow } from '../explore/ui/ExploreOptionalFilterRow';
 export {
   EXPLORE_FACILITY_KINDS_PARAM,
   EXPLORE_HAS_TRIP_PARAM,
+  EXPLORE_PLACE_TYPES_PARAM,
   EXPLORE_PRICE_FILTER_OPTIONS,
   EXPLORE_PRICE_PARAM,
+  EXPLORE_TRIP_TYPES_PARAM,
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,
   destinationPlaceTopicsFrom,
@@ -14,28 +16,22 @@ export {
   explorePlaceHasHostedTrip,
   hostedOutingSummariesByPlaceId,
   hostedPlaceLocationIdsFromCatalog,
+  matchesPlaceMapTopicFilter,
+  matchesTripMapTopicFilter,
+  matchesUnifiedTopicFilter,
   parseExploreFacilityKinds,
   parseExploreHasTrip,
   parseExplorePriceFilter,
+  parsePlaceMapTopicsParam,
+  parseTripMapTopicsParam,
   serializeExploreFacilityKinds,
   serializeExploreHasTrip,
   serializeExplorePriceFilter,
+  serializePlaceMapTopicsParam,
+  serializeTripMapTopicsParam,
   toggleExploreDestinationPlaceTopic,
   type ExplorePriceFilter,
   type ExploreVenueFilterPatch,
-} from '../explore/exploreOptionalFilters';
-export {
-  EXPLORE_PLACE_TYPES_PARAM,
-  EXPLORE_TRIP_TYPES_PARAM,
-  parsePlaceMapTopicsParam,
-  parseTripMapTopicsParam,
-  serializePlaceMapTopicsParam,
-  serializeTripMapTopicsParam,
-} from '../explore/exploreMapTopicUrlParams';
-export {
-  matchesPlaceMapTopicFilter,
-  matchesTripMapTopicFilter,
   type PlaceMapTopicKey,
   type TripMapTopicKey,
-} from '../explore/exploreMapQuickTopicFilters';
-export { ExploreOptionalFilterRow } from '../explore/ui/ExploreOptionalFilterRow';
+} from './discoveryPortExploreOptionalFilterWire';

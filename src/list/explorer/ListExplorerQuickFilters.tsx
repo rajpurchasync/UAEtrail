@@ -8,7 +8,7 @@ import {
   type ExploreVenueFilterPatch,
   type PlaceMapTopicKey,
   type TripMapTopicKey,
-} from '../../discovery/discoveryPortExploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';

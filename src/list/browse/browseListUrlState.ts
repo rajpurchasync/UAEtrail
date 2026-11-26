@@ -22,7 +22,7 @@ import {
   serializeExplorePriceFilter,
   serializePlaceMapTopicsParam,
   serializeTripMapTopicsParam,
-} from '../../discovery/discoveryPortExploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import {
   parseCrewPeopleSurface,
   serializeCrewPeopleSurface,

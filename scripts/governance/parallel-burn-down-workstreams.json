@@ -808,8 +808,23 @@
         "src/discovery/discoverySessionParamsGuard.test.ts"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w55 on clean tree", "recreate discoveryPortExploreRuntime.ts"]
+    },
+    {
+      "id": "W56",
+      "status": "done",
+      "title": "Split OptionalFilterWire from OptionalFilters UI barrel",
+      "branch": "burn-down/w56-optional-filter-wire",
+      "owns": [
+        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
+        "src/discovery/discoveryPortExploreOptionalFilters.ts",
+        "scripts/dev/consolidate-discovery-ports-w56.mjs",
+        "src/list/browse/browseListUrlState.ts",
+        "src/activity-discovery/catalog/activities.ts",
+        "src/places-discovery/catalog/places.ts"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w56 on clean tree", "catalog imports discoveryPortExploreOptionalFilters"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

@@ -22,7 +22,7 @@ import {
   hostedPlaceLocationIdsFromCatalog,
   matchesUnifiedTopicFilter,
   type ExplorePriceFilter,
-} from '../../discovery/discoveryPortExploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';

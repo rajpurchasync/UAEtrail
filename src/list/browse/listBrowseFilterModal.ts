@@ -1,5 +1,5 @@
 import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
-import type { PlaceMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilters';
+import type { PlaceMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { BrowsePriceFilter } from './browseListFilters';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { LIST_BROWSE_AUDIENCE_OPTIONS } from './browseAudienceFilter';
