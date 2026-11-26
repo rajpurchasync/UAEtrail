@@ -36,7 +36,7 @@ import {
 import { memberProfileLink } from '../member/memberProfileLink';
 import { memberProfileRoleBadgeLabel } from '../member/memberProfileRoleBadge';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
-import { exploreMapItemPathFromAvailabilityRow } from '../discovery/discoveryPortExploreCrewAvailability';
+import { exploreMapItemPathFromAvailabilityRow } from '../discovery/discoveryPortExploreMapClient';
 import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import { findCrewAvailabilityNarrativeFromDetail } from './findCrewAvailabilityNarrative';
 import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoveryPortListBrowseCard';

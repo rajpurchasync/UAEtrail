@@ -1,4 +1,5 @@
-/** Map client wire — bbox fetch, overlay merge, tiles, device location, pin filter, query freshness. */
+/** W32+W76 — map client wire + availability row deep link. */
+export { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
 export {
   defaultExploreMapFetchScope,
   formatExploreMapBboxParam,
