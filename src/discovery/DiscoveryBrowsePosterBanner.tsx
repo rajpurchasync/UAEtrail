@@ -4,8 +4,8 @@ import type { DiscoveryCardModel } from './discoveryCardModel';
 import { EnvironmentImage } from '../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { DiscoveryCardTypeIcon } from '../explore/ui/DiscoveryCardTypeIcon';
-import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../list/browse/browsePosterCover';
-import { browseCardMeta } from '../list/browse/browseCardMeta';
+import { browseCardMeta } from './discoverySessionListFeed';
+import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from './discoverySessionListPeek';
 import { DiscoveryCardHostProfileNav } from './DiscoveryCardHostProfileNav';
 import { BROWSE_LIST_HERO_TYPE, BROWSE_LIST_HERO_TYPE_WRAP } from './browse/discoveryBrowseListChrome';
 

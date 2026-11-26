@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from './discoveryCardModel';
-import { BrowseCardPhotoShare, BROWSE_CARD_IMAGE } from '../list/browse/browseCardChrome';
+import { BrowseCardPhotoShare, BROWSE_CARD_IMAGE } from './discoverySessionListBrowseCardChrome';
 import { DiscoveryBrowsePosterBanner } from './DiscoveryBrowsePosterBanner';
 
 export type DiscoveryBrowseThumbnailPosterProps = {

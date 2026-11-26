@@ -331,6 +331,19 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  const discoveryListFacadeRe =
+    /^src\/discovery\/discoverySession(?:List|GeoUrl|MapHandoff|PeopleUrl|FindCrew|Params|Parsers|Taxonomy|Explore)/;
+
+  it('W15 discovery prod routes list browse through discoverySessionList* facades', () => {
+    const directList = /from ['"][^'"]*list\//;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/discovery'))) {
+      if (discoveryListFacadeRe.test(rel)) continue;
+      if (directList.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('W14 list prod avoids direct explore/* imports (split discoverySessionExplore* facades)', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];

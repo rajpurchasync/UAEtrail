@@ -84,7 +84,9 @@
       "listImportsDiscoveryRuntime": 0,
       "listDiscoveryRuntimeImportViolations": [],
       "listImportsExploreDirect": 0,
-      "listExploreDirectImportViolations": []
+      "listExploreDirectImportViolations": [],
+      "discoveryImportsListDirect": 0,
+      "discoveryListDirectImportViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

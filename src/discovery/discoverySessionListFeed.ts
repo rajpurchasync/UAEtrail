@@ -7,6 +7,8 @@ export { BrowseCompactRow } from '../list/browse/BrowseCompactRow';
 export { BROWSE_CARD_CHIP } from '../list/browse/browseCardChrome';
 export {
   browseCardDateIso,
+  browseCardHostName,
+  browseCardListHeroPriceLabel,
   browseCardMeta,
   browseCardTitle,
   browseRowWhenDisplay,

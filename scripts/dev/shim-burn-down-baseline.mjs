@@ -335,6 +335,19 @@ for (const file of walkFiles(join(feSrc, 'list'))) {
   }
 }
 
+const discoveryListFacadeImportAllowRe =
+  /^src\/discovery\/discoverySession(?:List|GeoUrl|MapHandoff|PeopleUrl|FindCrew|Params|Parsers|Taxonomy|Explore)/;
+const discoveryDirectListImportRe = /from ['"][^'"]*list\//;
+const discoveryImportsListDirect = [];
+for (const file of walkFiles(join(feSrc, 'discovery'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (discoveryListFacadeImportAllowRe.test(rel)) continue;
+  if (discoveryDirectListImportRe.test(readFileSync(file, 'utf8'))) {
+    discoveryImportsListDirect.push(rel);
+  }
+}
+
 const listImportsDiscoveryRuntime = [];
 for (const file of walkFiles(join(feSrc, 'list'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -504,6 +517,8 @@ const baseline = {
       listDiscoveryRuntimeImportViolations: listImportsDiscoveryRuntime,
       listImportsExploreDirect: listImportsExploreDirect.length,
       listExploreDirectImportViolations: listImportsExploreDirect,
+      discoveryImportsListDirect: discoveryImportsListDirect.length,
+      discoveryListDirectImportViolations: discoveryImportsListDirect,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,

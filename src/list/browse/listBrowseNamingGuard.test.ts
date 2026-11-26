@@ -137,7 +137,8 @@ describe('listBrowseNamingGuard', () => {
   it('BROWSE-NAME-01s: list feed card pipeline lives under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/buildListFeedCards.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/buildListFeedCards.ts'))).toBe(false);
-    expect(read('src/discovery/buildDiscoveryEnrichedCard.ts')).toMatch(/browse\/enrichListFeedCard/);
+    expect(read('src/discovery/buildDiscoveryEnrichedCard.ts')).toMatch(/discoverySessionListFeedEnrich/);
+    expect(read('src/discovery/discoverySessionListFeedEnrich.ts')).toMatch(/browse\/enrichListFeedCard/);
     expect(read('src/list/browse/useBrowseListFeed.ts')).toMatch(/from '\.\/buildListFeedCards'/);
   });
 
@@ -434,6 +435,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const allowed = new Set([
       'src/discovery/DiscoveryCardWireEngagementFooter.tsx',
+      'src/discovery/discoverySessionListFeedEngagement.ts',
       'src/list/browse/ListFeedWireFooterButtons.tsx',
     ]);
     const violations: string[] = [];

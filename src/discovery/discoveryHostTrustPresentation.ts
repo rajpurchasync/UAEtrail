@@ -5,7 +5,7 @@ import {
 } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from './discoveryCardModel';
 import { discoveryCardIsAvailabilityPin } from './discoveryCardModel';
-import { browseCardHostName } from '../list/browse/browseCardMeta';
+import { browseCardHostName } from './discoverySessionListFeed';
 
 /** Trust chips under the host name — not navigation hints. */
 export const resolveDiscoveryHostTrustLabels = (card: DiscoveryCardModel): string[] => {

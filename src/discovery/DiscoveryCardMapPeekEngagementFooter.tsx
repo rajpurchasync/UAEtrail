@@ -1,9 +1,9 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
-import type { ListFeedFooterModel } from '../list/browse/listFeedFooterActions';
 import {
   ListFeedMapPeekFooterButtons,
+  type ListFeedFooterModel,
   type ListFeedMapPeekFooterVariant,
-} from '../list/browse/ListFeedMapPeekFooterButtons';
+} from './discoverySessionListFeedEngagement';
 
 export type DiscoveryCardMapPeekEngagementFooterProps = {
   model: ListFeedFooterModel;

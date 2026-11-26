@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BrowseItemLink } from '../../list/browse/BrowseItemLink';
+import { BrowseItemLink } from '../discoverySessionListBrowseLink';
 import { DiscoveryBrowseCardMetaLine } from './DiscoveryBrowseCardMetaLine';
 
 type DiscoveryBrowseCardMetaSlotProps = {
