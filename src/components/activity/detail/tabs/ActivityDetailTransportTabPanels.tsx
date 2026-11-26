@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Car, ChevronRight } from 'lucide-react';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../../../explore/createFlowCopy';
+import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '@/discovery/discoverySessionExploreCreateFlowCopy';
 import { ActivityLinkedParentPlanAffordance } from '../../ActivityLinkedParentPlanAffordance';
 import {
   ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE,

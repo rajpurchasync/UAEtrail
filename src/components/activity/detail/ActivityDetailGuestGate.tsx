@@ -4,7 +4,7 @@ import {
   ACTIVITY_JOIN_CTA_SELECTOR,
   withAuthResumeQuery,
 } from '../../../utils/authReturnContext';
-import { ExploreGuestSignInCard } from '../../../explore/ui/ExploreGuestSignInCard';
+import { ExploreGuestSignInCard } from '@/discovery/discoverySessionExploreGuestSignIn';
 
 type ActivityDetailGuestGateProps = {
   activity: ActivityDetailDTO;

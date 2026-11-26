@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
 import { ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING } from '../../content/activityDetailCopy';
-import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
+import { ExploreResponsiveSheet } from '@/discovery/discoverySessionExploreResponsiveSheet';
 import {
   ActivityOutingShareMenuBody,
   type ActivityOutingSharePayload,

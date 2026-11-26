@@ -1,4 +1,4 @@
-import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
+import { ExploreResponsiveSheet } from '@/discovery/discoverySessionExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
   ACTIVITY_ROLLCALL_BACK_LABEL,

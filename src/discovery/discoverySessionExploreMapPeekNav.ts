@@ -4,6 +4,9 @@ export {
   buildMapPeekReturnPath,
   consumerDetailChildLinkState,
   mapPeekDetailNavState,
+  planUpcomingEntityLinkState,
+  planWishlistEntityLinkState,
+  profileHistoryEntityLinkState,
   readDetailBackToFromLocation,
   type MapPeekDetailNavState,
 } from '../explore/mapPeekDetailNavState';

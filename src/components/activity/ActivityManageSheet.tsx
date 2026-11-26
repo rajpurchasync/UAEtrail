@@ -12,7 +12,7 @@ import {
   type ActivityViewerAccessDTO,
   type ActivityViewerEntitlementsDTO,
 } from '@uaetrail/shared-types';
-import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
+import { LinkRidesharePanel } from '@/discovery/discoverySessionExploreLinkRideshareUi';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityRollcallView } from './ActivityRollcallView';
@@ -60,9 +60,11 @@ import { resolveActivityDetailHeaderChrome } from '../../activity/activityDetail
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { ConsumerDetailHeaderTypeMark } from '../mobile/DetailHeaderChrome';
 import { MobileBackButton } from '../mobile/MobileBackButton';
-import { CreateHostingActivityFlow } from '../../explore/ui/CreateHostingActivityFlow';
-import { hostingFlowForComposeKind } from '../../explore/ui/hostingFlows';
-import { resolveHostComposeKindFromActivity } from '../../explore/ui/hostingFromActivity';
+import {
+  CreateHostingActivityFlow,
+  hostingFlowForComposeKind,
+  resolveHostComposeKindFromActivity,
+} from '@/discovery/discoverySessionExploreHostingActivityUi';
 import { activityCrewPath, joinAuthPath } from '../../config/routingCatalog';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
 
