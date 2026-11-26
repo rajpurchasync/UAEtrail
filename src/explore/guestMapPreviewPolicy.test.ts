@@ -28,6 +28,8 @@ describe('guestMapPreviewPolicy', () => {
 
   it('explore map suppresses guest preview chrome when map load failed', () => {
     const stage = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreMapStage.tsx'), 'utf8');
+    expect(stage).toMatch(/discoveryPortExploreGuestWire/);
+    expect(stage).not.toMatch(/from ['"]\.\.\/guestMapPreviewPolicy['"]/);
     expect(stage).toMatch(/showGuestMapPreviewNotice[\s\S]*!loadError/);
     expect(stage).toMatch(/!loadError && guestExplorePreviewLimitReached\(\)/);
   });

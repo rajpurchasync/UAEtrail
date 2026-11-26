@@ -101,6 +101,27 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
+  it('DISC-03-16: W104 list avoids exploreSearchHomeCopy (SearchFeed port only)', () => {
+    const direct = /from ['"][^'"]*explore\/search\/exploreSearchHomeCopy['"]/;
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = full.replace(/\\/g, '/');
+          if (direct.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    walk('src/list');
+    expect(violations).toEqual([]);
+    expect(read('src/list/explorer/FindCrewSearchChrome.tsx')).toMatch(/discoveryPortExploreSearchFeed/);
+    expect(read('src/explore/guestMapPreviewPolicy.test.ts')).toMatch(/discoveryPortExploreGuestWire/);
+  });
+
   it('DISC-03-15: W103 booking where resolver via SearchFeed on search home surfaces', () => {
     const feed = /discoveryPortExploreSearchFeed/;
     expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(feed);
