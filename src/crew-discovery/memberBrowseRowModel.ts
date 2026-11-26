@@ -39,7 +39,7 @@ import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
 import { exploreMapItemPathFromAvailabilityRow } from '../discovery/discoveryPortExploreCrewAvailability';
 import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import { findCrewAvailabilityNarrativeFromDetail } from './findCrewAvailabilityNarrative';
-import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoveryPortListCompose';
+import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoveryPortListBrowseCard';
 import type { CrewBrowseMemberRowProps } from './panel/crewBrowse/CrewBrowseMemberRow';
 /** L1 projection for people-browse list rows (panel + list `listCat=people`). */
 export type MemberBrowseRowVm = CrewBrowseMemberRowProps & {

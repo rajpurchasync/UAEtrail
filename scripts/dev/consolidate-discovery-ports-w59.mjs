@@ -7,15 +7,15 @@ const root = join(import.meta.dirname, '..', '..');
 const discoveryDir = join(root, 'src/discovery');
 
 const DELETE = [
-  'discoveryPortListComposeQuery.ts',
+  'discoveryPortListBrowseCardQuery.ts',
   'discoveryPortListFindCrewPlan.ts',
   'discoveryPortListMapSplit.ts',
   'discoveryPortListExplorerMapShell.ts',
 ];
 
 const REPLACEMENTS = [
-  ['discoveryPortListComposeQuery', 'discoveryPortListCompose'],
-  ['discoveryPortListFindCrewPlan', 'discoveryPortListCompose'],
+  ['discoveryPortListBrowseCardQuery', 'discoveryPortListBrowseCard'],
+  ['discoveryPortListFindCrewPlan', 'discoveryPortListBrowseCard'],
   ['discoveryPortListMapSplit', 'discoveryPortListMapShell'],
   ['discoveryPortListExplorerMapShell', 'discoveryPortListMapShell'],
 ];
