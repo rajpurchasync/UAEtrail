@@ -50,6 +50,25 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/discovery/discoverySessionExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 
+  it('W18 geo prod routes explore UI/routing via discoverySessionExplore facades', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const violations: string[] = [];
+    const walkGeo = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walkGeo(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (directExplore.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    walkGeo('src/geo');
+    expect(violations).toEqual([]);
+  });
+
   it('W16–W17 cross-context surfaces route list browse via discoverySessionList facades', () => {
     const allowDirect = /list\//;
     const roots = [

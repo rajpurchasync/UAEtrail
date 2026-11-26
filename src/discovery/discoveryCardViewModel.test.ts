@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModel, buildDiscoveryCardViewModelCard } from './discoveryCardViewModel';
-import { buildListFeedCards } from '../list/browse/buildListFeedCards';
+import { buildListFeedCards } from './discoverySessionListFeed';
 import { buildDiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   hostedExploreMapItem,
   seekingExploreMapItem,
   venueExploreMapItem,
 } from '../explore/exploreMapItemFixtures';
-import { resolveVenueBrowsePosterCopy } from '../list/browse/venueBrowseCardCopy';
+import { resolveVenueBrowsePosterCopy } from './discoverySessionListVenueBrowseFacts';
 import { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
 import { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
 

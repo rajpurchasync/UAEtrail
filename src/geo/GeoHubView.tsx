@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GuestFeatureUnlockPanel } from '../explore/ui/GuestFeatureUnlockPanel';
+import { GuestFeatureUnlockPanel } from '../discovery/discoverySessionExploreGuestUnlock';
 import { Compass, LayoutGrid, Layers, MapPin, Droplets } from 'lucide-react';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import type { GeoCountsDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
@@ -27,7 +27,7 @@ import { useGeoPagedActivities, useGeoPagedFacilities, useGeoPagedPlaces } from 
 import {
   consumerDetailChildLinkState,
   readDetailBackToFromLocation,
-} from '../explore/mapPeekDetailNavState';
+} from '../discovery/discoverySessionExploreMapPeekNav';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { resolveGeoConsumerDetailHeaderChrome } from './resolveGeoConsumerDetailHeaderChrome';
 import { destinationGuideLinkLabel } from './destinationGuideLinkLabel';

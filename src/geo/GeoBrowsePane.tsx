@@ -5,7 +5,7 @@ import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
 import { countExploreSearchScopes } from '../discovery/discoverySessionExploreRuntime';
 import { Link } from 'react-router-dom';
-import { explorePath } from '../explore/routing';
+import { explorePath } from '../discovery/discoverySessionExploreRouting';
 import { listDiscoveryPath } from '../discovery/discoverySession';
 import { buildListFeedCards } from '../discovery/discoverySessionListFeed';
 import {

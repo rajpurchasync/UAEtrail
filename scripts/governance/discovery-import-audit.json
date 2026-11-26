@@ -25,7 +25,7 @@
     "src/discovery": {
       "discovery": 4,
       "components": 4,
-      "explore": 51,
+      "explore": 53,
       "discoverySessionListBrowseLink": 3,
       "discoverySessionListBrowseCardChrome": 1,
       "discoveryCardModel": 3,
@@ -37,7 +37,7 @@
       "config": 3,
       "content": 3,
       "activity": 2,
-      "list": 69,
+      "list": 71,
       "utils": 1
     },
     "src/activity-discovery": {
@@ -70,7 +70,7 @@
     "discovery": 7,
     "styles": 1,
     "explorer": 1,
-    "explore": 56,
+    "explore": 58,
     "discoverySessionListBrowseLink": 3,
     "discoverySessionListBrowseCardChrome": 1,
     "discoveryCardModel": 3,
@@ -80,7 +80,7 @@
     "discoverySessionListPosterPresentation": 1,
     "content": 7,
     "activity": 2,
-    "list": 69,
+    "list": 71,
     "utils": 1,
     "lib": 6,
     "discover": 1,
