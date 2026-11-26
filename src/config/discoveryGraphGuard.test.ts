@@ -102,6 +102,26 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W25 plan + auth prod route explore via discoverySessionExplore facades', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const roots = ['src/components/plan', 'src/components/auth'];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (directExplore.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    expect(violations).toEqual([]);
+  });
+
   it('W24 components/activity prod routes explore via discoverySessionExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];

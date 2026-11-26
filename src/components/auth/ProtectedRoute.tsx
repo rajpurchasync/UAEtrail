@@ -13,7 +13,7 @@ import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { GuestGatedSurfaceLayout } from './GuestGatedSurfaceLayout';
 import { resolveGuestSurfaceForPath } from '../../utils/guestSurfaceByPath';
 import type { ReactElement } from 'react';
-import { resolveWelcomeFinishExplorePath } from '../../explore/exploreWelcomeNavigation';
+import { resolveWelcomeFinishExplorePath } from '@/discovery/discoverySessionExploreWelcomeNavigation';
 import {
   isSignupProfileGateExemptPath,
   meProfileSignupGateKey,

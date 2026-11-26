@@ -1,6 +1,6 @@
 import { Link, type LinkProps } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { planUpcomingEntityLinkState } from '../../explore/mapPeekDetailNavState';
+import { planUpcomingEntityLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { isPlanSummaryFocusScrollGuardActive } from '../../plan/planSummaryFocusScroll';
 import { capturePlanUpcomingViewReturn } from '../../plan/planUpcomingReturnCapture';
 import { viewReturnPathKey } from '../../utils/viewReturnMemory';

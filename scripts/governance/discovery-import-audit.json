@@ -25,7 +25,7 @@
     "src/discovery": {
       "discovery": 4,
       "components": 4,
-      "explore": 76,
+      "explore": 78,
       "discoverySessionListBrowseLink": 3,
       "discoverySessionListBrowseCardChrome": 1,
       "discoveryCardModel": 3,
@@ -70,7 +70,7 @@
     "discovery": 10,
     "styles": 1,
     "explorer": 1,
-    "explore": 76,
+    "explore": 78,
     "discoverySessionListBrowseLink": 3,
     "discoverySessionListBrowseCardChrome": 1,
     "discoveryCardModel": 3,

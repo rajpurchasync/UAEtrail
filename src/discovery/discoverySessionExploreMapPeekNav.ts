@@ -7,6 +7,7 @@ export {
   planUpcomingEntityLinkState,
   planWishlistEntityLinkState,
   profileHistoryEntityLinkState,
+  readDetailBackPrefersDeclared,
   readDetailBackToFromLocation,
   type MapPeekDetailNavState,
 } from '../explore/mapPeekDetailNavState';
