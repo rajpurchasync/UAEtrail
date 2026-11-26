@@ -438,6 +438,7 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/list/explorer/ListDiscoverySearchField.tsx')).toMatch(/exploreSearchScopesForQuery/);
     expect(read('src/discovery/discoveryPortExploreSearchFeed.ts')).toMatch(/resolveExploreSearchTripPool/);
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/resolveExploreSearchTripPool/);
+    expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/discoveryPortExploreSearchRouting/);
     expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(
       /discoveryPortExploreSearchFeed/
     );
@@ -485,7 +486,8 @@ describe('discoverySessionParamsGuard', () => {
       if (exploreSearchImport.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoveryPortExploreSearch.ts')).toMatch(/discoveryPortExploreSearchRouting/);
+    expect(read('src/discovery/discoveryPortExploreSearch.ts')).toMatch(/ExploreSearchScopeHints/);
+    expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/discoveryPortExploreSearchRouting/);
   });
 
   it('W9 explore imports list explorer / shell / prefill via discoverySession facades', () => {
