@@ -4,11 +4,11 @@ import type { Map as LeafletMap } from 'leaflet';
 import { SessionExpiredNotice } from '../../components/auth/SessionExpiredNotice';
 import { ExploreGuestMapPreviewNotice } from './ExploreGuestMapPreviewNotice';
 import {
-  isGuestMapCatalogPreviewLimited,
   guestExplorePreviewLimitReached,
+  isGuestMapCatalogPreviewLimited,
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
-} from '../guestMapPreviewPolicy';
+} from '../../discovery/discoveryPortExploreGuestWire';
 import { Plus } from 'lucide-react';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';

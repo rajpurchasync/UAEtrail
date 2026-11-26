@@ -28,7 +28,7 @@ import { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
 import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
 import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
-import { recordGuestExplorePreviewView } from '../guestMapPreviewPolicy';
+import { recordGuestExplorePreviewView } from '../../discovery/discoveryPortExploreGuestWire';
 import { navigateToAuthGate, withAuthResumeShare } from '../../utils/authReturnContext';
 import { useExploreSelectionMapPeekAction } from './useExploreSelectionMapPeekAction';
 

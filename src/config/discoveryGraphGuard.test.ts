@@ -101,6 +101,53 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
+  it('DISC-03-13: W102 explore guestMapPreviewCopy allowlist (policy spine only)', () => {
+    const directGuestCopy = /from ['"][^'"]*guestMapPreviewCopy['"]/;
+    const allow = new Set(['src/explore/guestMapPreviewPolicy.ts']);
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      if (!existsSync(join(process.cwd(), dir))) return;
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = full.replace(/\\/g, '/');
+          if (allow.has(rel)) continue;
+          if (directGuestCopy.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    walk('src/explore');
+    expect(violations).toEqual([]);
+  });
+
+  it('DISC-03-14: W102 explore ui/search/shell guest policy via GuestWire', () => {
+    const directPolicy = /from ['"][^'"]*guestMapPreviewPolicy['"]/;
+    const roots = ['src/explore/ui', 'src/explore/search', 'src/explore/shell'];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      if (!existsSync(join(process.cwd(), dir))) return;
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = full.replace(/\\/g, '/');
+          if (directPolicy.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/guestExplorePreviewCanSearch/);
+    expect(read('src/discovery/discoveryPortExploreSearchFeed.ts')).toMatch(
+      /resolveExploreSearchBookingWherePlaceholder/
+    );
+  });
+
   it('DISC-03-11: W100 explore search/ui guest copy via GuestWire (not guestMapPreviewCopy)', () => {
     const directGuestCopy = /from ['"][^'"]*guestMapPreviewCopy['"]/;
     const roots = ['src/explore/ui', 'src/explore/search'];

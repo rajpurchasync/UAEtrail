@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from '../ui/ExploreResponsiveSheet';
-import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
+import {
+  EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE,
+  guestExplorePreviewCanSearch,
+} from '../../discovery/discoveryPortExploreGuestWire';
 import { ExploreGuestPreviewLimitPanel } from '../ui/ExploreGuestPreviewLimitPanel';
 import { ExploreSearchScopePills } from './ExploreSearchScopePills';
 import { ExploreSearchBookingHero } from './ExploreSearchBookingHero';
 import { ExploreBookingSearchMapMatches } from './ExploreBookingSearchMapMatches';
-import { EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE } from '../../discovery/discoveryPortExploreGuestWire';
 import {
   EXPLORE_SEARCH_MAP_MATCHES_TITLE,
   resolveExploreSearchBookingWherePlaceholder,

@@ -26,7 +26,7 @@ import { useExploreMapViewport } from '../ui/useExploreMapViewport';
 import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
-import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
+import { guestExplorePreviewCanSearch } from '../../discovery/discoveryPortExploreGuestWire';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
 import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import { useCrewDiscoveryBrowseBundle } from '@/crew-discovery/hooks/useCrewDiscoveryBrowseBundle';

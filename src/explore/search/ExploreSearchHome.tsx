@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { joinAuthPath } from '../../config/platform';
 import { useAuth } from '../../context/AuthContext';
-import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
+import { guestExplorePreviewCanSearch } from '../../discovery/discoveryPortExploreGuestWire';
 import { ExploreGuestPreviewLimitPanel } from '../ui/ExploreGuestPreviewLimitPanel';
 import { ExploreSearchBookingHero } from './ExploreSearchBookingHero';
 import { useExploreBookingSearchState } from './useExploreBookingSearchState';

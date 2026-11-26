@@ -7,8 +7,13 @@ export {
   type ExploreWelcomeFinishState,
 } from '../explore/exploreWelcomeNavigation';
 export {
+  guestExplorePreviewCanSearch,
+  guestExplorePreviewLimitReached,
+  isGuestMapCatalogPreviewLimited,
   readExploreGuestMapPreviewDismissed,
+  recordGuestExplorePreviewView,
   writeExploreGuestMapPreviewDismissed,
+  type GuestExplorePreviewViewResult,
 } from '../explore/guestMapPreviewPolicy';
 export {
   EXPLORE_GUEST_MAP_PREVIEW_ALERT_EMOJI,

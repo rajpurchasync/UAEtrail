@@ -16,7 +16,7 @@ import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMes
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
 import { buildMapPeekReturnPath } from '../mapPeekDetailNavState';
-import { guestExplorePreviewLimitReached } from '../guestMapPreviewPolicy';
+import { guestExplorePreviewLimitReached } from '../../discovery/discoveryPortExploreGuestWire';
 import type { Location } from 'react-router-dom';
 
 /** Join context for map peek — activity wire only (hosted + seeking). */
