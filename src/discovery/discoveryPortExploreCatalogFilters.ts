@@ -1,4 +1,10 @@
-/** W46+W72 — catalog wire: sort, mode, topics, hub labels, venue topic URL params. */
+/** W46+W72+W82 — catalog wire: sort, mode, topics, destination URL slug, hub labels. */
+export {
+  exploreDestinationQueryParam,
+  filterExploreMapItemsByDestinationSlug,
+  exploreMapItemMatchesDestinationSlug,
+  parseExploreDestinationSlug,
+} from '../explore/exploreDestinationFilter';
 export { exploreCatalogHubLabelFromExploreItem } from '../explore/exploreCatalogHubLabel';
 export { EXPLORE_PLACE_TOPIC_OPTIONS, aliasPlaceMapTopicToList } from '../explore/exploreMapTopicUrlParams';
 export {

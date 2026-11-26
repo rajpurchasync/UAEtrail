@@ -396,6 +396,10 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreMapPin.ts')).toMatch(/isPlacesMapItem/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/isPlacesMapItem/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discoveryPortExploreMapPin/);
+    expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/parseExploreDestinationSlug/);
+    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(/parseExploreDestinationSlug/);
+    expect(read('src/list/browse/ListFeedActionsProvider.tsx')).not.toMatch(/routingCatalog/);
+    expect(read('src/list/browse/ListFeedActionsProvider.tsx')).toMatch(/activityDetailPath/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);

@@ -8,10 +8,15 @@ import {
   type ReactNode,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { ActivityDTO, ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
+import {
+  activityDetailPath,
+  resolveActivityHostUserId,
+  type ActivityDTO,
+  type ActivityMapPeekActionId,
+  type UserRole,
+} from '@uaetrail/shared-types';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
-import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
@@ -38,7 +43,6 @@ import { navigateHostFromPlaceCard } from '../../place/peek/navigateHostFromPlac
 import { resolveListFeedFooterModel } from '../browse/listFeedFooterActions';
 import { inferJoinUiStateFromDiscoveryCard } from '../../activity/inferJoinUiStateFromDiscoveryCard';
 import { applyPeekJoinOpenAfterClick } from '../../activity/resolvePeekJoinOpenAfterClick';
-import { activityDetailPath } from '../../config/routingCatalog';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 
 type ListFeedActionsContextValue = {
