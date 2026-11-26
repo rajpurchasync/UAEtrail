@@ -11,7 +11,7 @@ import { sortExploreActivities } from '../../discovery/discoveryPortExploreListS
 import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,
-} from '../../discovery/discoveryPortExploreMapQuickTopicFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import { isFriendMapItem } from '../../discovery/discoveryPortExploreMapPin';
 import {
   exploreItemMatchesPriceFilter,

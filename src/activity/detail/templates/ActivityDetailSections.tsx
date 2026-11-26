@@ -72,7 +72,7 @@ import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import {
   ActivityPeekLinkedTransport,
   activityPeekHasLinkedTransportAffordance,
-} from '@/discovery/discoveryPortExplorePeekLinkedTransport';
+} from '@/discovery/discoveryPortExplorePeekBody';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '@/discovery/discoveryPortExploreCreateFlow';
 import { capitalize } from '../../../utils';
 import { activityRegistryPlacePath } from '../../../utils/activityRegistryPlacePath';

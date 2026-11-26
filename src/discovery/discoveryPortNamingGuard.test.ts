@@ -55,6 +55,7 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreFlowChrome.ts',
       'discoveryPortExploreListCatalog.ts',
       'discoveryPortExploreMapClient.ts',
+      'discoveryPortExplorePeekBody.ts',
     ];
     for (const file of ports) {
       expect(existsSync(join(root, file))).toBe(true);

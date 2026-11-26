@@ -4,7 +4,7 @@ import { sortExploreVenues } from '../../discovery/discoveryPortExploreListSort'
 import {
   matchesPlaceMapTopicFilter,
   type PlaceMapTopicKey,
-} from '../../discovery/discoveryPortExploreMapQuickTopicFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import {
   effectivePlaceTopicsForFacilityKinds,
   exploreItemMatchesFacilityKinds,
