@@ -102,6 +102,24 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W34 activity-discovery and places-discovery catalogs via discoveryPortExplore', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const roots = ['src/activity-discovery', 'src/places-discovery'];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) walk(full);
+        else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (directExplore.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    expect(violations).toEqual([]);
+  });
+
   it('W33 discoveryCardModel, services, routing import explore only via ports or shared-types', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const targets = [

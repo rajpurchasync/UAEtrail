@@ -459,8 +459,27 @@
         "src/discovery/discoveryPortExploreAddFacilityFlow.ts"
       ],
       "avoid": ["src/activity-discovery/**", "src/places-discovery/**"]
+    },
+    {
+      "id": "W34",
+      "status": "done",
+      "title": "activity-discovery + places-discovery catalog ports",
+      "branch": "burn-down/w34-discovery-catalogs",
+      "owns": [
+        "src/activity-discovery/catalog/activities.ts",
+        "src/activity-discovery/catalog/availabilityCatalog.ts",
+        "src/places-discovery/catalog/places.ts",
+        "src/places-discovery/catalog/listCatalog.ts",
+        "src/discovery/discoveryPortExploreListSort.ts",
+        "src/discovery/discoveryPortExploreActivityModeFilter.ts",
+        "src/discovery/discoveryPortExploreMapQuickTopicFilters.ts",
+        "src/discovery/discoveryPortExploreMapPinModel.ts",
+        "src/discovery/discoveryPortExploreOthersSubtype.ts",
+        "src/discovery/discoveryPortExploreOutingTopic.ts"
+      ],
+      "avoid": ["src/explore/** impl", "exploreMapItemFixtures in tests"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

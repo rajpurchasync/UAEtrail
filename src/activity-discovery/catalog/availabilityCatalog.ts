@@ -1,18 +1,18 @@
 import { exploreMapItemIsAvailabilityCatalog, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
-import { sortExploreActivities } from '../../explore/exploreListSort';
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
-} from '../../explore/exploreActivityDateFilter';
-import type { MapFilterKey } from '../../explore/routing';
-import { exploreItemMatchesQuery } from '../../explore/exploreSearchMatches';
-import type { ExploreOthersSubtypeKey } from '../../explore/exploreOthersSubtype';
-import type { ExploreOutingTopicKey } from '../../explore/exploreOutingTopic';
+} from '../../discovery/discoveryPortExploreActivityDate';
+import { sortExploreActivities } from '../../discovery/discoveryPortExploreListSort';
 import {
   isFriendMapItem,
   matchesOthersMapFilter,
-} from '../../explore/ui/exploreMapPinModel';
+} from '../../discovery/discoveryPortExploreMapPinModel';
+import type { ExploreOthersSubtypeKey } from '../../discovery/discoveryPortExploreOthersSubtype';
+import type { ExploreOutingTopicKey } from '../../discovery/discoveryPortExploreOutingTopic';
+import type { MapFilterKey } from '../../discovery/discoveryPortExploreRouting';
+import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreRuntime';
 
 /** Filters for fixed availability (`source: availability`) on the shared map payload. */
 export type MapAvailabilityFilters = {

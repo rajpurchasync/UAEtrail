@@ -1,8 +1,13 @@
-/** W13 — optional map filters shared with list explorer chrome. */
+/** W13/W34 — optional map filters shared with list explorer and discovery catalogs. */
 export {
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,
   destinationPlaceTopicsFrom,
+  effectivePlaceTopicsForFacilityKinds,
+  exploreItemMatchesFacilityKinds,
+  exploreItemMatchesPriceFilter,
+  explorePlaceHasHostedTrip,
+  hostedPlaceLocationIdsFromCatalog,
   toggleExploreDestinationPlaceTopic,
   type ExplorePriceFilter,
   type ExploreVenueFilterPatch,

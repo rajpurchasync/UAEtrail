@@ -1,21 +1,23 @@
 import { exploreMapItemIsRetiredSeekingActivity, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
-import { sortExploreActivities } from '../../explore/exploreListSort';
-import { matchesActivityDateFilter } from '../../explore/exploreActivityDateFilter';
-import { exploreItemMatchesQuery } from '../../explore/exploreSearchMatches';
 import {
   exploreMapItemMatchesActivityModeFilter,
   type ExploreActivityModeFilter,
-} from '../../explore/exploreActivityModeFilter';
+} from '../../discovery/discoveryPortExploreActivityModeFilter';
+import {
+  matchesActivityDateFilter,
+} from '../../discovery/discoveryPortExploreActivityDate';
+import { sortExploreActivities } from '../../discovery/discoveryPortExploreListSort';
 import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,
-} from '../../explore/exploreMapQuickTopicFilters';
+} from '../../discovery/discoveryPortExploreMapQuickTopicFilters';
+import { isFriendMapItem } from '../../discovery/discoveryPortExploreMapPinModel';
 import {
   exploreItemMatchesPriceFilter,
   type ExplorePriceFilter,
-} from '../../explore/exploreOptionalFilters';
-import { isFriendMapItem } from '../../explore/ui/exploreMapPinModel';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
+import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreRuntime';
 import {
   selectAvailabilityFromMapItems,
   type MapAvailabilityFilters,

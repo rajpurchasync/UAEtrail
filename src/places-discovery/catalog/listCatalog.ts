@@ -5,7 +5,10 @@ import {
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
-import { sortExploreActivities, sortExploreVenues } from '../../explore/exploreListSort';
+import {
+  sortExploreActivities,
+  sortExploreVenues,
+} from '../../discovery/discoveryPortExploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 const isFacilityCatalogItem = (item: ExploreMapItemDTO): boolean =>

@@ -1,19 +1,22 @@
 import type { ExploreMapItemDTO, PlaceKind } from '@uaetrail/shared-types';
 import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
-import { sortExploreVenues } from '../../explore/exploreListSort';
-import type { MapFilterKey, VenueListFilterKey } from '../../explore/routing';
+import { sortExploreVenues } from '../../discovery/discoveryPortExploreListSort';
 import {
   matchesPlaceMapTopicFilter,
   type PlaceMapTopicKey,
-} from '../../explore/exploreMapQuickTopicFilters';
+} from '../../discovery/discoveryPortExploreMapQuickTopicFilters';
 import {
   effectivePlaceTopicsForFacilityKinds,
   exploreItemMatchesFacilityKinds,
   explorePlaceHasHostedTrip,
   hostedPlaceLocationIdsFromCatalog,
-} from '../../explore/exploreOptionalFilters';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
+import type { MapFilterKey, VenueListFilterKey } from '../../discovery/discoveryPortExploreRouting';
+import {
+  isPlacesMapItem,
+  isShopListItem,
+} from '../../discovery/discoveryPortExploreRuntime';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
-import { isPlacesMapItem, isShopListItem } from '../../explore/ui/exploreMapPinModel';
 
 export type MapPlaceFilters = {
   mapFilter: MapFilterKey;
