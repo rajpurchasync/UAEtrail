@@ -9,7 +9,7 @@ import {
 import {
   exploreActivityDatePresetToInclusiveRange,
   type ExploreActivityDatePreset,
-} from '@/discovery/discoveryPortExploreActivityDate';
+} from '@/discovery/discoveryPortExploreOptionalFilterWire';
 import type { MapFilterKey } from '@/discovery/discoveryPortExploreRouting';
 
 const STALE_MS = 60_000;

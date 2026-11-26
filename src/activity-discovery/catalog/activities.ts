@@ -6,7 +6,7 @@ import {
 } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesActivityDateFilter,
-} from '../../discovery/discoveryPortExploreActivityDate';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { sortExploreActivities } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesTripMapTopicFilter,

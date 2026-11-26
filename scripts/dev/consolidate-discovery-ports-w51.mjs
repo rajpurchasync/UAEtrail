@@ -8,7 +8,7 @@ const root = join(import.meta.dirname, '..', '..');
 const REPLACEMENTS = [
   [
     "import type { ExploreActivityDatePreset, PlaceMapTopicKey } from '../../discovery/discoveryPortExploreRuntime'",
-    "import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';\nimport type { PlaceMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilters'",
+    "import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';\nimport type { PlaceMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilters'",
   ],
   [
     "import type { PlaceMapTopicKey, TripMapTopicKey } from '../../discovery/discoveryPortExploreRuntime'",

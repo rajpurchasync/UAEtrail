@@ -1,8 +1,8 @@
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
-} from '../../discovery/discoveryPortExploreActivityDate';
+} from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { parseMapFilter, parseVenueRegionsParam } from '../../discovery/discoveryPortExploreRouting';
 import {
   EXPLORE_FACILITY_KINDS_PARAM,

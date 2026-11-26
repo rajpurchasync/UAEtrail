@@ -7,7 +7,7 @@ import {
 import {
   serializeExploreActivityDatePreset,
   type ExploreActivityDatePreset,
-} from '@/discovery/discoveryPortExploreActivityDate';
+} from '@/discovery/discoveryPortExploreOptionalFilterWire';
 import { fetchDiscoverCrewFeed } from './crewFeedClient';
 
 const FEED_STALE_MS = 60_000;

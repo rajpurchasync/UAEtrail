@@ -194,10 +194,10 @@
     {
       "id": "W11",
       "status": "done",
-      "title": "discoveryPortExploreActivityDate — list activity-date preset facade",
+      "title": "discoveryPortExploreOptionalFilterWire — list activity-date preset facade",
       "branch": "burn-down/w11-activity-date",
       "owns": [
-        "src/discovery/discoveryPortExploreActivityDate.ts",
+        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
         "src/list/explorer/**",
         "src/list/crews/CrewsTabBody.tsx",
         "src/list/shell/useListDiscoveryCrewsCategoryModel.ts"
@@ -736,7 +736,7 @@
       "owns": [
         "src/discovery/discoveryPortExploreRuntime.ts",
         "src/discovery/discoveryPortExploreOptionalFilters.ts",
-        "src/discovery/discoveryPortExploreActivityDate.ts",
+        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
         "src/discovery/discoveryPortExploreSearch.ts",
         "src/discovery/discoveryPortExploreBrowse.ts",
         "scripts/dev/consolidate-discovery-ports-w51.mjs",
@@ -1021,8 +1021,23 @@
         "re-run consolidate-discovery-ports-w70 on clean tree",
         "re-export useBrowseGeoScopeHydration from GeoHub (session barrel risk)"
       ]
+    },
+    {
+      "id": "W71",
+      "status": "done",
+      "title": "ActivityDate into OptionalFilterWire (explore)",
+      "branch": "burn-down/w71-activity-date-optional-filter-wire",
+      "owns": [
+        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
+        "scripts/dev/consolidate-discovery-ports-w71.mjs",
+        "src/discovery/discoverySessionParamsGuard.test.ts"
+      ],
+      "avoid": [
+        "re-run consolidate-discovery-ports-w71 on clean tree",
+        "merge activity-date re-exports into OptionalFilters UI barrel"
+      ]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70", "W71"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

@@ -18,7 +18,7 @@ import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { ListExplorerCalendar } from './ListExplorerCalendar';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';

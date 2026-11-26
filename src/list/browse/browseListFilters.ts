@@ -6,8 +6,8 @@ import {
   mergeListCatalogPlansAndPlaces,
 } from '@/places-discovery/catalog/listCatalog';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
-import { matchesActivityDateFilter } from '../../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import { matchesActivityDateFilter } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
   deriveVenueRegionSortOrder,

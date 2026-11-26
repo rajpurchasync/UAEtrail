@@ -9,7 +9,7 @@ import {
   EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
   EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL,
 } from '../content/exploreCrewsCopy';
-import type { ExploreActivityDatePreset } from '../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../discovery/discoveryPortExploreOptionalFilterWire';
 import {
   availabilityMatchesFindCrewSearchDates,
   crewBrowseAvailabilityDetailFromPerson,

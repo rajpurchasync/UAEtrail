@@ -1,4 +1,4 @@
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { PlaceMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { BrowsePriceFilter } from './browseListFilters';
 import type { BrowseTripTopicKey } from './browseListTripTopics';

@@ -1,6 +1,6 @@
 import type { PlaceKind } from '@uaetrail/shared-types';
 import { ExploreOptionalFilterRow } from '../../discovery/discoveryPortExploreOptionalFilters';
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import {
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,

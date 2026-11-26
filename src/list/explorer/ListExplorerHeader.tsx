@@ -25,7 +25,7 @@ import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerGeoScopeChip } from './ListExplorerGeoScopeChip';

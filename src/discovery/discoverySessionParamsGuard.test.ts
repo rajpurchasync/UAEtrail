@@ -381,14 +381,14 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/activity-discovery/catalog/activities.ts')).not.toMatch(/discoveryPortExploreOptionalFilters/);
   });
 
-  it('W11 list module imports activity date preset via discoveryPortExploreActivityDate', () => {
+  it('W11 list module imports activity date preset via discoveryPortExploreOptionalFilterWire', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
       if (/explore\/exploreActivityDateFilter/.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoveryPortExploreActivityDate.ts')).toMatch(/serializeExploreActivityDatePreset/);
-    expect(read('src/discovery/discoveryPortExploreActivityDate.ts')).toMatch(/parseExploreActivityDatePreset/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/serializeExploreActivityDatePreset/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/parseExploreActivityDatePreset/);
   });
 
   it('W10 list module imports explore search via discoveryPortExploreSearch facade', () => {

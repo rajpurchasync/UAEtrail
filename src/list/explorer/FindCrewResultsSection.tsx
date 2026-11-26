@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ExploreClockStyle, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { CrewsTabBody } from '@/discovery/discoveryPortListFindCrew';

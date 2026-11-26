@@ -8,7 +8,7 @@ import { useCrewDiscoveryAvailability } from './useCrewDiscoveryAvailability';
 import type { useExploreBrowseUrlState } from '@/discovery/discoveryPortExploreBrowse';
 import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
 import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommendationsQuery';
-import { serializeExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
+import { serializeExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
 import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
 import type { MapFilterKey } from '@/discovery/discoveryPortExploreRouting';
 import {

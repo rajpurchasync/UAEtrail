@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
 import {
   ExploreSearchBookingHero,
   resolveExploreSearchDetectedWhereQuery,

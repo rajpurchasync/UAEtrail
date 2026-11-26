@@ -1,4 +1,12 @@
-/** W56 — optional map filter wire (URL params, matchers); no filter row UI. */
+/** W56+W71 — optional map filter wire + activity-date preset (URL params, matchers; no filter row UI). */
+export type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
+export {
+  exploreActivityDatePresetToInclusiveRange,
+  matchesActivityDateFilter,
+  parseExploreActivityDatePreset,
+  serializeExploreActivityDatePreset,
+  todayIso,
+} from '../explore/exploreActivityDateFilter';
 export { matchesUnifiedTopicFilter } from '../explore/exploreMapTopicFilterMatch';
 export {
   EXPLORE_FACILITY_KINDS_PARAM,
