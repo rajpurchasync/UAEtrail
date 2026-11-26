@@ -8,7 +8,6 @@ export {
   type ExploreSearchScopeKey,
 } from '../explore/exploreBrowseTaxonomy';
 export type { useExploreBrowseUrlState } from '../explore/ui/useExploreBrowseUrlState';
-export { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
 export { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../explore/ui/exploreDesktopBrowseRailChrome';
 export {
   useExplorePublishedDestinations,

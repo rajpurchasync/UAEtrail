@@ -1,5 +1,5 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { isDiscoverBrowseRoute } from '@/discovery/discoveryPortExploreBrowse';
+import { isDiscoverBrowseRoute } from '@/discovery/discoveryPortExploreRouting';
 import {
   createContext,
   ReactNode,

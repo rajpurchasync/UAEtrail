@@ -40,3 +40,4 @@ export {
 export { parseExplorePanel } from '../explore/discoveryUrlParams';
 export { parseMapFilter, parseVenueRegionsParam } from '../explore/routing';
 export { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
+export { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';

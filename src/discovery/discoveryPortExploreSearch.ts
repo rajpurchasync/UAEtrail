@@ -28,9 +28,4 @@ export { exploreSearchWhereBrowseQuery } from '../explore/search/exploreSearchWh
 export { useExploreSearchCommunityGroups } from '../explore/search/useExploreSearchCommunityGroups';
 export { ExploreSearchBookingHero } from '../explore/search/ExploreSearchBookingHero';
 export { ExploreSearchInboundRedirectHost } from '../explore/search/ExploreSearchInboundRedirectHost';
-export {
-  countExploreSearchScopes,
-  EXPLORE_SEARCH_SCOPES_SHIPPED,
-  exploreItemMatchesQuery,
-  type ExploreSearchScopeKey,
-} from './discoveryPortExploreSearchRouting';
+export { EXPLORE_SEARCH_SCOPES_SHIPPED, type ExploreSearchScopeKey } from './discoveryPortExploreSearchRouting';

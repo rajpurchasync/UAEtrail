@@ -3,8 +3,8 @@ import type { NavigateFunction } from 'react-router-dom';
 import { MAP_CONFIG, readExploreMapStyle, EXPLORE_MAP_STYLE_STORAGE_KEY, type ExploreMapStyle } from '../../config/platform';
 import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
-import { getExploreMapLocationPreference } from '../exploreMapLocationPreference';
-import { shouldOpenExploreLocationPromptFromWelcome } from '../exploreWelcomeNavigation';
+import { getExploreMapLocationPreference } from '../../discovery/discoveryPortExploreMapClient';
+import { shouldOpenExploreLocationPromptFromWelcome } from '../../discovery/discoveryPortExploreGuestWire';
 
 type UseExploreMapViewportArgs = {
   user: { id: string } | null | undefined;
