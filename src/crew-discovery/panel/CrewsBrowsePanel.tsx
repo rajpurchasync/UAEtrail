@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
-import { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../../discovery/discoveryPortExploreDesktopBrowseRail';
+import { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../../discovery/discoveryPortExploreBrowse';
 import type { CrewBrowseLane, CrewPeopleFacet } from '../crewBrowseState';
 import { DEFAULT_CREW_PEOPLE_FACET } from '../crewBrowseState';
 import { CrewBrowsePanelTabs } from './CrewBrowsePanelTabs';

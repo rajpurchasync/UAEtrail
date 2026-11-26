@@ -288,7 +288,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/browseListBucket.ts',
-        facade: /discoveryPortExploreBrowseTaxonomy/,
+        facade: /discoveryPortExploreBrowse/,
         avoidDirect: /from ['"][^'"]*explore\/exploreBrowseTaxonomy/,
       },
       {
@@ -314,7 +314,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/explorer/ListDiscoverySearchField.tsx',
-        facade: /discoveryPortExploreBrowseTaxonomy/,
+        facade: /discoveryPortExploreBrowse/,
         avoidDirect: /explore\/exploreBrowseTaxonomy|explore\/exploreSearchScopeUi/,
       },
       {
@@ -351,7 +351,7 @@ describe('discoverySessionParamsGuard', () => {
       if (directExplore.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).not.toMatch(/discoveryPortExploreListDrawer/);
+    expect(read('src/discovery/discoverySession.ts')).not.toMatch(/discoveryPortExploreListChrome/);
   });
 
   it('W12 list module imports discoveryRuntime via discoveryPortExploreRuntime', () => {

@@ -7,7 +7,7 @@ import {
   EXPLORE_SEARCH_PROMPT,
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
-} from '../../discovery/discoveryPortExploreBrowseTaxonomy';
+} from '../../discovery/discoveryPortExploreBrowse';
 import { exploreSearchScopesForQuery } from '../../discovery/discoveryPortExploreSearchUi';
 import { ExploreSearchScopeHints } from '../../discovery/discoveryPortExploreSearchScopeHints';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';

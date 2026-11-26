@@ -1,4 +1,4 @@
-import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '@/discovery/discoveryPortExploreBrowseTaxonomy';
+import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '@/discovery/discoveryPortExploreBrowse';
 import {
   GUEST_ACTIVITY_DETAIL_PREVIEW_TITLE,
   GUEST_GATE_OOPS_TITLE,

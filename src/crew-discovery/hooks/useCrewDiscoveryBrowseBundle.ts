@@ -5,7 +5,7 @@ import { useCrewDiscoveryAvailabilityCatalog } from './useCrewDiscoveryAvailabil
 import { useCrewDiscoveryNetworkPreview } from './useCrewDiscoveryNetworkPreview';
 import { useCrewDiscoveryRoster } from './useCrewDiscoveryRoster';
 import { useCrewDiscoveryAvailability } from './useCrewDiscoveryAvailability';
-import type { useExploreBrowseUrlState } from '@/discovery/discoveryPortExploreBrowseUrlState';
+import type { useExploreBrowseUrlState } from '@/discovery/discoveryPortExploreBrowse';
 import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
 import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommendationsQuery';
 import { serializeExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';

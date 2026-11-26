@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, X } from 'lucide-react';
 import { geoNodePath } from '../../config/surfacePaths';
 import { formatBrowseGeoPathLabel } from '../browse/browseGeoPath';
-import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExplorePublishedDestinations';
+import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExploreBrowse';
 
 type ListExplorerGeoScopeChipProps = {
   geoPath: readonly string[];

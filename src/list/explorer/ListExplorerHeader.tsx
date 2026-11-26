@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, Map, Maximize2, Minimize2, PanelLeftClose, Search, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreListDrawer';
+import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreListChrome';
 import { Link, useNavigate } from 'react-router-dom';
-import { ExploreMapProjectionToggle } from '../../discovery/discoveryPortExploreListDrawer';
+import { ExploreMapProjectionToggle } from '../../discovery/discoveryPortExploreListChrome';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type {
   ExploreSearchScopeCounts,
   ExploreSearchScopeKey,
-} from '../../discovery/discoveryPortExploreBrowseTaxonomy';
+} from '../../discovery/discoveryPortExploreBrowse';
 import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../browse/listChromeTheme';
 import { ListDiscoverySearchField } from './ListDiscoverySearchField';
 import { ListExplorerBucketToggle } from './ListExplorerBucketToggle';

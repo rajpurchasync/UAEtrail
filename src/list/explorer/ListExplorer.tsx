@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreListDrawer';
-import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExplorePublishedDestinations';
+import { useExploreDesktopListDrawerChrome } from '../../discovery/discoveryPortExploreListChrome';
+import { useExplorePublishedDestinations } from '../../discovery/discoveryPortExploreBrowse';
 import { buildBrowseCollapsedRailLabels } from '../browse/browseCollapsedRailLabels';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
 import { BrowsePanelCollapsedRail } from './BrowsePanelCollapsedRail';
@@ -11,7 +11,7 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type {
   ExploreSearchScopeCounts,
   ExploreSearchScopeKey,
-} from '../../discovery/discoveryPortExploreBrowseTaxonomy';
+} from '../../discovery/discoveryPortExploreBrowse';
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browse/browseListCopy';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';

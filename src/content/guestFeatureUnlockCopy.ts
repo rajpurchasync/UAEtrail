@@ -1,5 +1,5 @@
 import { GUEST_OUTING_SIGN_UP_CTA, PRODUCT_JOIN_CTA, PRODUCT_TAGLINE } from './productNorthStar';
-import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '@/discovery/discoveryPortExploreBrowseTaxonomy';
+import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '@/discovery/discoveryPortExploreBrowse';
 import type { GuestBrowseGateIntent } from './guestBrowseGateCopy';
 
 /** Member-only surfaces — explain the feature, then sign up / log in. */

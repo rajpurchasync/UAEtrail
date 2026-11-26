@@ -13,7 +13,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import { isDiscoverBrowseRoute } from '../discovery/discoveryPortExploreBrowsePosters';
+import { isDiscoverBrowseRoute } from '../discovery/discoveryPortExploreBrowse';
 import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
