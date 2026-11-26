@@ -17,7 +17,7 @@ import {
 import {
   activityTypeToHostComposeKind,
   navigateToExploreHost,
-} from '../../explore/navigateExploreHost';
+} from '@/discovery/discoveryPortExploreNavigateHost';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { TenantSwitcher } from '../../components/ui';
 import { ActivityMapPeekWireFooter } from '../../components/activity/ActivityMapPeekWireFooter';
@@ -44,7 +44,7 @@ import { activityKindChromeEmoji } from '../../activity/activityKindChrome';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
-import { consumerDetailChildLinkState } from '../../explore/mapPeekDetailNavState';
+import { consumerDetailChildLinkState } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 import {
   AdminTablePager,

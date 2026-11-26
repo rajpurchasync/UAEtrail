@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import '../../explore/ui/exploreMapClusterSpiderAnimation';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -12,7 +11,12 @@ import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG, type ExploreMapStyle } from '../../config/platform';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
 import { exploreMapPinRingColor, type MapPinRingSource } from '../../config/exploreTheme';
-import { HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI, MAP_FILTER_EMOJI } from '../../explore/exploreCopy';
+import {
+  CAMPING_ACTIVITY_EMOJI,
+  CAMPING_VENUE_EMOJI,
+  HIKING_VENUE_EMOJI,
+  MAP_FILTER_EMOJI,
+} from '@/discovery/discoveryPortExploreMapPinCopy';
 import {
   buildActivityMapPinLayout,
   buildMapClusterIconHtml,
@@ -23,11 +27,11 @@ import {
   resolveClusterClickExploreItemId,
   resolveColocatedExploreItemIdFromPointer,
   type ColocatedPinIconEntry,
-} from '../../explore/mapPinIcons';
+} from '@/discovery/discoveryPortExploreMapPinIcons';
 import {
   resolveMapPinActivityCaption,
   resolveMapPinPlaceCaption,
-} from '../../explore/exploreMapPinCaption';
+} from '@/discovery/discoveryPortExploreMapPinCaption';
 import { MapTileLayers } from './MapTileLayers';
 import { mapTileLoadOptions } from './mapTileLoadOptions';
 import {
@@ -49,16 +53,17 @@ import type {
   PlaceMapPin,
 } from './placesMapTypes';
 export type { ColocatedMapPinEntry, MapBounds, MapPinKind, MapPinSource, PlaceMapPin };
-import { exploreMapClusterRadiusPx, EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM } from '../../explore/ui/exploreMapCluster';
 import {
+  EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM,
+  exploreMapClusterRadiusPx,
   exploreMapClusterSpiderPolylineOptions,
   scheduleExploreMapClusterSpiderExpand,
   syncExploreMapClusterSpiderCollapse,
-} from '../../explore/ui/exploreMapClusterSpiderAnimation';
+} from '@/discovery/discoveryPortExploreMapCluster';
 import {
   formatExploreMapClusterTooltipLabel,
   formatExploreMapPinTooltipLabel,
-} from '../../explore/exploreMapPinTooltip';
+} from '@/discovery/discoveryPortExploreMapPinTooltip';
 
 const toMapPinRingSource = (source: MapPinSource): MapPinRingSource | undefined => {
   if (source === 'availability') return 'availability';

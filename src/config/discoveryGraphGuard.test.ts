@@ -102,6 +102,33 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W28 components/ui map + publishing/admin host navigate via ports or shared-types', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const uiTargets = [
+      'src/components/ui/PlacesMap.tsx',
+      'src/components/ui/MeetingPointMap.tsx',
+      'src/components/ui/PlaceCardActions.tsx',
+      'src/components/ui/JoinRequestModal.tsx',
+    ];
+    const violations: string[] = [];
+    for (const rel of uiTargets) {
+      if (directExplore.test(read(rel))) violations.push(rel);
+    }
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) walk(full);
+        else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (directExplore.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    walk('src/pages/publishing');
+    walk(join('src/pages/admin'));
+    expect(violations).toEqual([]);
+  });
+
   it('W27 destination, detail shared, consumer pages prod route explore via discoverySessionExplore facades', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const roots = ['src/components/destination', 'src/detail/shared'];

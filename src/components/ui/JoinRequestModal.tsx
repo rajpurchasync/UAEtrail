@@ -12,11 +12,11 @@ import {
   type ActivityDTO,
   joinHostProfileShareNotice,
   resolveJoinHostProfileDisclosureNeeds,
+  resolveExplorePrice,
 } from '@uaetrail/shared-types';
 import { JoinPackingAck } from '../activity/JoinPackingAck';
 import { formatDate } from '../../utils';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
-import { resolveExplorePrice } from '../../explore/explorePriceLabel';
 import {
   extractJoinInstructionLines,
   JOIN_MANDATORY_AGREEMENT_TEXT,

@@ -3,6 +3,33 @@
   "updated": "2026-11-26",
   "description": "Independent shim burn-down lanes for multi-agent / multi-task. One lane per branch; acquire locks per agent-file-lock.mdc.",
   "integrationGate": "npm run verify:system:quick && npm run shim:baseline",
+  "facadeNaming": {
+    "purpose": "Cross-context import ports — not product rename, compat re-exports, or second implementations.",
+    "productTerms": {
+      "discovery": "Bounded context (one catalog, multiple projections).",
+      "explore": "Map-first discovery shell (/explore) — still the product surface name.",
+      "list": "List browse projection (/list)."
+    },
+    "codeOwners": {
+      "src/explore": "Explore projection implementation (only explore + list may import deeply).",
+      "src/list": "List projection implementation.",
+      "src/discovery": "Shared card/read models + import ports (discoveryPort*) + URL spine (discoverySession*)."
+    },
+    "filenamePattern": {
+      "discoverySession*": "URL browse session spine only — params, parsers, geo URL (shared /explore + /list).",
+      "discoveryPortExplore*": "Cross-context port to src/explore/** (preferred for all new ports).",
+      "discoveryPortList*": "Cross-context port to src/list/** (preferred for all new ports).",
+      "discoverySessionExplore*": "Legacy port name — migrate to discoveryPortExplore* in W29 (no new files).",
+      "discoverySessionList*": "Legacy port name — migrate to discoveryPortList* in W29 (no new files)."
+    },
+    "notAllowed": [
+      "Fat barrels (e.g. discoverySession.ts re-exporting React trees).",
+      "Duplicate APIs or legacy aliases kept 'for compat'.",
+      "Cross-context from '@/explore/*' or '@/list/*' in guarded roots (use port path).",
+      "Doc-only 'alignment' without guards + zero baseline violations."
+    ],
+    "endState": "Illegal cross-import metrics at 0; ports stay one-concern re-exports or fold wire into shared-types where appropriate."
+  },
   "lanes": [
     {
       "id": "W4s",
@@ -338,8 +365,33 @@
         "src/pages/WelcomeSignup.tsx"
       ],
       "avoid": ["src/components/ui/PlacesMap", "src/pages/publishing", "src/pages/admin"]
+    },
+    {
+      "id": "W28",
+      "status": "done",
+      "title": "PlacesMap ports, join price wire, publishing/admin host navigate",
+      "branch": "burn-down/w28-map-publish-ports",
+      "owns": [
+        "src/components/ui/PlacesMap.tsx",
+        "src/components/ui/MeetingPointMap.tsx",
+        "src/components/ui/JoinRequestModal.tsx",
+        "src/pages/publishing/**",
+        "src/pages/admin/Activities.tsx",
+        "src/discovery/discoveryPortExploreMapPin*.ts",
+        "src/discovery/discoveryPortExploreNavigateHost.ts"
+      ],
+      "avoid": ["src/explore/mapPinIcons impl churn"]
+    },
+    {
+      "id": "W29",
+      "status": "planned",
+      "title": "Rename legacy discoverySessionExplore/List ports → discoveryPortExplore/List",
+      "branch": "burn-down/w29-port-rename",
+      "owns": ["src/discovery/discoverySessionExplore*.ts", "src/discovery/discoverySessionList*.ts"],
+      "avoid": ["src/explore/**", "src/list/** impl"],
+      "notes": "Mechanical rename + import codemod; guards unchanged. No new discoverySessionExplore* after W28."
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

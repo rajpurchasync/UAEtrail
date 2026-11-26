@@ -7,10 +7,10 @@ import { TenantSwitcher } from '../../components/ui';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
-import { navigateToExploreHost } from '../../explore/navigateExploreHost';
+import { navigateToExploreHost } from '@/discovery/discoveryPortExploreNavigateHost';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { HostingHubView } from '../../hosting/HostingHubView';
-import { resolveHostingPublishingProfileKind } from '../../explore/hostingPublishTenants';
+import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortExploreHostingPublishTenants';
 import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 
