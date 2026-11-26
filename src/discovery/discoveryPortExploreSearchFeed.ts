@@ -8,6 +8,7 @@ export {
 } from '../explore/search/exploreSearchJoinablePools';
 export { exploreSearchComposeFeedMode } from '../explore/search/exploreSearchComposeMode';
 export {
+  EXPLORE_SEARCH_MAP_MATCHES_TITLE,
   EXPLORE_SEARCH_MATCHES_TITLE,
   resolveExploreSearchBookingWherePlaceholder,
 } from '../explore/search/exploreSearchHomeCopy';

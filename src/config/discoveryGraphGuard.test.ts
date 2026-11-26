@@ -101,6 +101,19 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
+  it('DISC-03-15: W103 booking where resolver via SearchFeed on search home surfaces', () => {
+    const feed = /discoveryPortExploreSearchFeed/;
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(feed);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).not.toMatch(
+      /from ['"]\.\/exploreSearchHomeCopy['"]/
+    );
+    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(feed);
+    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).not.toMatch(
+      /resolveExploreSearchBookingWherePlaceholder[\s\S]*from ['"]\.\/exploreSearchHomeCopy['"]/
+    );
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(feed);
+  });
+
   it('DISC-03-13: W102 explore guestMapPreviewCopy allowlist (policy spine only)', () => {
     const directGuestCopy = /from ['"][^'"]*guestMapPreviewCopy['"]/;
     const allow = new Set(['src/explore/guestMapPreviewPolicy.ts']);
