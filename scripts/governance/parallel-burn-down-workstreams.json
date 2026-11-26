@@ -192,8 +192,16 @@
       "branch": "burn-down/w13-list-explore-facades",
       "owns": ["src/discovery/discoverySessionExplore*.ts", "src/list/**"],
       "avoid": ["src/explore/** impl"]
+    },
+    {
+      "id": "W14",
+      "status": "done",
+      "title": "Split discoverySessionExplore* UI/compose/map facades for list prod",
+      "branch": "burn-down/w14-list-explore-ui-facades",
+      "owns": ["src/discovery/discoverySessionExplore*.ts", "src/list/**"],
+      "avoid": ["src/discovery/discoverySession.ts barrel"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

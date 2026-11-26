@@ -1,6 +1,6 @@
 import type { ActivityComposeKind } from '@uaetrail/shared-types';
 import { LIST_DISCOVERY_PATH } from '@/config/platform';
-import { activityCompose, formatComposeQuery } from '@/explore/compose';
+import { activityCompose, formatComposeQuery } from '@/discovery/discoverySessionExploreCompose';
 import {
   LIST_AVAILABILITY_SLOT_QUERY_KEY,
   LIST_PLAN_WITH_QUERY_KEY,

@@ -331,6 +331,16 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  it('W14 list prod avoids direct explore/* imports (split discoverySessionExplore* facades)', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
+      if (directExplore.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).not.toMatch(/discoverySessionExploreListDrawer/);
+  });
+
   it('W12 list module imports discoveryRuntime via discoverySessionExploreRuntime', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {

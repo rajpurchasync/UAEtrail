@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, Map, Maximize2, Minimize2, PanelLeftClose, Search, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
+import { useExploreDesktopListDrawerChrome } from '../../discovery/discoverySessionExploreListDrawer';
 import { Link, useNavigate } from 'react-router-dom';
-import { ExploreMapProjectionToggle } from '../../explore/ui/ExploreMapProjectionToggle';
+import { ExploreMapProjectionToggle } from '../../discovery/discoverySessionExploreListDrawer';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type {
   ExploreSearchScopeCounts,

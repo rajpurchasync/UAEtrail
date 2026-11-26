@@ -9,7 +9,7 @@ import {
   type ExploreSearchScopeKey,
 } from '../../discovery/discoverySessionExploreBrowseTaxonomy';
 import { exploreSearchScopesForQuery } from '../../discovery/discoverySessionExploreSearchUi';
-import { ExploreSearchScopeHints } from '../../explore/ui/ExploreSearchScopeHints';
+import { ExploreSearchScopeHints } from '../../discovery/discoverySessionExploreSearchScopeHints';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
 import { LIST_SEARCH } from '../browse/listChromeTheme';
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { useBindExploreListMapHover } from '../../explore/ExploreMapChromeContext';
+import { useBindExploreListMapHover } from '../../discovery/discoverySessionExploreMapChromeContext';
 import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { useMinWidthPx } from '../../hooks/useMinWidthPx';
 import { collapseDesktopSideNav } from '../../hooks/useDesktopSideNavExpanded';

@@ -1,5 +1,5 @@
 import type { CreateFlowBridge } from '../../create/CreateFlowProvider';
-import { useComposeRoute } from '../../explore/create/hooks/useComposeRoute';
+import { useComposeRoute } from '../../discovery/discoverySessionExploreComposeHooks';
 
 type ComposeApi = ReturnType<typeof useComposeRoute>;
 

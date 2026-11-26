@@ -3,8 +3,11 @@ import { X } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { getMapBounds } from '../../config/regions';
 import { getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
-import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
-import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
+import {
+  expandMapPins,
+  layoutColocatedMapPins,
+  ExploreMapLoadingSkeleton,
+} from '../../discovery/discoverySessionExploreMapColumn';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { LIST_MAP_COLUMN_CLOSE } from '../browse/listChromeTheme';
 import { LIST_SIDE_MAP_MIN_PX } from '../browse/listDiscoverySideMapSplit';
