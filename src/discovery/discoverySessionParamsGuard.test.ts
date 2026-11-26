@@ -354,25 +354,21 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).not.toMatch(/discoveryPortExploreListChrome/);
   });
 
-  it('W12 list module imports discoveryRuntime via discoveryPortExploreRuntime', () => {
+  it('W12 list module avoids direct discoveryRuntime; optional filter URL via facades', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
       if (/explore\/discoveryRuntime/.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
+    expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilters/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRouting/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/parseExplorePriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(/parseMapFilter/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
-    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/useExplorePublishedDestinationsQuery/);
-    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/exploreItemMatchesPriceFilter/);
-    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/parseExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
-    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/exploreItemMatchesQuery/);
     expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreItemMatchesQuery/);
-    expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(
-      /from '\.\.\/explore\/exploreSearchMatches'/
-    );
-    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).not.toMatch(/isPlacesMapItem/);
-    expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/isPlacesMapItem/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
       /discoveryPortExploreSearchRouting/
     );

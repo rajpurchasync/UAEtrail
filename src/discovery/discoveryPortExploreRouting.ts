@@ -26,3 +26,4 @@ export {
   type VenueListFilterKey,
 } from '../explore/routing';
 export { parseExplorePanel } from '../explore/discoveryUrlParams';
+export { parseMapFilter, parseVenueRegionsParam } from '../explore/routing';

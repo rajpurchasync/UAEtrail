@@ -37,7 +37,7 @@
       "config": 3,
       "content": 3,
       "activity": 2,
-      "explore": 120,
+      "explore": 121,
       "list": 72,
       "utils": 1
     },
@@ -80,7 +80,7 @@
     "discoveryPortExploreCardChrome": 1,
     "content": 7,
     "activity": 2,
-    "explore": 120,
+    "explore": 121,
     "list": 72,
     "utils": 1,
     "lib": 6,

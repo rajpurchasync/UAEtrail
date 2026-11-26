@@ -47,8 +47,9 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
 
   it('DISC-03-06: GW-7 browse leaves use discoveryPortExplore facades', () => {
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExplore/);
-    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRuntime/);
-    expect(read('src/discovery/discoveryPortExploreRuntime.ts')).toMatch(/discoveryRuntime/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilters/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRouting/);
+    expect(existsSync(join(process.cwd(), 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
   });
 
   it('W20 config prod routes explore via discoveryPortExplore facades (incl routingCatalog)', () => {
