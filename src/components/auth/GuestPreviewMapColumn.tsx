@@ -8,7 +8,7 @@ import {
   layoutColocatedMapPins,
   ExploreMapLoadingSkeleton,
 } from '../../discovery/discoveryPortExploreMapChrome';
-import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoveryPortListMapShell';
+import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoveryPortListGeoBrowse';
 
 const PlacesMap = lazy(() =>
   import('../ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))

@@ -947,8 +947,25 @@
         "re-run consolidate-discovery-ports-w65 on clean tree",
         "fold Embed into FindCrew (ListDiscoveryExperience import cycle)"
       ]
+    },
+    {
+      "id": "W66",
+      "status": "done",
+      "title": "chip + map split hygiene (GeoBrowse px, not merged into BrowseFilters)",
+      "branch": "burn-down/w66-chip-map-split",
+      "owns": [
+        "src/discovery/discoveryPortListGeoBrowse.ts",
+        "src/discovery/discoveryPortListMapShell.ts",
+        "src/discovery/discoveryPortListFeed.ts",
+        "src/discovery/discoverySession.ts",
+        "scripts/dev/consolidate-discovery-ports-w66.mjs"
+      ],
+      "avoid": [
+        "re-run consolidate-discovery-ports-w66 on clean tree",
+        "fold GeoBrowse into BrowseFilters (discoverySession → browseListBucket → mobileFiveTabNav cycle)"
+      ]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

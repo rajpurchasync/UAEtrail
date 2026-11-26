@@ -4,7 +4,6 @@
 export { buildListFeedCards } from '../list/browse/buildListFeedCards';
 export { sortBrowseListCards } from '../list/browse/listBrowseSort';
 export { BrowseCompactRow } from '../list/browse/BrowseCompactRow';
-export { BROWSE_CARD_CHIP } from '../list/browse/browseCardChrome';
 export {
   browseCardDateIso,
   browseCardHostName,

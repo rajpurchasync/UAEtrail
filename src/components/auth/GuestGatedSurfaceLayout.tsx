@@ -18,7 +18,7 @@ import {
 } from './guestGatedLayout';
 import { GuestPreviewCatalogList } from './GuestPreviewCatalogList';
 import { useListSideMapWidth, ListSideMapResizeHandle } from '../../discovery/discoveryPortListMapShell';
-import { LIST_BROWSE_MAX_PX } from '../../discovery/discoveryPortListMapShell';
+import { LIST_BROWSE_MAX_PX } from '../../discovery/discoveryPortListGeoBrowse';
 import { GuestPreviewMapColumn } from './GuestPreviewMapColumn';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 

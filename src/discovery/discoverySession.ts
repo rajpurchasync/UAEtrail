@@ -70,8 +70,8 @@ export {
   LIST_QUICK_VENUE_TOPIC_PILLS,
   filterExploreMapItemsForList,
 } from './discoveryPortListBrowseFilters';
+export { BROWSE_CARD_CHIP } from './discoveryPortListBrowseCard';
 export {
-  BROWSE_CARD_CHIP,
   BrowseCompactRow,
   buildListFeedCards,
   browseCardDateIso,

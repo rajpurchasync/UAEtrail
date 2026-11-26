@@ -1,4 +1,3 @@
-/** W59 — list/map split tokens + side-map resize chrome. */
-export { LIST_BROWSE_MAX_PX, LIST_SIDE_MAP_MIN_PX } from '../list/browse/listDiscoverySideMapSplit';
+/** W59+W66 — side-map resize chrome (split px tokens live on discoveryPortListBrowseFilters). */
 export { ListSideMapResizeHandle } from '../list/explorer/ListSideMapResizeHandle';
 export { useListSideMapWidth } from '../list/explorer/useListSideMapWidth';
