@@ -102,6 +102,23 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W31 src/create bounded context imports explore only via discoveryPortExplore', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) walk(full);
+        else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (directExplore.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    walk('src/create');
+    expect(violations).toEqual([]);
+  });
+
   it('W30 shop, org console, place guest, facility detail, select hooks via discoveryPortExplore', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const filePaths = [

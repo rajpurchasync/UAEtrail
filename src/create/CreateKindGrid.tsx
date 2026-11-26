@@ -1,5 +1,5 @@
 import { EXPLORE_COMPOSE, EXPLORE_FLOW } from '../config/exploreTheme';
-import { exploreFlowKindTileClass } from '../explore/ui/exploreFlowUi';
+import { exploreFlowKindTileClass } from '../discovery/discoveryPortExploreFlowUi';
 
 export type CreateKindOption<Id extends string = string> = {
   id: Id;

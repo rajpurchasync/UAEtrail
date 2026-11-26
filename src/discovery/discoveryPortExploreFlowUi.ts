@@ -1,2 +1,5 @@
-/** W26 — shared explore flow form chrome for availability logistics. */
-export { exploreFlowChoiceCardClass } from '../explore/ui/exploreFlowUi';
+/** W26/W31 — shared explore flow form chrome for availability and create FAB tiles. */
+export {
+  exploreFlowChoiceCardClass,
+  exploreFlowKindTileClass,
+} from '../explore/ui/exploreFlowUi';

@@ -1,10 +1,10 @@
 import type { NavigateFunction } from 'react-router-dom';
-import type { ExploreCompose } from '../explore/compose';
-import { composeFlowIdFromRoute } from '../explore/composeFlowCatalog';
+import type { ExploreCompose } from '../discovery/discoveryPortExploreCompose';
+import { composeFlowIdFromRoute } from '../discovery/discoveryPortExploreComposeFlowCatalog';
 import {
   writeHostingWizardSession,
   type HostingWizardSession,
-} from '../explore/ui/composeWizardSession';
+} from '../discovery/discoveryPortExploreComposeWizardSession';
 import { createFlowPath, createFlowPathFromWindow } from './createFlowPath';
 
 /**

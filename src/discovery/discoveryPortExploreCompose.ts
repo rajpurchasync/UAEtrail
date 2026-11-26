@@ -1,8 +1,11 @@
-/** W14/W27 — compose route helpers for find-crew, list, and destination hub CTAs. */
+/** W14/W27/W31 — compose route helpers for find-crew, list, destination hub, and create shell. */
 export {
   activityCompose,
+  addVenueKindFromRoute,
   formatComposeQuery,
   intentFixedCompose,
   intentOpenCompose,
+  isComposeWizardRoute,
   placeCompose,
+  type ExploreCompose,
 } from '../explore/compose';

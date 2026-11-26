@@ -1,8 +1,8 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
-import { activityCompose } from '../explore/compose';
-import { composeFlowIdFromRoute } from '../explore/composeFlowCatalog';
-import { buildRideshareDraftFromParentActivity } from '../explore/linkRidesharePrefill';
+import { activityCompose } from '../discovery/discoveryPortExploreCompose';
+import { composeFlowIdFromRoute } from '../discovery/discoveryPortExploreComposeFlowCatalog';
+import { buildRideshareDraftFromParentActivity } from '../discovery/discoveryPortExploreLinkRidesharePrefill';
 import { launchHostWizard } from './launchHostWizard';
 
 /**

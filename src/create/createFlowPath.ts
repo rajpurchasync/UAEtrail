@@ -1,6 +1,6 @@
-import type { ExploreCompose } from '../explore/compose';
-import { buildComposeAuthReturnPath } from '../explore/create/guestComposeResume';
-import { explorePath } from '../explore/routing';
+import type { ExploreCompose } from '../discovery/discoveryPortExploreCompose';
+import { buildComposeAuthReturnPath } from '../discovery/discoveryPortExploreGuestComposeResume';
+import { explorePath } from '../discovery/discoveryPortExploreRouting';
 
 /**
  * Open a create-flow session on the current product surface.

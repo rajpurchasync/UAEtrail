@@ -1,6 +1,6 @@
 import { EXPLORE_Z } from '../config/exploreTheme';
-import { ExploreResponsiveSheet } from '../explore/ui/ExploreResponsiveSheet';
-import { FlowSheetHeader } from '../explore/ui/ExploreFlowSheetChrome';
+import { FlowSheetHeader } from '../discovery/discoveryPortExploreFlowSheetChrome';
+import { ExploreResponsiveSheet } from '../discovery/discoveryPortExploreResponsiveSheet';
 import { CreateKindGrid, type CreateKindOption } from './CreateKindGrid';
 
 type CreateIntentPickerSheetProps<Id extends string> = {

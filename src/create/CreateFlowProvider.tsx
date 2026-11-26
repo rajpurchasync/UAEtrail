@@ -13,16 +13,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { EXPLORE_MAP_PATH } from '../config/platform';
-import { addVenueKindFromRoute, isComposeWizardRoute } from '../explore/compose';
-import { ComposeHost } from '../explore/create/ComposeHost';
-import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
-import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
-import { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
-import { parseExploreDestinationSlug } from '../explore/exploreDestinationFilter';
-import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../explore/routing';
-import type { HostingWizardPrefill } from '../explore/ui/hostingWizardPrefill';
-import type { AddSubmitResult } from '../explore/ui/addFlow';
-import type { AvailabilityFixedSubmitResult } from '../explore/ui/intentFixedFlowEngine';
+import type { AddSubmitResult } from '../discovery/discoveryPortExploreAddFlow';
+import {
+  addVenueKindFromRoute,
+  isComposeWizardRoute,
+} from '../discovery/discoveryPortExploreCompose';
+import { ComposeHost } from '../discovery/discoveryPortExploreComposeHost';
+import { useComposeRoute } from '../discovery/discoveryPortExploreComposeHooks';
+import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExploreComposeWizardSession';
+import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreDestination';
+import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreGuestComposeSignIn';
+import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHostingPrefill';
+import type { AvailabilityFixedSubmitResult } from '../discovery/discoveryPortExploreIntentFixedFlow';
+import {
+  parseFacilityOnPlaceId,
+  parsePlanWithUserId,
+} from '../discovery/discoveryPortExploreRouting';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
