@@ -135,10 +135,10 @@ export const seedDemoScheduledActivities = async (
   ctx: DemoActivitySeedContext
 ): Promise<{ jaisActivityId: string }> => {
   const event = await upsertEvent('seed-event-jais', {
-    tenant: { connect: { id: ctx.agencyTenantId } },
-    location: { connect: { id: 'jebel-jais-summit-trail' } },
-    createdBy: { connect: { id: ctx.agencyOwnerId } },
-    host: { connect: { id: ctx.agencyGuideId } },
+    tenantId: ctx.agencyTenantId,
+    locationId: 'jebel-jais-summit-trail',
+    createdById: ctx.agencyOwnerId,
+    hostId: ctx.agencyGuideId,
     activityType: ActivityType.HIKING,
     title: 'Jebel Jais Group Hike',
     description: 'Guided early morning summit trek.',
@@ -157,10 +157,10 @@ export const seedDemoScheduledActivities = async (
   await attachGuides('seed-event-jais', [ctx.agencyGuideId, ctx.agencyOwnerId], ctx.agencyOwnerId);
 
   await upsertEvent('seed-event-fossil-camp', {
-    tenant: { connect: { id: ctx.individualHostTenantId } },
-    location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: ctx.individualHostId } },
-    host: { connect: { id: ctx.individualHostId } },
+    tenantId: ctx.individualHostTenantId,
+    locationId: 'fossil-rock-desert-camp',
+    createdById: ctx.individualHostId,
+    hostId: ctx.individualHostId,
     activityType: ActivityType.CAMPING,
     title: 'Fossil Rock Overnight Camp',
     description: 'Desert camping with stargazing and sunrise photography.',
@@ -179,10 +179,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-shawka-free', {
-    tenant: { connect: { id: ctx.agencyTenantId } },
-    location: { connect: { id: 'wadi-shawka-loop' } },
-    createdBy: { connect: { id: ctx.agencyOwnerId } },
-    host: { connect: { id: ctx.agencyGuideId } },
+    tenantId: ctx.agencyTenantId,
+    locationId: 'wadi-shawka-loop',
+    createdById: ctx.agencyOwnerId,
+    hostId: ctx.agencyGuideId,
     activityType: ActivityType.HIKING,
     title: 'Wadi Shawka Community Hike',
     description:
@@ -202,10 +202,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-omar-draft', {
-    tenant: { connect: { id: ctx.individualHostTenantId } },
-    location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: ctx.individualHostId } },
-    host: { connect: { id: ctx.individualHostId } },
+    tenantId: ctx.individualHostTenantId,
+    locationId: 'fossil-rock-desert-camp',
+    createdById: ctx.individualHostId,
+    hostId: ctx.individualHostId,
     activityType: ActivityType.HIKING,
     title: 'Omar — Wadi loop (draft)',
     description: 'Draft plan for host QA — publish from Trips when ready.',
@@ -222,10 +222,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-desert-meetup', {
-    tenant: { connect: { id: ctx.individualHostTenantId } },
-    location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: ctx.individualHostId } },
-    host: { connect: { id: ctx.individualHostId } },
+    tenantId: ctx.individualHostTenantId,
+    locationId: 'fossil-rock-desert-camp',
+    createdById: ctx.individualHostId,
+    hostId: ctx.individualHostId,
     activityType: ActivityType.EVENT,
     title: 'Desert Sunset Meetup (Free)',
     description:
@@ -246,10 +246,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-kite-beach-run', {
-    tenant: { connect: { id: ctx.agencyTenantId } },
-    location: { connect: { id: 'jumeirah-kite-beach' } },
-    createdBy: { connect: { id: ctx.agencyOwnerId } },
-    host: { connect: { id: ctx.agencyGuideId } },
+    tenantId: ctx.agencyTenantId,
+    locationId: 'jumeirah-kite-beach',
+    createdById: ctx.agencyOwnerId,
+    hostId: ctx.agencyGuideId,
     activityType: ActivityType.EVENT,
     title: 'Kite Beach Sunrise Run',
     description: 'Community 5K along the Dubai Marina/Kite Beach track — all paces welcome.',
@@ -272,10 +272,10 @@ export const seedDemoScheduledActivities = async (
 
   // Linked to `seed-event-jais` — explore map peek shows “Rideshare available” on the parent hike.
   await upsertEvent('seed-event-rideshare-marina-jais', {
-    tenant: { connect: { id: ctx.individualHostTenantId } },
-    location: { connect: { id: 'jebel-jais-summit-trail' } },
-    createdBy: { connect: { id: ctx.individualHostId } },
-    host: { connect: { id: ctx.individualHostId } },
+    tenantId: ctx.individualHostTenantId,
+    locationId: 'jebel-jais-summit-trail',
+    createdById: ctx.individualHostId,
+    hostId: ctx.individualHostId,
     activityType: ActivityType.RIDESHARE,
     linkedActivityId: 'seed-event-jais',
     title: 'Rideshare Dubai Marina → Jebel Jais',
@@ -307,10 +307,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-boulder-session', {
-    tenant: { connect: { id: ctx.agencyTenantId } },
-    location: { connect: { id: 'hatta-dam-loop' } },
-    createdBy: { connect: { id: ctx.agencyOwnerId } },
-    host: { connect: { id: ctx.agencyGuideId } },
+    tenantId: ctx.agencyTenantId,
+    locationId: 'hatta-dam-loop',
+    createdById: ctx.agencyOwnerId,
+    hostId: ctx.agencyGuideId,
     activityType: ActivityType.EVENT,
     outingCategory: 'activities',
     outingTopic: 'climbing',
@@ -331,10 +331,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-hatta-dam-social-hike', {
-    tenant: { connect: { id: ctx.individualHostTenantId } },
-    location: { connect: { id: 'hatta-dam-loop' } },
-    createdBy: { connect: { id: ctx.individualHostId } },
-    host: { connect: { id: ctx.individualHostId } },
+    tenantId: ctx.individualHostTenantId,
+    locationId: 'hatta-dam-loop',
+    createdById: ctx.individualHostId,
+    hostId: ctx.individualHostId,
     activityType: ActivityType.HIKING,
     title: 'Hatta Dam loop — social hike',
     description: 'Easy dam loop for new hikers — coffee stop after the walk.',
@@ -353,10 +353,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-al-ain-dunes-camp', {
-    tenant: { connect: { id: ctx.agencyTenantId } },
-    location: { connect: { id: 'al-ain-desert-camp' } },
-    createdBy: { connect: { id: ctx.agencyOwnerId } },
-    host: { connect: { id: ctx.agencyGuideId } },
+    tenantId: ctx.agencyTenantId,
+    locationId: 'al-ain-desert-camp',
+    createdById: ctx.agencyOwnerId,
+    hostId: ctx.agencyGuideId,
     activityType: ActivityType.CAMPING,
     title: 'Al Ain dune camp weekend',
     description: 'Guided overnight on Remah dunes — tents provided, BYO sleeping bag.',
@@ -375,10 +375,10 @@ export const seedDemoScheduledActivities = async (
   });
 
   await upsertEvent('seed-event-khorfakkan-coastal-walk', {
-    tenant: { connect: { id: ctx.agencyTenantId } },
-    location: { connect: { id: 'khorfakkan-beach-trail' } },
-    createdBy: { connect: { id: ctx.agencyOwnerId } },
-    host: { connect: { id: ctx.agencyGuideId } },
+    tenantId: ctx.agencyTenantId,
+    locationId: 'khorfakkan-beach-trail',
+    createdById: ctx.agencyOwnerId,
+    hostId: ctx.agencyGuideId,
     activityType: ActivityType.EVENT,
     title: 'Khorfakkan corniche walk',
     description: 'Coastal walk under the Hajar Mountains — swim stop optional.',

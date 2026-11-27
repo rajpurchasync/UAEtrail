@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useProductLocation, useProductSearchParams } from '../routing/useEffectiveLocation';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useProductSearchParams } from '../routing/useProductSearchParams';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
@@ -64,7 +64,7 @@ const CreateFlowContext = createContext<CreateFlowContextValue | null>(null);
 export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
   const { user, initializing: authInitializing } = useAuth();
   const navigate = useNavigate();
-  const { pathname, search } = useProductLocation();
+  const { pathname, search } = useLocation();
   const [searchParams, setSearchParams] = useProductSearchParams();
   const queryClient = useQueryClient();
   const isDesktop = useMinWidthMd();

@@ -105,7 +105,7 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   applyVenueRegions: ctx.handlers.applyVenueRegions,
   applyGeoPath: ctx.handlers.applyGeoPath,
   othersSubtype: ctx.othersSubtype,
-  applyBuddySubtype: ctx.handlers.applyBuddySubtype,
+  applyOthersSubtype: ctx.handlers.applyOthersSubtype,
   outingTopic: ctx.outingTopic,
   applyOutingTopic: ctx.handlers.applyOutingTopic,
   searchScope: ctx.searchScope,

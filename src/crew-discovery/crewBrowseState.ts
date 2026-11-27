@@ -98,7 +98,7 @@ export const parseCrewBrowseState = (
   const proKind = parseCrewProfessionalKind(proKindRaw);
 
   const laneFromTab = normalizeBrowseLane(rawTab);
-  if (laneFromTab === 'professional' || laneFromTab === 'community') {
+  if (laneFromTab === 'professional' || laneFromTab === 'community' || laneFromTab === 'trips') {
     return {
       lane: laneFromTab,
       facet: DEFAULT_CREW_PEOPLE_FACET,

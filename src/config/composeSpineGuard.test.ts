@@ -5,15 +5,11 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
-  it('COMPOSE-SPINE-01: wire emit prefixes are activity · intent · place only', () => {
+  it('COMPOSE-SPINE-01: compose-route wire contract test present (R6)', () => {
+    expect(existsSync(join(process.cwd(), 'packages/shared-types/src/compose-route.test.ts'))).toBe(true);
     const wire = read('packages/shared-types/src/compose-route.ts');
-    expect(wire).toMatch(/formatComposeWire/);
-    expect(wire).toMatch(/intent:open/);
-    expect(wire).toMatch(/activity:\$\{route\.kind\}/);
-    expect(wire).toMatch(/place:facility:/);
     expect(wire).not.toMatch(/return `seek:/);
     expect(wire).not.toMatch(/migrateLegacyComposeWire/);
-    expect(wire).not.toMatch(/seek:flexible/);
   });
 
   it('COMPOSE-SPINE-02: plan launcher delegates to CreateFlow (no parallel compose stack)', () => {

@@ -1,5 +1,5 @@
 /**
- * W10/W88 — search UI facade only (wire → SearchRouting + SearchFeed).
+ * W10/W88 — search UI facade only (wire → SearchRouting).
  */
 export { ExploreSearchScopeHints } from '../explore/ui/ExploreSearchScopeHints';
 export { useExploreSearchCommunityGroups } from '../explore/search/useExploreSearchCommunityGroups';

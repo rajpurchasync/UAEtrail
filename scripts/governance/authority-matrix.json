@@ -27,7 +27,7 @@
     {
       "id": "people-crews-tab-inbound",
       "module": "src/routing/productUrlInbound.ts",
-      "rule": "readPeopleCrewsTabParam inbound; stripRetiredPeopleListTabParams on outbound (peopleTab canonical)",
+      "rule": "readPeopleCrewsTabParam inbound; peopleTab canonical on outbound",
       "forbidEmitIn": ["src/list", "src/explore", "src/crew-discovery"]
     },
     {

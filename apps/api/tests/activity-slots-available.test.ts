@@ -22,7 +22,7 @@ describe('resolveActivitySlotsAvailable', () => {
     ).toBe(19);
   });
 
-  it('prefers the higher of participantSlotsUsed, counts.going, and participant rows', () => {
+  it('reads participantSlotsUsed only — ignores counts.going and participant rows', () => {
     expect(
       resolveActivityParticipantSlotsUsed({
         ...base,
@@ -30,6 +30,13 @@ describe('resolveActivitySlotsAvailable', () => {
         counts: { going: 5, waitlisted: 0, pending: 0 },
         participants: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
       } as Parameters<typeof resolveActivityParticipantSlotsUsed>[0])
-    ).toBe(5);
+    ).toBe(2);
+    expect(
+      resolveActivityParticipantSlotsUsed({
+        ...base,
+        counts: { going: 5, waitlisted: 0, pending: 0 },
+        participants: [{ id: 'a' }],
+      } as Parameters<typeof resolveActivityParticipantSlotsUsed>[0])
+    ).toBe(0);
   });
 });

@@ -329,7 +329,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     syncExploreUrl({ list: false, browse: false });
   }, [isDesktop, listMode, setters, syncExploreUrl]);
 
-  const applyBuddySubtype = useCallback(
+  const applyOthersSubtype = useCallback(
     (next: ExploreOthersSubtypeKey) => {
       setters.setOthersSubtype(next);
       const nextTopic = next === 'activities' ? outingTopic : 'all';
@@ -651,7 +651,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     applyCrewBrowseLane,
     applyCrewPeopleFacet,
     closeListPanel,
-    applyBuddySubtype,
+    applyOthersSubtype,
     applyOutingTopic,
     applyDesktopBrowseTab,
     applyActivityFilter,

@@ -110,9 +110,9 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
 
   const startAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const event = await createActivityDetailed({
-    tenant: { connect: { id: tenant.id } },
-    location: { connect: { id: location.id } },
-    createdBy: { connect: { id: organizer._id } },
+    tenantId: tenant.id,
+    locationId: location.id,
+    createdById: organizer._id,
     title: `Test Activity ${suffix}`,
     description: 'Join us for a test hike',
     startAt,

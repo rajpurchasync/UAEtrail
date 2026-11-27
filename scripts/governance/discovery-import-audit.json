@@ -12,13 +12,13 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 223,
+      "..": 221,
       "browse": 81,
       "crews": 3,
       "components": 1,
       "config": 1,
       "create": 1,
-      "discovery": 3,
+      "discovery": 1,
       "styles": 1,
       "explorer": 1
     },
@@ -35,13 +35,13 @@
       "discoveryPortExploreCardChrome": 1,
       "config": 4,
       "content": 3,
-      "explore": 122,
-      "list": 86,
-      "routing": 2,
+      "explore": 121,
+      "list": 85,
       "activity": 2,
       "hooks": 2,
       "utils": 1,
-      "context": 1
+      "context": 1,
+      "routing": 1
     },
     "src/activity-discovery": {
       "..": 14
@@ -63,13 +63,13 @@
     }
   },
   "byTarget": {
-    "..": 273,
+    "..": 271,
     "browse": 81,
     "crews": 3,
     "components": 5,
     "config": 6,
     "create": 1,
-    "discovery": 12,
+    "discovery": 10,
     "styles": 1,
     "explorer": 1,
     "discoveryPortListBrowseCard": 4,
@@ -80,13 +80,13 @@
     "discoveryPortListPeek": 1,
     "discoveryPortExploreCardChrome": 1,
     "content": 7,
-    "explore": 122,
-    "list": 86,
-    "routing": 2,
+    "explore": 121,
+    "list": 85,
     "activity": 2,
     "hooks": 2,
     "utils": 1,
     "context": 1,
+    "routing": 1,
     "lib": 6,
     "discover": 1,
     "member": 3,

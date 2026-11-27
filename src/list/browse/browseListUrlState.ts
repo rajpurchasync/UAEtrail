@@ -1,8 +1,8 @@
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilters';
 import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import { parseMapFilter, parseVenueRegionsParam } from '../../discovery/discoveryPortExploreRouting';
 import {
   EXPLORE_FACILITY_KINDS_PARAM,
@@ -22,7 +22,7 @@ import {
   serializeExplorePriceFilter,
   serializePlaceMapTopicsParam,
   serializeTripMapTopicsParam,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import {
   parseCrewPeopleSurface,
   serializeCrewPeopleSurface,

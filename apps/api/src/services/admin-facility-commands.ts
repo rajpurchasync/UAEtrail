@@ -33,7 +33,7 @@ export type AdminFacilityWriteInput = {
   partnerReferralUrl?: string | null;
 };
 
-const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): LocationStatus => {
+const toStoredLocationStatus = (status?: 'draft' | 'active' | 'inactive'): LocationStatus => {
   if (status === 'draft') return LocationStatus.DRAFT;
   return status === 'inactive' ? LocationStatus.INACTIVE : LocationStatus.ACTIVE;
 };
@@ -62,7 +62,7 @@ export const createAdminFacilityRecord = async (input: {
     images: body.images,
     tags,
     featured: body.featured ?? false,
-    status: toPrismaLocationStatus(body.status),
+    status: toStoredLocationStatus(body.status),
     countryCode: body.countryCode?.toUpperCase() ?? 'AE',
     partnerReferralUrl: body.partnerReferralUrl?.trim() || null,
     createdByUserId: input.actorId,
@@ -93,7 +93,7 @@ export const updateAdminFacilityRecord = async (input: {
   }
 
   const nextStatus =
-    body.status !== undefined ? toPrismaLocationStatus(body.status) : existing.status;
+    body.status !== undefined ? toStoredLocationStatus(body.status) : existing.status;
   const activating =
     nextStatus === LocationStatus.ACTIVE && existing.status !== LocationStatus.ACTIVE;
 

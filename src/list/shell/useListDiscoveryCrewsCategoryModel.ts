@@ -10,7 +10,7 @@ import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/li
 import {
   serializeExploreActivityDatePreset,
   type ExploreActivityDatePreset,
-} from '@/discovery/discoveryPortExploreOptionalFilterWire';
+} from '@/discovery/discoveryPortExploreOptionalFilters';
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';

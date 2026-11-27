@@ -20,8 +20,8 @@ export const setAdminUserStatus = async (input: {
     throw new ApiError(400, 'cannot_modify_admin', 'Cannot modify admin status.');
   }
 
-  const prismaStatus = input.status === 'active' ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
-  await updateAuthUserStatus(input.userId, prismaStatus);
+  const storedStatus = input.status === 'active' ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
+  await updateAuthUserStatus(input.userId, storedStatus);
   if (input.status === 'suspended') {
     await revokeRefreshTokensByUser(input.userId);
   }

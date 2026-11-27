@@ -3,7 +3,7 @@ import { availabilitySlotOverlapsRange } from '@uaetrail/shared-types';
 import {
   exploreActivityDatePresetToInclusiveRange,
   type ExploreActivityDatePreset,
-} from '@/discovery/discoveryPortExploreOptionalFilterWire';
+} from '@/discovery/discoveryPortExploreOptionalFilters';
 
 /** Best slot to anchor Propose a plan — prefers fixed pin in the search range. */
 export const pickProposePlanAnchorSlot = (

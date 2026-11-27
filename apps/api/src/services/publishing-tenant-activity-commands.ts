@@ -10,8 +10,8 @@ import {
   assertNoLegacyLinkedRideshareFields,
   assertRideshareActivityFields,
   assertLocationMatchesActivityType,
-  fromPrismaActivityType,
-  toPrismaActivityType,
+  fromStoredActivityType,
+  toStoredActivityType,
 } from '../domain/activity-type.js';
 import { assertActivityPricingAllowed } from '../domain/activity-pricing.js';
 import { assertActivityJoinInstructions } from '../domain/activity-join-instructions.js';
@@ -135,11 +135,11 @@ export const createPublishingTenantActivity = async (input: {
   });
 
   const created = await createActivityDetailed({
-    tenant: { connect: { id: input.tenantId } },
-    location: { connect: { id: body.locationId } },
-    createdBy: { connect: { id: input.actorId } },
-    host: { connect: { id: hostId } },
-    activityType: toPrismaActivityType(body.activityType),
+    tenantId: input.tenantId,
+    locationId: body.locationId,
+    createdById: input.actorId,
+    hostId,
+    activityType: toStoredActivityType(body.activityType),
     title: body.title,
     description: body.description,
     startAt: parseLocalDateTime(body.date, body.time, countryCode),
@@ -249,7 +249,7 @@ export const updatePublishingTenantActivity = async (input: {
   }
 
   const nextActivityType =
-    body.activityType ?? fromPrismaActivityType(existing.activityType ?? ActivityType.HIKING);
+    body.activityType ?? fromStoredActivityType(existing.activityType ?? ActivityType.HIKING);
   assertNoLegacyLinkedRideshareFields(nextActivityType, body);
   if (!activityCatalogAllows(existing.status, 'edit')) {
     throw new ApiError(
@@ -359,7 +359,7 @@ export const updatePublishingTenantActivity = async (input: {
   }
 
   const updated = await updateActivityDetailed(activityId, {
-    location: body.locationId ? { connect: { id: body.locationId } } : undefined,
+    locationId: body.locationId || undefined,
     title: body.title,
     description: body.description,
     startAt: nextStartAt,
@@ -432,11 +432,7 @@ export const updatePublishingTenantActivity = async (input: {
     ...(body.pricingMode !== undefined ? { pricingMode: body.pricingMode } : {}),
     capacity: body.capacity,
     waitlist: body.waitlist,
-    host: body.hostId
-      ? { connect: { id: body.hostId } }
-      : body.hostId === null
-        ? { disconnect: true }
-        : undefined,
+    hostId: body.hostId,
     outingCategory: body.outingCategory,
     outingTopic: body.outingTopic,
     linkedActivityId: body.linkedActivityId,

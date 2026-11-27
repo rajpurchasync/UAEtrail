@@ -28,9 +28,13 @@ const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
 
 describe('exploreMapPinModel', () => {
   it('matchesUnifiedExploreMapItem respects hiking topic across activities and venues', () => {
-    const activity = baseItem({ id: 'a1', source: 'activity', kind: 'hiking' });
-    const venue = baseItem({ id: 'v1', source: 'venue', kind: 'hiking' });
-    const filter = { mapFilter: 'hiking' as const, pinKind: 'all' as const };
+    const activity = hostedExploreMapItem({ id: 'a1', kind: 'hiking' });
+    const venue = venueExploreMapItem({ id: 'venue:v1', kind: 'hiking' });
+    const filter = {
+      mapFilter: 'hiking' as const,
+      pinKind: 'all' as const,
+      activityDatePreset: 'anyday' as const,
+    };
     expect(matchesUnifiedExploreMapItem(activity, filter)).toBe(true);
     expect(matchesUnifiedExploreMapItem(venue, filter)).toBe(true);
     expect(matchesUnifiedExploreMapItem(activity, { ...filter, mapFilter: 'camping' })).toBe(false);
@@ -89,11 +93,11 @@ describe('exploreMapPinModel', () => {
     expect(pin?.hostedTripCount).toBe(1);
   });
 
-  it('expandMapPins resolves activityMode for hosted and seeking', () => {
+  it('expandMapPins resolves hosted activityMode; retired seeking is not a pin mode', () => {
     const hosted = expandMapPins([hostedExploreMapItem()])[0];
     const seeking = expandMapPins([seekingExploreMapItem()])[0];
     expect(hosted.activityMode).toBe('hosted');
-    expect(seeking.activityMode).toBe('seeking');
+    expect(seeking.activityMode).toBeUndefined();
   });
 
   it('expandMapPins adds carpool destination pin when to-coords differ', () => {

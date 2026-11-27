@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Accessibility, ActivityType } from '../src/domain/enums.js';
 import { locationSubmitBodySchema } from '../src/domain/location-submit.js';
-import { buildLocationCreateData } from '../src/services/location-submit.js';
+import { buildPlaceSubmitPayload } from '../src/services/location-submit.js';
 import { buildTestLocationSubmitBody, testDestinations } from './helpers/test-seed.js';
 
-describe('buildLocationCreateData', () => {
+describe('buildPlaceSubmitPayload', () => {
   it('persists placeHubLabel and syncs area tag for outdoor venues', () => {
-    const data = buildLocationCreateData(
+    const data = buildPlaceSubmitPayload(
       buildTestLocationSubmitBody({
         name: 'Wadi Shawka Loop',
         region: 'RAK',
@@ -24,11 +24,11 @@ describe('buildLocationCreateData', () => {
     expect(data.childFriendly).toBe(true);
     expect(data.tags).toContain('area:Wadi Shawka Dam');
     expect(data.accessibility).toBe(Accessibility.CAR_ACCESSIBLE);
-    expect(data.submittedBy).toEqual({ connect: { id: 'user-1' } });
+    expect(data.submittedById).toBe('user-1');
   });
 
   it('derives remote accessibility from 4x4-only access', () => {
-    const data = buildLocationCreateData(
+    const data = buildPlaceSubmitPayload(
       buildTestLocationSubmitBody({
         name: 'Desert Camp',
         region: 'Abu Dhabi',
@@ -43,7 +43,7 @@ describe('buildLocationCreateData', () => {
   });
 
   it('persists facility kind tags on member facility submit', () => {
-    const data = buildLocationCreateData(
+    const data = buildPlaceSubmitPayload(
       buildTestLocationSubmitBody({
         name: 'Dam toilets',
         region: 'Dubai',

@@ -621,7 +621,7 @@ const baseline = {
       ? ['W10: list imports explore search via discoveryPortExploreSearch']
       : []),
     ...(listImportsExploreActivityDate.length > 0
-      ? ['W11: list imports explore activity date via discoveryPortExploreOptionalFilterWire']
+      ? ['W11: list imports explore activity date via discoveryPortExploreOptionalFilters']
       : []),
     ...(listImportsDiscoveryRuntime.length > 0
       ? ['W12: list imports map catalog via discoveryPortExploreRuntime']

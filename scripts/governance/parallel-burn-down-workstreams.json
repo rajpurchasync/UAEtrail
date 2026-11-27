@@ -3,7 +3,7 @@
   "updated": "2026-11-27",
   "programStatus": "closed",
   "closedAt": "2026-11-27",
-  "closureSummary": "FE discovery graph: shim:baseline nextActions []; discovery-import-audit listExploreImports 0; twenty discoveryPortExplore* ports (W97); DISC-03-01–16 guards. Do not open W106+ micro-lanes unless metrics regress.",
+  "closureSummary": "FE discovery graph: shim:baseline nextActions []; discovery-import-audit listExploreImports 0; eighteen discoveryPortExplore* ports (W97); DISC-03-01–16 guards. Do not open W106+ micro-lanes unless metrics regress.",
   "reactivateWhen": [
     "shim:baseline nextActions is non-empty",
     "discovery-import-audit listExploreImports > 0",
@@ -238,10 +238,10 @@
     {
       "id": "W11",
       "status": "done",
-      "title": "discoveryPortExploreOptionalFilterWire — list activity-date preset facade",
+      "title": "discoveryPortExploreOptionalFilters — list activity-date preset facade",
       "branch": "burn-down/w11-activity-date",
       "owns": [
-        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
+        "src/discovery/discoveryPortExploreOptionalFilters.ts",
         "src/list/explorer/**",
         "src/list/crews/CrewsTabBody.tsx",
         "src/list/shell/useListDiscoveryCrewsCategoryModel.ts"
@@ -777,7 +777,6 @@
       "owns": [
         "src/discovery/discoveryPortExploreRuntime.ts",
         "src/discovery/discoveryPortExploreOptionalFilters.ts",
-        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
         "src/discovery/discoveryPortExploreSearch.ts",
         "src/discovery/discoveryPortExploreBrowse.ts",
         "scripts/dev/consolidate-discovery-ports-w51.mjs",
@@ -855,9 +854,8 @@
       "title": "Split OptionalFilterWire from OptionalFilters UI barrel",
       "branch": "burn-down/w56-optional-filter-wire",
       "owns": [
-        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
         "src/discovery/discoveryPortExploreOptionalFilters.ts",
-        "scripts/dev/consolidate-discovery-ports-w56.mjs",
+        "scripts/archive/discovery-port-codemods/consolidate-discovery-ports-w56.mjs",
         "src/list/browse/browseListUrlState.ts",
         "src/activity-discovery/catalog/activities.ts",
         "src/places-discovery/catalog/places.ts"
@@ -1069,7 +1067,7 @@
       "title": "ActivityDate into OptionalFilterWire (explore)",
       "branch": "burn-down/w71-activity-date-optional-filter-wire",
       "owns": [
-        "src/discovery/discoveryPortExploreOptionalFilterWire.ts",
+        "src/discovery/discoveryPortExploreOptionalFilters.ts",
         "scripts/dev/consolidate-discovery-ports-w71.mjs",
         "src/discovery/discoverySessionParamsGuard.test.ts"
       ],
@@ -1346,7 +1344,7 @@
       "title": "SearchFeed wire port; slim Search UI facade",
       "branch": "burn-down/w87-search-feed-wire",
       "owns": [
-        "src/discovery/discoveryPortExploreSearchFeed.ts",
+        "src/discovery/discoveryPortExploreSearchRouting.ts",
         "src/discovery/discoveryPortExploreSearch.ts",
         "src/list/shell/useListDiscoveryExploreSearchFeedModel.ts",
         "src/list/explorer/FindCrewResultsSection.tsx",
@@ -1588,7 +1586,7 @@
       "branch": "burn-down/w102-guest-policy-wire",
       "owns": [
         "src/discovery/discoveryPortExploreGuestWire.ts",
-        "src/discovery/discoveryPortExploreSearchFeed.ts",
+        "src/discovery/discoveryPortExploreSearchRouting.ts",
         "src/explore/ui/ExploreMapStage.tsx",
         "src/config/discoveryGraphGuard.test.ts"
       ],
@@ -1600,7 +1598,7 @@
       "title": "Booking where resolver on SearchFeed; home/modal via facade",
       "branch": "burn-down/w103-search-feed-booking-where",
       "owns": [
-        "src/discovery/discoveryPortExploreSearchFeed.ts",
+        "src/discovery/discoveryPortExploreSearchRouting.ts",
         "src/explore/search/ExploreSearchHome.tsx",
         "src/explore/search/ExploreBookingSearchModal.tsx",
         "src/config/discoveryGraphGuard.test.ts"

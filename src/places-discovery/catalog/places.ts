@@ -4,13 +4,13 @@ import { sortExploreVenues } from '../../discovery/discoveryPortExploreCatalogFi
 import {
   matchesPlaceMapTopicFilter,
   type PlaceMapTopicKey,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import {
   effectivePlaceTopicsForFacilityKinds,
   exploreItemMatchesFacilityKinds,
   explorePlaceHasHostedTrip,
   hostedPlaceLocationIdsFromCatalog,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { MapFilterKey, VenueListFilterKey } from '../../discovery/discoveryPortExploreRouting';
 import { isPlacesMapItem, isShopListItem } from '../../discovery/discoveryPortExploreMapPin';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';

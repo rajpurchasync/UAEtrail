@@ -157,4 +157,22 @@ describe('naming coherence (API)', () => {
       expect(block).not.toMatch(/\bauthorUserId:/);
     }
   });
+
+  it('direct chat thread reads are cursor-only (limit + beforeMessageId)', () => {
+    const route = readFileSync(join(API_SRC, 'routes', 'chat.ts'), 'utf8');
+    expect(route).toMatch(/loadDirectMessageLatest/);
+    expect(route).toMatch(/loadDirectMessageOlder/);
+    expect(route).not.toMatch(/loadDirectMessageThread/);
+    expect(route).not.toMatch(/pageSize/);
+    const read = readFileSync(join(API_SRC, 'services', 'chat-direct-messages-read.ts'), 'utf8');
+    expect(read).not.toMatch(/loadDirectMessageThread/);
+    expect(read).not.toMatch(/listThreadMessages\(/);
+    const store = readFileSync(join(API_SRC, 'lib', 'chat-messages-store.ts'), 'utf8');
+    expect(store).not.toMatch(/export const listThreadMessages =/);
+    const wall = readFileSync(join(API_SRC, 'lib', 'social-groups-store.ts'), 'utf8');
+    expect(wall).not.toMatch(/before\?: Date/);
+    const wallSchema = readFileSync(join(API_SRC, 'routes', 'user', 'schemas.ts'), 'utf8');
+    expect(wallSchema).toMatch(/beforeMessageId/);
+    expect(wallSchema).not.toMatch(/Use only one of since, before, or beforeMessageId/);
+  });
 });

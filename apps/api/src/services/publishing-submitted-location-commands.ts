@@ -5,7 +5,7 @@ import { createLocationRecord } from '../lib/activities-store.js';
 import { createAuditLog } from '../lib/audit.js';
 import { toLocationDto } from '../lib/mappers.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
-import { buildLocationCreateData } from './location-submit.js';
+import { buildPlaceSubmitPayload } from './location-submit.js';
 import { resolvePlaceSubmitDestination } from './place-submit-destination.js';
 import { awardPoints } from './rewards.js';
 
@@ -17,7 +17,7 @@ export const submitPublishingLocation = async (input: {
   const { destinationId, placeHubLabel } = await resolvePlaceSubmitDestination(input.body);
 
   const created = await createLocationRecord(
-    buildLocationCreateData({ ...input.body, destinationId, placeHubLabel }, input.userId)
+    buildPlaceSubmitPayload({ ...input.body, destinationId, placeHubLabel }, input.userId)
   );
 
   await createAuditLog({

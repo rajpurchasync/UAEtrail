@@ -21,9 +21,6 @@ export const UPL_HOSTED_BY = 'Hosted by';
 /** Create / publish an outing on the map (FAB Host) */
 export const UPL_HOST_AN_OUTING = 'Host an outing';
 
-/** Map mode: member looking for company */
-export const UPL_SEEKING = 'Looking for company';
-
 /**
  * Geography (CPC).
  * Destination = admin-curated outdoor hub (`/destination/:slug`, filter `?destination=`) — not a map pin. **Area** in `geoRef.names.area` = AdminGeo tree locality.

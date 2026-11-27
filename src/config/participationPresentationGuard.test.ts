@@ -60,7 +60,7 @@ describe('participationPresentationGuard (MIG-SURFACE-ACTIVITY-DETAIL)', () => {
   });
 
   it('PART-PRES-04: peek↔detail parity tests stay in domain verify', () => {
-    const verify = read('scripts/verify/verify-domain-fe.mjs');
+    const verify = read('scripts/verify/domain-fe-vitest-files.mjs');
     expect(verify).toMatch(/mapDetailEngagementParity\.test\.ts/);
     expect(verify).toMatch(/listMapPeekEngagementParity\.test\.ts/);
     expect(verify).toMatch(/resolveActivityPresentation\.test\.ts/);

@@ -6,7 +6,7 @@ import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { BrowseMainCategoryKey } from '../browse/browseListTaxonomy';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from '../browse/browseListMapHandoff';
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { ExploreSearchScopeKey } from '../../discovery/discoveryPortExploreCatalogFilters';
 
 export type ListDiscoveryBrowseSyncUrl = (

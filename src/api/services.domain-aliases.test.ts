@@ -10,7 +10,7 @@ describe('api canonical surface', () => {
     expect(typeof api.getPublicPlaceDetail).toBe('function');
     expect(typeof api.getPublicPlaceTrackPreview).toBe('function');
     expect(typeof api.submitOrganisationPlace).toBe('function');
-    expect(typeof api.submitPlace).toBe('function');
+    expect((api as Record<string, unknown>).submitPlace).toBeUndefined();
   });
 
   it('exposes tenant activity console and member status', () => {
@@ -46,6 +46,7 @@ describe('api canonical surface', () => {
 
   it('does not expose removed legacy facade names', () => {
     const legacy = api as Record<string, unknown>;
+    expect(legacy.submitPlace).toBeUndefined();
     expect(legacy.getPublicLocations).toBeUndefined();
     expect(legacy.getHostRequests).toBeUndefined();
     expect(legacy.listOrganisationActivities).toBeUndefined();

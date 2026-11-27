@@ -5,10 +5,10 @@ import { ExploreExperienceBrowsePanels } from '../shell/ExploreExperienceBrowseP
 import { ExploreExperienceOverlays } from '../shell/ExploreExperienceOverlays';
 import { ExploreMapShell } from '../shell/ExploreMapShell';
 import { useBindExploreListMapHover, useBindExploreMapClosePeek } from '../ExploreMapChromeContext';
-import { useDiscoveryMapExperienceModel } from '../../discovery/useDiscoveryExperienceModel';
+import { useExploreExperienceModel } from '../shell/useExploreExperienceModel';
 
 export const ExploreExperience = () => {
-  const model = useDiscoveryMapExperienceModel();
+  const model = useExploreExperienceModel();
   useBindExploreMapClosePeek(model.handleCloseMapSelection);
   useBindExploreListMapHover(model.setHighlightedExploreItemId);
 

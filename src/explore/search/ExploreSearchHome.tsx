@@ -9,7 +9,7 @@ import { useExploreBookingSearchState } from './useExploreBookingSearchState';
 import { ExploreBookingRecentSearches } from './ExploreBookingRecentSearches';
 import { exploreSearchComposeFeedMode } from './exploreSearchComposeMode';
 import { ExploreSearchRecommendedSection } from './ExploreSearchRecommendedSection';
-import { resolveExploreSearchBookingWherePlaceholder } from '../../discovery/discoveryPortExploreSearchFeed';
+import { resolveExploreSearchBookingWherePlaceholder } from '../../discovery/discoveryPortExploreSearchRouting';
 
 export const ExploreSearchHome = () => {
   const booking = useExploreBookingSearchState();

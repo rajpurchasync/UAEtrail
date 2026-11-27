@@ -12,7 +12,6 @@ import {
 } from '@uaetrail/shared-types';
 
 import { PRODUCT_CREWS_TAB_LABEL, PRODUCT_FRIENDS_SURFACE_LABEL } from './productNorthStar';
-import { UPL_SEEKING } from './upl-glossary';
 
 /** Explore lens title — same triad as Activities · Places (`PRODUCT_CREWS_TAB_LABEL`). */
 export const EXPLORE_CREWS_PANEL_TITLE = PRODUCT_CREWS_TAB_LABEL;

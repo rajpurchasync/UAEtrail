@@ -17,7 +17,7 @@ export const submitMemberPlace = async (
   );
   const res =
     tenantId && !proposing
-      ? await api.submitPlace(tenantId, payload)
+      ? await api.submitOrganisationPlace(tenantId, payload)
       : await api.submitUserPlace(payload);
   return res.data;
 };

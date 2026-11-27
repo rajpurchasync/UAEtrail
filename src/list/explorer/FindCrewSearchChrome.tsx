@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilters';
 import { ExploreSearchBookingHero } from '@/discovery/discoveryPortExploreSearch';
-import { resolveExploreSearchDetectedWhereQuery } from '@/discovery/discoveryPortExploreSearchFeed';
+import { resolveExploreSearchDetectedWhereQuery } from '@/discovery/discoveryPortExploreSearchRouting';
 import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { FIND_CREW_WHERE_PLACEHOLDER, FIND_CREW_WHEN_PICK_LABEL } from './findCrewSearchCopy';
 

@@ -1,12 +1,19 @@
-/** W13/W34/W56 — optional filter row UI; wire → discoveryPortExploreOptionalFilterWire. */
+/** W13/W34/W56/W71 — optional filter row UI + map filter wire (URL params, matchers, activity-date preset). */
 export { ExploreOptionalFilterRow } from '../explore/ui/ExploreOptionalFilterRow';
+export type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
+export {
+  exploreActivityDatePresetToInclusiveRange,
+  matchesActivityDateFilter,
+  parseExploreActivityDatePreset,
+  serializeExploreActivityDatePreset,
+  todayIso,
+} from '../explore/exploreActivityDateFilter';
+export { matchesUnifiedTopicFilter } from '../explore/exploreMapTopicFilterMatch';
 export {
   EXPLORE_FACILITY_KINDS_PARAM,
   EXPLORE_HAS_TRIP_PARAM,
-  EXPLORE_PLACE_TYPES_PARAM,
   EXPLORE_PRICE_FILTER_OPTIONS,
   EXPLORE_PRICE_PARAM,
-  EXPLORE_TRIP_TYPES_PARAM,
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,
   destinationPlaceTopicsFrom,
@@ -16,22 +23,27 @@ export {
   explorePlaceHasHostedTrip,
   hostedOutingSummariesByPlaceId,
   hostedPlaceLocationIdsFromCatalog,
-  matchesPlaceMapTopicFilter,
-  matchesTripMapTopicFilter,
-  matchesUnifiedTopicFilter,
   parseExploreFacilityKinds,
   parseExploreHasTrip,
   parseExplorePriceFilter,
-  parsePlaceMapTopicsParam,
-  parseTripMapTopicsParam,
   serializeExploreFacilityKinds,
   serializeExploreHasTrip,
   serializeExplorePriceFilter,
-  serializePlaceMapTopicsParam,
-  serializeTripMapTopicsParam,
   toggleExploreDestinationPlaceTopic,
   type ExplorePriceFilter,
   type ExploreVenueFilterPatch,
+} from '../explore/exploreOptionalFilters';
+export {
+  EXPLORE_PLACE_TYPES_PARAM,
+  EXPLORE_TRIP_TYPES_PARAM,
+  parsePlaceMapTopicsParam,
+  parseTripMapTopicsParam,
+  serializePlaceMapTopicsParam,
+  serializeTripMapTopicsParam,
+} from '../explore/exploreMapTopicUrlParams';
+export {
+  matchesPlaceMapTopicFilter,
+  matchesTripMapTopicFilter,
   type PlaceMapTopicKey,
   type TripMapTopicKey,
-} from './discoveryPortExploreOptionalFilterWire';
+} from '../explore/exploreMapQuickTopicFilters';

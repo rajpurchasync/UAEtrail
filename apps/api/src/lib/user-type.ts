@@ -1,19 +1,9 @@
+import type { AdminUserType } from '@uaetrail/shared-types';
 import { TenantType, UserRole } from '../domain/enums.js';
 import { findAuthUserById } from './auth-users-store.js';
 import { findTenantByOwnerId } from './tenant-store.js';
 
-export type AdminUserType =
-  | 'participant'
-  | 'business_host'
-  | 'guide_host'
-  | 'host_staff'
-  | 'platform_admin'
-  /** @deprecated */
-  | 'business_organizer'
-  /** @deprecated */
-  | 'guide_organizer'
-  /** @deprecated */
-  | 'organizer_staff';
+export type { AdminUserType };
 
 type UserTypeInput = {
   role: UserRole;
@@ -48,13 +38,10 @@ export const resolveAdminUserListFilters = (userType?: string): AdminUserListFil
     case 'platform_admin':
       return { role: UserRole.PLATFORM_ADMIN };
     case 'host_staff':
-    case 'organizer_staff':
       return { role: [UserRole.TENANT_ADMIN, UserRole.TENANT_GUIDE] };
     case 'business_host':
-    case 'business_organizer':
       return { role: UserRole.TENANT_OWNER, tenantOwnerType: TenantType.COMPANY };
     case 'guide_host':
-    case 'guide_organizer':
       return { role: UserRole.TENANT_OWNER, tenantOwnerType: TenantType.GUIDE_OWNED };
     default:
       return {};
@@ -66,19 +53,4 @@ export const isBusinessHostById = async (userId: string): Promise<boolean> => {
   if (!user || user.role !== UserRole.TENANT_OWNER) return false;
   const tenant = await findTenantByOwnerId(userId);
   return tenant?.type === TenantType.COMPANY;
-};
-
-/** @deprecated Prisma-shaped filter — use resolveAdminUserListFilters for Mongo queries. */
-export const adminUserTypeFilter = (userType: string): Record<string, unknown> | null => {
-  const filters = resolveAdminUserListFilters(userType);
-  if (!filters.role) return null;
-  if (filters.tenantOwnerType) {
-    return {
-      role: filters.role,
-      ownedTenants: {
-        some: { type: filters.tenantOwnerType }
-      }
-    };
-  }
-  return { role: filters.role };
 };

@@ -64,7 +64,10 @@ switch (step) {
         process.exit(1);
       }
     }
-    const verifyFe = readFileSync(join(root, 'scripts/verify/verify-domain-fe.mjs'), 'utf8');
+    const verifyFe = [
+      readFileSync(join(root, 'scripts/verify/verify-domain-fe.mjs'), 'utf8'),
+      readFileSync(join(root, 'scripts/verify/domain-fe-vitest-files.mjs'), 'utf8'),
+    ].join('\n');
     const guardBundle = [
       'consumerDetailQaMatrixGuard.test.ts',
       'activityDetailS10fBridgeGuard.test.ts',

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -7,13 +7,9 @@ import {
   withHikingKitExtras,
   type ActivityDTO,
 } from '@uaetrail/shared-types';
-import {
-  publishHostingActivity as publishCreateActivity,
-  updateHostingActivity,
-} from '../../services/hostingActivityPublish';
+import { runHostingActivityFlowPublish } from './hostingActivityFlowPublish';
 import { createDraftFromPastActivity } from './hostingFromActivity';
 import { useAuth } from '../../context/AuthContext';
-import { afterHostingActivityPublishClientRefresh } from '../../hooks/hostingPublishClientEffects';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { setActiveTenantId } from '../../api/tenant';
 import { listHostingPublishProfiles, resolveHostingPublishingProfileKind } from '../hostingPublishTenants';
@@ -24,9 +20,6 @@ import {
 import { ComposeWizardShell } from '../create/ComposeWizardShell';
 import {
   ComposeMapEntryRow,
-  ComposePlacePickerOverlay,
-  COMPOSE_MAP_INTENTS,
-  dismissComposeMapIfOpen,
   formatComposeMapCoord,
   useComposeMapSession,
 } from '../create/interactions';
@@ -40,7 +33,6 @@ import {
   isPastWizardStep,
   requestComposeFlowClose,
 } from './composeFlowClose';
-import { validateHostingPlaceDestination } from '../hostingPublishDestination';
 import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import {
   areaRowInCatalogCountry,
@@ -48,31 +40,9 @@ import {
   nearestPlaceCatalogHostingLeaf,
 } from '../../places/placeCatalogDestinationIndex';
 import {
-  enrichHostingCatalogPlacePick,
-  patchPickHostingCatalogPlace,
-} from './hostingDestinationDraft';
-import {
-  HOSTING_DESTINATION_MAP_SEARCH_TITLE,
-} from '../createFlowCopy';
-import {
-  applyHostDestinationMapLocation,
-  hostDestinationMapCenter,
-  isHostDestinationCatalogMap,
-  isHostDestinationCustomMap,
-  isHostDestinationMap,
-} from './hostingWizard/hostDestinationMap';
-import { hostHasProRideshareMapDestination } from '../rideshareDestinationPolicy';
-import {
   buildDateOptions,
   createFlowStepTitle,
-  defaultCapacityForKind,
-  emptyCreateActivityDraft,
-  hydrateCreateActivityDraft,
   getCreateFlowSteps,
-  locationPickerConfirmLabel,
-  locationPickerHint,
-  locationPickerTitle,
-  validateDraftStep,
   isHikingHostingFlow,
   isCampingHostingFlow,
   isEventHostingFlow,
@@ -81,33 +51,21 @@ import {
   isStructuredHostingFlow,
   usesGoingFromHostingStep,
   type CreateFlowStepId,
-  type LocationPrecision,
   type CreateActivityDraft,
   type CreateActivityKind,
 } from './hostingFlowEngine';
-import { hostingPublishSeed, type HostComposeKind } from '../compose';
-import { composeFlowIdFromRoute, defaultParticipationForHostRoute } from '../composeFlowCatalog';
-import {
-  clearHostingWizardSession,
-  findHostingWizardLinkSessionScope,
-  hostingWizardSessionScope,
-  readHostingWizardSession,
-  writeHostingWizardSession,
-} from './composeWizardSession';
+import type { HostComposeKind } from '../compose';
+import { composeFlowIdFromRoute } from '../composeFlowCatalog';
+import { findHostingWizardLinkSessionScope, hostingWizardSessionScope } from './composeWizardSession';
 import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import {
   fromLocationLabel,
   HOSTING_RIDESHARE_LINKED_NOTICE,
-  HOME_START_UNMATCHED,
-  HOSTING_PROFILE_INCOMPLETE_ERROR,
   TO_LOCATION_LABEL,
 } from '../createFlowCopy';
-import { reverseCommunityCity } from '../../lib/placeSearch';
-import { MAP_CONFIG } from '../../config/platform';
 import { HostingPublishSuccessSheet } from './HostingPublishSuccessSheet';
 import {
   HOSTING_PUBLISH_FLOW_IDLE,
-  hostingPublishFlowBlocksSessionPersist,
   hostingPublishFlowIsPublishing,
   hostingPublishFlowPublishedActivity,
   type HostingPublishFlowStatus,
@@ -116,16 +74,12 @@ import { registryPlaceTypeForHostingKindFlow, type HostingKindFlow } from './hos
 import type { HostingWizardPrefill } from './hostingWizardPrefill';
 import { renderHostingWizardSteps } from './hostingWizard/HostingWizardSteps';
 import type { HostingWizardContext } from './hostingWizard/hostingWizardContext';
-
-type HostingMapIntent =
-  | typeof COMPOSE_MAP_INTENTS.hostDestinationCatalog
-  | typeof COMPOSE_MAP_INTENTS.hostCustomSpot
-  | typeof COMPOSE_MAP_INTENTS.hostGoingFrom
-  | typeof COMPOSE_MAP_INTENTS.hostMeeting
-  | typeof COMPOSE_MAP_INTENTS.hostRouteFrom
-  | typeof COMPOSE_MAP_INTENTS.hostRouteTo;
-
-type FlowStep = 'type' | CreateFlowStepId;
+import { CreateHostingActivityFlowMapOverlay } from './CreateHostingActivityFlowMapOverlay';
+import type { HostingActivityFlowStep, HostingMapIntent } from './hostingActivityFlowTypes';
+import { resolveHostingActivityFlowMapChrome } from './hostingActivityFlowMapChrome';
+import { useHostingActivityFlowMapActions } from './useHostingActivityFlowMapActions';
+import { useHostingActivityFlowNavigation } from './useHostingActivityFlowNavigation';
+import { useHostingActivityFlowWizardLifecycle } from './useHostingActivityFlowWizardLifecycle';
 
 export interface CreateHostingActivityFlowProps {
   open: boolean;
@@ -201,7 +155,7 @@ export const CreateHostingActivityFlow = ({
   }, [publishTenantOptions, tenantId]);
   const memberDisplayName = user?.displayName ?? null;
 
-  const [step, setStep] = useState<FlowStep>('type');
+  const [step, setStep] = useState<HostingActivityFlowStep>('type');
   const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
   const [selectedKind, setSelectedKind] = useState<CreateActivityKind | null>(null);
   const [publishStatus, setPublishStatus] = useState<HostingPublishFlowStatus>(
@@ -301,85 +255,12 @@ export const CreateHostingActivityFlow = ({
       : wizardPrefill
         ? 'prefill'
         : null;
-  const wizardInitializedRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!open) {
-      setError(null);
-      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
-      setShowMonthView(false);
-      closeMap();
-      return;
-    }
-
-    if (wizardInitKey && wizardInitializedRef.current === wizardInitKey) return;
-
-    if (wizardPrefill?.draft.kind) {
-      const prefillKind = wizardPrefill.draft.kind;
-      setDraft(hydrateCreateActivityDraft(wizardPrefill.draft));
-      setSelectedKind(prefillKind);
-      const steps = hostingKindFlow
-        ? hostingKindFlow.getSteps({
-            placeLabelSource: wizardPrefill.draft.placeLabelSource,
-            registryPlaceId: wizardPrefill.draft.registryPlaceId,
-            communityHostFlow: wizardPrefill.draft.communityHostFlow,
-          })
-        : getCreateFlowSteps(prefillKind, wizardPrefill.draft.communityHostFlow);
-      setStep(steps[0] ?? 'title');
-      setError(null);
-      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
-      setShowMonthView(false);
-      closeMap();
-      wizardInitializedRef.current = wizardInitKey;
-      return;
-    }
-
-    if (hostComposeKind && hostingFlowId) {
-      const saved = readHostingWizardSession(hostingFlowId, wizardSessionScope);
-      if (saved?.draft?.kind) {
-        setDraft(hydrateCreateActivityDraft(saved.draft));
-        setSelectedKind(saved.selectedKind);
-        setStep(saved.step as FlowStep);
-        setError(null);
-        setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
-        setShowMonthView(false);
-        closeMap();
-        wizardInitializedRef.current = wizardInitKey;
-        return;
-      }
-
-      const seed = hostingPublishSeed(hostComposeKind);
-      const createKind = seed.createKind;
-      const participationMode =
-        defaultParticipationForHostRoute(hostComposeKind) ?? seed.participationMode;
-      const nextDraft: CreateActivityDraft = {
-        ...emptyCreateActivityDraft(),
-        kind: createKind,
-        communityHostFlow: seed.communityHostFlow,
-        participationMode,
-        capacity: defaultCapacityForKind(createKind),
-        joinMode: 'open',
-      };
-      setDraft(nextDraft);
-      setSelectedKind(createKind);
-      setStep(getCreateFlowSteps(createKind, seed.communityHostFlow)[0]);
-      setError(null);
-      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
-      setShowMonthView(false);
-      closeMap();
-      wizardInitializedRef.current = wizardInitKey;
-      return;
-    }
-
-    if (!user) {
-      onClose();
-    }
-  }, [
+  useHostingActivityFlowWizardLifecycle({
     open,
     user,
-    navigate,
-    signInHref,
     onClose,
+    closeMap,
     wizardPrefill,
     editActivity,
     hostComposeKind,
@@ -387,90 +268,40 @@ export const CreateHostingActivityFlow = ({
     hostingFlowId,
     wizardSessionScope,
     wizardInitKey,
-    closeMap,
-  ]);
-
-  useEffect(() => {
-    if (!open || !hostingFlowId || hostingPublishFlowBlocksSessionPersist(publishStatus)) return;
-    const linkToParentActivityId =
-      wizardPrefill?.linkToParentActivityId ??
-      readHostingWizardSession(hostingFlowId, wizardSessionScope)?.linkToParentActivityId;
-    writeHostingWizardSession(
-      hostingFlowId,
-      {
-        step,
-        draft,
-        selectedKind,
-        ...(linkToParentActivityId ? { linkToParentActivityId } : {}),
-        ...(wizardPrefill?.sourceActivityId ? { sourceActivityId: wizardPrefill.sourceActivityId } : {}),
-      },
-      wizardSessionScope
-    );
-  }, [
-    open,
-    hostingFlowId,
-    wizardSessionScope,
+    hostingFlowIdForPersist: hostingFlowId,
     step,
     draft,
     selectedKind,
     publishStatus,
-    wizardPrefill?.linkToParentActivityId,
-    wizardPrefill?.sourceActivityId,
-  ]);
+    setError,
+    setPublishStatus,
+    setShowMonthView,
+    setDraft,
+    setSelectedKind,
+    setStep,
+  });
 
   const patchDraft = useCallback((patch: Partial<CreateActivityDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const closeMapOverlay = useCallback(() => {
-    closeMap();
-    setError(null);
-  }, [closeMap]);
-
-  const pickHostingCatalogPlaceById = useCallback(
-    (placeId: string) => {
-      const place = catalogPlaces.find((row) => row.id === placeId);
-      const patch = patchPickHostingCatalogPlace(
-        draft,
-        placeId,
-        catalogPlaces,
-        destinationAreas,
-        catalogCountry
-      );
-      patchDraft(patch);
-      closeMapOverlay();
-      if (!place) return;
-      void enrichHostingCatalogPlacePick(place, patch).then((extra) => {
-        if (extra) patchDraft(extra);
-      });
-    },
-    [catalogCountry, catalogPlaces, closeMapOverlay, destinationAreas, draft, patchDraft]
-  );
-
-  const openDestinationCatalogMap = useCallback(() => {
-    openMap(COMPOSE_MAP_INTENTS.hostDestinationCatalog);
-  }, [openMap]);
-
-  const openDestinationCustomSpotMap = useCallback(() => {
-    openMap(COMPOSE_MAP_INTENTS.hostCustomSpot);
-  }, [openMap]);
-
-  const openGoingFromMap = useCallback(() => {
-    openMap(COMPOSE_MAP_INTENTS.hostGoingFrom);
-  }, [openMap]);
-
-  const openMeetingPointMap = useCallback(() => {
-    openMap(COMPOSE_MAP_INTENTS.hostMeeting);
-  }, [openMap]);
-
-  const openRouteMap = useCallback(
-    (target: 'from' | 'to') => {
-      openMap(
-        target === 'to' ? COMPOSE_MAP_INTENTS.hostRouteTo : COMPOSE_MAP_INTENTS.hostRouteFrom
-      );
-    },
-    [openMap]
-  );
+  const {
+    closeMapOverlay,
+    pickHostingCatalogPlaceById,
+    openDestinationCatalogMap,
+    openDestinationCustomSpotMap,
+    openGoingFromMap,
+    openMeetingPointMap,
+    openRouteMap,
+  } = useHostingActivityFlowMapActions({
+    mapSession,
+    draft,
+    patchDraft,
+    catalogPlaces,
+    destinationAreas,
+    catalogCountry,
+    setError,
+  });
 
   useEffect(() => {
     const allowed = new Set(allowedActivityPricingModes(hostTiers, { publishingProfileKind }));
@@ -547,73 +378,25 @@ export const CreateHostingActivityFlow = ({
 
   const exitWizardBack = useComposeWizardExitBack(requestClose, onBackToIntent);
 
-  const goToFirstStep = useCallback(() => {
-    if (!selectedKind) return;
-    patchDraft({
-      kind: selectedKind,
-      capacity: defaultCapacityForKind(selectedKind),
-      priceMode: 'free',
-      priceAmount: 0,
-      ...(selectedKind === 'rideshare'
-        ? { joinMode: 'open' as const, participationMode: 'approval' as const }
-        : {}),
-      ...(selectedKind === 'hiking'
-        ? { packingAckMode: 'strict' as const, packingItems: defaultHikingPackingItems() }
-        : selectedKind === 'event'
-          ? { packingAckMode: 'lenient' as const, packingItems: defaultHikingPackingItems() }
-          : {}),
-    });
-    setStep(getCreateFlowSteps(selectedKind)[0]);
-  }, [patchDraft, selectedKind]);
-
-  const goBack = useCallback(() => {
-    if (dismissComposeMapIfOpen(mapSession.open, closeMap)) {
-      setError(null);
-      return;
-    }
-    if (step === 'type' || currentPageIndex <= 0) {
-      if (wizardPrefill || editActivity) {
-        requestClose();
-        return;
-      }
-      if (step === 'type' && !hostComposeKind) {
-        exitWizardBack();
-        return;
-      }
-      if (currentPageIndex <= 0) {
-        exitWizardBack();
-        return;
-      }
-      setStep('type');
-      return;
-    }
-    setStep(wizardPages[currentPageIndex - 1][0]);
-  }, [
-    mapSession.open,
+  const { goToFirstStep, goBack, goNext } = useHostingActivityFlowNavigation({
+    mapSession,
     closeMap,
+    setError,
     step,
+    setStep,
+    kind,
+    draft,
+    selectedKind,
+    patchDraft,
+    wizardPages,
+    widePageSteps,
     currentPageIndex,
     wizardPrefill,
     editActivity,
     hostComposeKind,
     requestClose,
     exitWizardBack,
-    wizardPages,
-  ]);
-
-  const goNext = useCallback(() => {
-    if (!kind || step === 'type') return;
-    for (const id of widePageSteps) {
-      const validation = validateDraftStep(id, draft);
-      if (validation) {
-        setError(validation);
-        return;
-      }
-    }
-    setError(null);
-    if (currentPageIndex < 0 || currentPageIndex >= wizardPages.length - 1) return;
-    setStep(wizardPages[currentPageIndex + 1][0]);
-  }, [kind, step, draft, currentPageIndex, wizardPages, widePageSteps]);
+  });
 
   const handlePublish = useCallback(async () => {
     if (!user?.id) return;
@@ -643,62 +426,37 @@ export const CreateHostingActivityFlow = ({
       return;
     }
 
-    if (!tenantId) {
-      setError(HOSTING_PROFILE_INCOMPLETE_ERROR);
-      return;
-    }
-
-    const validation = validateDraftStep('publish', draft);
-    if (validation) {
-      setError(validation);
-      return;
-    }
-    const placeAreaValidation = validateHostingPlaceDestination(draft, catalogPlaces);
-    if (placeAreaValidation) {
-      setError(placeAreaValidation);
-      return;
-    }
-
     setPublishStatus({ kind: 'submitting' });
     setError(null);
-    try {
-      const normalizedDraft = { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false };
-      if (editActivity) {
-        const updated = await updateHostingActivity({
-          activityId: editActivity.id,
-          draft: normalizedDraft,
-          tenantId,
-          userId: user.id,
-        });
-        await afterHostingActivityPublishClientRefresh(queryClient, {
-          activityId: updated.id,
-          userId: user.id,
-        });
-        await onPublished?.(updated);
-        setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
-        onClose();
-        return;
-      }
-      const activity = await publishCreateActivity({
-        draft: normalizedDraft,
-        tenantId,
-        userId: user.id,
-        sourceActivityId: wizardPrefill?.sourceActivityId ?? null,
-        linkToParentActivityId:
-          wizardPrefill?.linkToParentActivityId ??
-          readHostingWizardSession(hostingFlowId!, wizardSessionScope)?.linkToParentActivityId ??
-          null,
-      });
-      await afterHostingActivityPublishClientRefresh(queryClient, {
-        activityId: activity.id,
-        userId: user.id,
-      });
-      if (hostingFlowId) clearHostingWizardSession(hostingFlowId, wizardSessionScope);
-      setPublishStatus({ kind: 'submitted', result: activity });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not publish. Try again.');
+    const result = await runHostingActivityFlowPublish({
+      userId: user.id,
+      tenantId,
+      draft,
+      selectedKind,
+      catalogPlaces,
+      editActivity,
+      wizardPrefill,
+      hostingFlowId,
+      wizardSessionScope,
+      queryClient,
+    });
+    if (result.outcome === 'validation_error') {
+      setError(result.message);
       setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
+      return;
     }
+    if (result.outcome === 'publish_error') {
+      setError(result.message);
+      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
+      return;
+    }
+    if (result.outcome === 'updated') {
+      await onPublished?.(result.activity);
+      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
+      onClose();
+      return;
+    }
+    setPublishStatus({ kind: 'submitted', result: result.activity });
   }, [
     user?.id,
     hostGateLoading,
@@ -731,16 +489,16 @@ export const CreateHostingActivityFlow = ({
     onClose();
   };
 
-  const mapIntent = mapSession.intent;
-  const isPickupMapOpen = step === 'meeting' && mapIntent === COMPOSE_MAP_INTENTS.hostGoingFrom;
-  const isWhereMapOpen = step === 'where' && mapIntent === COMPOSE_MAP_INTENTS.hostGoingFrom;
-  const isDestinationCatalogMapOpen = isHostDestinationCatalogMap(mapIntent);
-  const isCustomSpotMapOpen = isHostDestinationCustomMap(mapIntent);
-  const isMeetingPointMapOpen = mapIntent === COMPOSE_MAP_INTENTS.hostMeeting;
-  const isDestMapOpen = mapIntent === COMPOSE_MAP_INTENTS.hostRouteTo && step === 'to';
-  const isRouteMapOverlay =
-    mapIntent === COMPOSE_MAP_INTENTS.hostRouteFrom ||
-    (mapIntent === COMPOSE_MAP_INTENTS.hostRouteTo && step === 'route');
+  const mapIntent = mapSession.intent as HostingMapIntent | null;
+  const {
+    isPickupMapOpen,
+    isWhereMapOpen,
+    isDestinationCatalogMapOpen,
+    isCustomSpotMapOpen,
+    isMeetingPointMapOpen,
+    isDestMapOpen,
+    isRouteMapOverlay,
+  } = useMemo(() => resolveHostingActivityFlowMapChrome(step, mapIntent), [step, mapIntent]);
 
   const hasFromPin = draft.latitude != null && draft.longitude != null;
   const hasToPin = draft.toLatitude != null && draft.toLongitude != null;
@@ -917,174 +675,37 @@ export const CreateHostingActivityFlow = ({
   }
 
   const hostMapOpen = mapSession.open && Boolean(kind);
-  let mapOverlay: ReactNode = null;
-  if (hostMapOpen && kind) {
-    const isMeetingPin = isMeetingPointMapOpen;
-    const isCustomSpotPin = isCustomSpotMapOpen;
-    const isCatalogDestinationPin = isDestinationCatalogMapOpen;
-    const isToStep = mapIntent === COMPOSE_MAP_INTENTS.hostRouteTo;
-    const hikeCampMeeting = isMeetingPin && (hikingFlow || campingFlow);
-    const selectedCatalogPlace = catalogPlaces.find((row) => row.id === draft.registryPlaceId) ?? null;
-    const destinationCenter = isHostDestinationMap(mapIntent)
-      ? hostDestinationMapCenter(mapIntent, draft, selectedCatalogPlace)
-      : null;
-    const lat = destinationCenter
-      ? destinationCenter.lat
-      : isMeetingPin
-        ? draft.meetingLatitude ?? draft.trailLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-        : isToStep
-          ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-          : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
-    const lng = destinationCenter
-      ? destinationCenter.lng
-      : isMeetingPin
-        ? draft.meetingLongitude ?? draft.trailLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-        : isToStep
-          ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-          : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
-    const mapEndpoint: 'from' | 'to' = isToStep || isCustomSpotPin ? 'to' : 'from';
-    const mapStep: CreateFlowStepId = step as CreateFlowStepId;
-    const pinAlreadySet = isCustomSpotPin
-      ? draft.trailLatitude != null && draft.trailLongitude != null
-      : isMeetingPin
-        ? draft.meetingLatitude != null && draft.meetingLongitude != null
-        : isToStep
-          ? hasToPin
-          : hasFromPin;
-
-    mapOverlay = (
-      <ComposePlacePickerOverlay
-            open
-            openInAdjustMode={
-              isCatalogDestinationPin
-                ? true
-                : hikeCampMeeting
-                  ? meetingPickerIntent !== 'search'
-                  : pinAlreadySet
-            }
-            initialPhase={
-              isCatalogDestinationPin
-                ? 'adjust'
-                : hikeCampMeeting
-                  ? meetingPickerIntent === 'search'
-                    ? 'search'
-                    : 'adjust'
-                  : undefined
-            }
-            startCoordsEditing={hikeCampMeeting && meetingPickerIntent === 'edit'}
-            onPlaceLabel={
-              isMeetingPin
-                ? (label: string) => {
-                    const trimmed = label.trim();
-                    if (trimmed) patchDraft({ meetingPointLabel: trimmed });
-                  }
-                : undefined
-            }
-            precision={draft.locationPrecision}
-            latitude={lat}
-            longitude={lng}
-            headerTitle={
-              isCatalogDestinationPin
-                ? HOSTING_DESTINATION_MAP_SEARCH_TITLE
-                : locationPickerTitle(mapStep, kind, mapEndpoint, stepTitleOptions)
-            }
-            confirmLabel={locationPickerConfirmLabel(kind, mapStep, mapEndpoint)}
-            hint={locationPickerHint(kind, draft.locationPrecision)}
-            onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
-            onLocationChange={(latitude: number, longitude: number) => {
-              if (isHostDestinationMap(mapIntent)) {
-                const patch = applyHostDestinationMapLocation(mapIntent, latitude, longitude);
-                if (patch) patchDraft(patch);
-                return;
-              }
-              if (isMeetingPin) {
-                patchDraft({ meetingLatitude: latitude, meetingLongitude: longitude });
-                return;
-              }
-              if (isToStep) {
-                if (hostHasProRideshareMapDestination(hostTiers)) {
-                  patchDraft({ toLatitude: latitude, toLongitude: longitude });
-                } else {
-                  patchDraft({
-                    toLatitude: latitude,
-                    toLongitude: longitude,
-                    rideshareDestinationKind: null,
-                    rideshareDestinationActivityId: null,
-                    rideshareDestinationPlaceId: null,
-                    rideshareDestinationDetailLine: null,
-                    rideshareDestinationPlaceLabel: null,
-                    toLabel: '',
-                  });
-                }
-              } else {
-                patchDraft({ latitude, longitude });
-              }
-            }}
-            onBack={goBack}
-            onClose={requestClose}
-            onConfirm={(_confirmLat: number, _confirmLng: number) => {
-              if (isCatalogDestinationPin) {
-                const pinLat = draft.trailLatitude;
-                const pinLng = draft.trailLongitude;
-                if (pinLat != null && pinLng != null) {
-                  const nearest = nearestPlaceCatalogHostingLeaf(pinLat, pinLng, catalogPlaces);
-                  if (nearest) {
-                    pickHostingCatalogPlaceById(nearest.id);
-                    return;
-                  }
-                }
-                closeMapOverlay();
-                return;
-              }
-              if (isRouteMapOverlay || isDestMapOpen) {
-                if (isToStep && hostHasProRideshareMapDestination(hostTiers)) {
-                  patchDraft({
-                    rideshareDestinationKind: 'map',
-                    rideshareDestinationActivityId: null,
-                    rideshareDestinationPlaceId: null,
-                    rideshareDestinationDetailLine: null,
-                    rideshareDestinationPlaceLabel: null,
-                  });
-                }
-                closeMapOverlay();
-                return;
-              }
-              if (isPickupMapOpen || isWhereMapOpen) {
-                if (isPickupMapOpen && kind === 'hiking' && !draft.communityHostFlow) {
-                  const latitude = draft.latitude;
-                  const longitude = draft.longitude;
-                  if (latitude == null || longitude == null) return;
-                  void reverseCommunityCity(latitude, longitude).then((place) => {
-                    if (!place) {
-                      setError(HOME_START_UNMATCHED);
-                      return;
-                    }
-                    patchDraft({
-                      fromLocationPrecise: true,
-                      fromLabel: place.label,
-                      latitude,
-                      longitude,
-                    });
-                    closeMapOverlay();
-                  });
-                  return;
-                }
-                closeMapOverlay();
-                return;
-              }
-              if (isCustomSpotMapOpen) {
-                closeMapOverlay();
-                return;
-              }
-              if (isMeetingPointMapOpen) {
-                closeMapOverlay();
-                return;
-              }
-              goNext();
-            }}
+  const mapOverlay: ReactNode =
+    hostMapOpen && kind && mapIntent ? (
+      <CreateHostingActivityFlowMapOverlay
+        kind={kind}
+        step={step}
+        mapIntent={mapIntent}
+        draft={draft}
+        patchDraft={patchDraft}
+        catalogPlaces={catalogPlaces}
+        hikingFlow={hikingFlow}
+        campingFlow={campingFlow}
+        meetingPickerIntent={meetingPickerIntent}
+        hostTiers={hostTiers}
+        stepTitleOptions={stepTitleOptions}
+        hasFromPin={hasFromPin}
+        hasToPin={hasToPin}
+        isDestinationCatalogMapOpen={isDestinationCatalogMapOpen}
+        isCustomSpotMapOpen={isCustomSpotMapOpen}
+        isMeetingPointMapOpen={isMeetingPointMapOpen}
+        isDestMapOpen={isDestMapOpen}
+        isRouteMapOverlay={isRouteMapOverlay}
+        isPickupMapOpen={isPickupMapOpen}
+        isWhereMapOpen={isWhereMapOpen}
+        onBack={goBack}
+        onClose={requestClose}
+        onGoNext={goNext}
+        onPickCatalogPlaceById={pickHostingCatalogPlaceById}
+        onCloseMapOverlay={closeMapOverlay}
+        onError={setError}
       />
-    );
-  }
+    ) : null;
 
   return (
     <ComposeWizardShell

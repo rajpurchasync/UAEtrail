@@ -1,6 +1,5 @@
 /**
  * Database-persisted enum values (SCREAMING_SNAKE_CASE).
- * Mirrors Prisma schema enums — use instead of `@prisma/client` imports in store layers.
  */
 
 export const UserRole = {

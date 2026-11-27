@@ -1,4 +1,3 @@
-import { PlaceDTO } from '@uaetrail/shared-types';
 import {
   placeApi,
   facilityApi,
@@ -61,9 +60,4 @@ export const api = {
   ...adminApi,
   ...chatApi,
   ...mediaApi,
-
-  /** Tenant workspace place submit (`/publishing/places`). */
-  submitPlace(tenantId: string, payload: Partial<PlaceDTO>) {
-    return publishingWorkspaceApi.submitOrganisationPlace(tenantId, payload);
-  },
 };

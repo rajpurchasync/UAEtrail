@@ -65,4 +65,25 @@ describe('inboundNamingHygieneGuard', { timeout: 30_000 }, () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  it('non-test product code does not keep Prisma-era converters or organizer aliases', () => {
+    const forbidden =
+      /\b(toPrisma\w+|fromPrisma\w+|membershipRoleToPrisma|RelationConnect|extractConnectedId|applyBuddySubtype|adminUserTypeFilter|business_organizer|guide_organizer|organizer_staff)\b/;
+    const offenders: string[] = [];
+    for (const file of allSourceFiles()) {
+      if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (forbidden.test(content)) {
+        offenders.push(file);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('activity type converters use stored names', () => {
+    const content = readFileSync(join(process.cwd(), 'apps/api/src/domain/activity-type.ts'), 'utf8');
+    expect(content).toMatch(/export const toStoredActivityType/);
+    expect(content).toMatch(/export const fromStoredActivityType/);
+    expect(content).not.toMatch(/toPrismaActivityType|fromPrismaActivityType/);
+  });
 });

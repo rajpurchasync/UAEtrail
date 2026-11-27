@@ -253,10 +253,10 @@ export const seedDevQaTwentyActivities = async (ctx: DemoActivitySeedContext): P
     const createdBy = useAgency ? ctx.agencyOwnerId : ctx.individualHostId;
 
     await upsertEvent(id, {
-      tenant: { connect: { id: tenantId } },
-      location: { connect: { id: spot.id } },
-      createdBy: { connect: { id: createdBy } },
-      host: { connect: { id: hostId } },
+      tenantId: tenantId,
+      locationId: spot.id,
+      createdById: createdBy,
+      hostId: hostId,
       activityType,
       title: `QA outing ${index + 1} — ${spot.id.replace(/-/g, ' ')}`,
       description: 'Seeded for local map and join testing.',

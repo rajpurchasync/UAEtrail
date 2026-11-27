@@ -4,6 +4,7 @@ import {
 } from '@uaetrail/shared-types';
 import type { ActivityWithPublicRelations } from '../../lib/activity-read-assembler.js';
 import { isRetiredSeekingActivityMode } from '../../domain/retired-seeking-activity-mode.js';
+import { resolveActivityParticipantSlotsUsed } from '../../lib/mappers.js';
 
 export type RankMapExploreActivityInput = {
   activity: ActivityWithPublicRelations;
@@ -29,7 +30,7 @@ export const rankMapExploreActivity = (
 
   const startMs = activity.startAt.getTime();
   const joined = activity.participants?.length ?? 0;
-  const slotsUsed = activity.participantSlotsUsed ?? activity.participants?.length ?? 0;
+  const slotsUsed = resolveActivityParticipantSlotsUsed(activity);
   const slotsLeft = activity.capacity > 0 ? activity.capacity - slotsUsed : null;
   const slotsAvailable = slotsLeft != null && slotsLeft > 0 ? slotsLeft : null;
 

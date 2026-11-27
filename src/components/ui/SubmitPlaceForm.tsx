@@ -5,7 +5,7 @@ import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { ImageUpload } from './ImageUpload';
 import { AssetKeyUpload } from './AssetKeyUpload';
 import { AppSelect } from './AppSelect';
-import { listPublicPlacesCatalog } from '../../hooks/placeCatalogReadsClientApi';
+import { fetchPlaceCatalogRows } from '../../hooks/placeCatalogReadsClientApi';
 import { submitMemberPlace } from '../../hooks/memberCatalogSubmitClientApi';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
@@ -129,7 +129,7 @@ export const SubmitPlaceForm = ({
     setSearchLoading(true);
     setError(null);
     try {
-      const catalog = await listPublicPlacesCatalog();
+      const catalog = await fetchPlaceCatalogRows();
       const q = searchQuery.trim().toLowerCase();
       const matches = catalog.filter((loc) => {
         if (!q) return true;

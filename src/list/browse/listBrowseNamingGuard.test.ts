@@ -96,7 +96,7 @@ describe('listBrowseNamingGuard', () => {
 
   it('BROWSE-NAME-01x: list discovery orchestration lives in shell model hook', () => {
     expect(existsSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'))).toBe(true);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useDiscoveryListExperienceModel/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useListDiscoveryExperienceModel/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/useBrowseListFeed/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/CrewsBrowsePanel/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/ListExplorer/);
@@ -173,7 +173,7 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExplore/);
     expect(read('src/list/browse/browseListFilters.ts')).not.toMatch(/explore\/discoveryRuntime/);
     expect(read('src/list/browse/browseListUrlState.ts')).toMatch(
-      /discovery\/discoveryPortExploreOptionalFilterWire/
+      /discovery\/discoveryPortExploreOptionalFilters/
     );
     expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discovery\/discoveryPortExploreRouting/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(

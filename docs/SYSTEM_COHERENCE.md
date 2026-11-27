@@ -825,7 +825,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 - [x] `notifyAdminsLocationSubmitted` → generic catalog submit copy (`notifyAdminsCatalogSubmitted`)
 - [x] §8.4.9 implementation alignment map + §3 matrix vocabulary (no **contribute** in architecture rows)
 - [x] FE facades: `memberCatalogSubmitClientApi`, `placeCatalogReadsClientApi`, `placeCatalogClient` (+ legacy shims)
-- [x] API facade: `place-submit.ts`; routes use `buildPlaceSubmitPayload`
+- [x] API facade: `location-submit.ts` (`buildPlaceSubmitPayload`); routes use the same builder
 - [x] Terminology guards: `cpc-terminology-guard.test.ts` (API), `cpcTerminologyGuard.test.ts` (FE subset)
 
 ---
@@ -926,7 +926,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 |---------|------|
 | `services/place-catalog.ts` | `buildPlaceCatalog` |
 | `services/place-registry.ts` | organize picker merge (transitional name; calls catalog builders) |
-| `services/place-submit.ts` | `buildPlaceSubmitPayload` |
+| `services/location-submit.ts` | `buildPlaceSubmitPayload` |
 | `services/facility-submit.ts` | `buildFacilitySubmitInput` |
 | `services/catalog-submit-notifications.ts` | admin notify on catalog submit |
 
@@ -1271,7 +1271,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 - [x] DMCP Phase 0 — `scripts/governance/authority-matrix.json` + `verify:authority-matrix` in `verify:system` (five capability axes → sole resolvers)
 - [x] DMCP Phase 1 — `resolvePublishingWorkspaceAccess` (no `UserRole` broaden) + `publish.isPlatformStaff` on `GET /me/status`
 - [x] DMCP Phase 2 — `verify:catalog-truth` (single `GET /explore/map` catalog; find crew = `member_availability`; seeking/demand product paths guarded)
-- [x] DMCP Phase 3 — `verify:discovery-graph` + **twenty** `discoveryPortExplore*` ports (`discoveryPortNamingGuard` W97); `listExploreImports` **0** (budget ≤25); retired `discoveryListRuntime` list facade; UI/wire split (Search · SearchFeed · SearchRouting · GuestWire · CatalogFilters); burn-down program **closed** 2026-11-27 (`scripts/governance/parallel-burn-down-workstreams.json` `programStatus: closed`)
+- [x] DMCP Phase 3 — `verify:discovery-graph` + **eighteen** `discoveryPortExplore*` ports (`discoveryPortNamingGuard` W97); `listExploreImports` **0** (budget ≤25); retired `discoveryListRuntime` list facade; UI/wire split (Search · SearchRouting · GuestWire · CatalogFilters); folded OptionalFilterWire + SearchFeed into sibling ports; burn-down program **closed** 2026-11-27 (`scripts/governance/parallel-burn-down-workstreams.json` `programStatus: closed`)
 - [x] DMCP Phase 4 — `verify:compose-spine` (host · availability · add wire; FAB + plan → `CreateFlowProvider`; `composeSpineGuard` + COMPOSE-LINE-06)
 - [x] DMCP Phase 5 — `verify:participation-spine` (`activityJoinClientApi` · `publishingJoinQueueClientApi`; L3/peek presentation; S10f bridge guards; human sign-off still `s10f:ops:print-routes`)
 - [x] DMCP Phase 6 — `verify:storefront-spine` (`PublishingProfileKind` · `/publishing` console · shop/agency facades · `PRO_MEMBERSHIP_PATH`; `operatorStorefrontSpineGuard`)

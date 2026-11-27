@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Route, Routes, type Location } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { LIST_DISCOVERY_PATH } from '../config/routingCatalogLite';
 import { COMMUNITY_CLUB_PATH_PREFIX } from '../config/routingCatalog';
 import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoveryPortExploreSearchRouting';
@@ -134,8 +134,8 @@ const operatorOverviewRoute = (
   </ProtectedRoute>
 );
 
-export const AppRoutes = ({ location }: { location: Location }) => (
-  <Routes location={location}>
+export const AppRoutes = () => (
+  <Routes>
     <Route path="/" element={<Home />} />
     <Route
       path={EXPLORE_SEARCH_RESULTS_PATH}

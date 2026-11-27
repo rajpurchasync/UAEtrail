@@ -42,22 +42,14 @@ export const mapTenantBusinessMode = (mode: string | null | undefined): TenantBu
 
 type ActivityCapacitySource = Activity & {
   participantSlotsUsed?: number;
-  participants?: Array<unknown>;
-  schemaVersion?: number;
-  counts?: { going?: number; waitlisted?: number; pending?: number } | null;
 };
 
-/** Headcount reserved against capacity — prefer `participantSlotsUsed`, heal stale v2 `counts`. */
+/** Headcount reserved against capacity — `participantSlotsUsed` is the write path. */
 export const resolveActivityParticipantSlotsUsed = (event: ActivityCapacitySource): number => {
-  const fromParticipants = event.participants?.length ?? 0;
-  const fromCounts =
-    event.schemaVersion === 2 && event.counts != null && typeof event.counts.going === 'number'
-      ? event.counts.going
-      : 0;
-  if (typeof event.participantSlotsUsed === 'number') {
-    return Math.max(event.participantSlotsUsed, fromCounts, fromParticipants);
+  if (typeof event.participantSlotsUsed === 'number' && Number.isFinite(event.participantSlotsUsed)) {
+    return Math.max(0, event.participantSlotsUsed);
   }
-  return Math.max(fromCounts, fromParticipants);
+  return 0;
 };
 
 export const resolveActivitySlotsAvailable = (event: ActivityCapacitySource): number =>

@@ -10,7 +10,10 @@ const vitestPathsInScript = (rel: string) => {
   return [...new Set([...matches].map((m) => m[0]))];
 };
 
-const domainFeVitest = () => vitestPathsInScript('scripts/verify/verify-domain-fe.mjs');
+const domainFeVitest = () => [
+  ...vitestPathsInScript('scripts/verify/verify-domain-fe.mjs'),
+  ...vitestPathsInScript('scripts/verify/domain-fe-vitest-files.mjs'),
+];
 
 describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW1-01: no Cursor agent plan markdown (schedule is manifest + touchpoints)', () => {
@@ -203,6 +206,14 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/getMeFriends/);
     expect(read('src/api/domains/friends.ts')).not.toMatch(/\/me\/buddies/);
     expect(read('src/explore/exploreItemSearch.ts')).not.toMatch(/terms\.push\([^)]*'seeking'/);
+    expect(read('src/explore/ui/exploreBrowseUrlPublicApi.ts')).toMatch(/applyOthersSubtype/);
+    expect(read('src/explore/ui/exploreBrowseUrlPublicApi.ts')).not.toMatch(/applyBuddySubtype/);
+    expect(
+      read('src/explore/ui/exploreBrowseUrlApplyHandlers/useExploreBrowseUrlApplyHandlersCore.ts')
+    ).toMatch(/applyOthersSubtype/);
+    expect(
+      read('src/explore/ui/exploreBrowseUrlApplyHandlers/useExploreBrowseUrlApplyHandlersCore.ts')
+    ).not.toMatch(/applyBuddySubtype/);
   });
 
   it('GW13-01: product surface naming — Friends/crew, not buddies labels', () => {

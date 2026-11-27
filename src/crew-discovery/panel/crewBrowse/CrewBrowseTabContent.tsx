@@ -12,7 +12,7 @@ import {
   EXPLORE_CREWS_FRIENDS_GOING_EMPTY,
   EXPLORE_CREWS_LOADING,
 } from '../../../content/exploreCrewsCopy';
-import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilters';
 import type { CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListFindCrew';
 import {
   buildMemberBrowseRowFromAvailability,

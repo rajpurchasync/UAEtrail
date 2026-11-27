@@ -1,5 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { fromPrismaActivityType } from '../domain/activity-type.js';
+import { fromStoredActivityType } from '../domain/activity-type.js';
 import {
   findTenantActivityForEdit,
   listTenantActivitiesDetailed,
@@ -104,7 +104,7 @@ export const listPublishingTenantActivityHistoryPage = async (input: {
       id: e.id,
       title: e.title,
       locationName: e.location.name,
-      activityType: fromPrismaActivityType(e.location.activityType),
+      activityType: fromStoredActivityType(e.location.activityType),
       startAt: e.startAt,
       status: e.status.toLowerCase(),
       capacity: e.capacity,

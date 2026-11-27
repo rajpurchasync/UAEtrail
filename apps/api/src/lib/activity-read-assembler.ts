@@ -10,9 +10,8 @@ import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js
 import {
   isRetiredSeekingActivityMode,
   mongoExcludeRetiredSeekingActivityMode,
-  mongoOnlyRetiredSeekingActivityMode,
   mongoPastPublishedExcludeRetiredSeeking,
-  mongoUpcomingPublishedOrRetiredSeeking,
+  mongoUpcomingPublished,
   publicActivityModeFromStored,
 } from '../domain/retired-seeking-activity-mode.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users-store.js';
@@ -322,13 +321,8 @@ const filterPublishedDocs = async (
     if (doc.status !== ActivityStatus.PUBLISHED) return false;
     if (!locations.has(doc.locationId)) return false;
     if (shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)) return false;
-    if (
-      when === 'upcoming' &&
-      !isRetiredSeekingActivityMode(doc.activityMode) &&
-      doc.startAt < now
-    ) {
-      return false;
-    }
+    if (isRetiredSeekingActivityMode(doc.activityMode)) return false;
+    if (when === 'upcoming' && doc.startAt < now) return false;
     if (when === 'past' && doc.startAt >= now) return false;
     return true;
   });
@@ -341,11 +335,12 @@ const buildPublishedActivitiesMongoFilter = (
   const base: Record<string, unknown> = {
     status: ActivityStatus.PUBLISHED,
     joinMode: { $ne: 'private' },
+    ...mongoExcludeRetiredSeekingActivityMode,
   };
   if (when === 'upcoming') {
     return {
       ...base,
-      ...mongoUpcomingPublishedOrRetiredSeeking(now),
+      ...mongoUpcomingPublished(now),
     };
   }
   if (when === 'past') {
@@ -356,22 +351,19 @@ const buildPublishedActivitiesMongoFilter = (
 
 const EXPLORE_MAP_PARTICIPANT_CAP = 12;
 
-/** @deprecated Use filterPublishedDocs */
-const filterPublishedUpcomingDocs = async (docs: MongoActivityDoc[]): Promise<MongoActivityDoc[]> =>
-  filterPublishedDocs(docs, 'upcoming');
-
 export const listFeaturedPublishedActivitiesFromMongo = async (take: number): Promise<ActivityWithPublicRelations[]> => {
   const docs = await activitiesCollection()
     .find({
       status: ActivityStatus.PUBLISHED,
       featured: true,
-      startAt: { $gte: new Date() }
+      startAt: { $gte: new Date() },
+      ...mongoExcludeRetiredSeekingActivityMode,
     })
     .sort({ startAt: 1 })
     .limit(take * 2)
     .toArray();
 
-  const filtered = await filterPublishedUpcomingDocs(docs);
+  const filtered = await filterPublishedDocs(docs, 'upcoming');
   return assembleEventsWithPublicRelations(filtered.slice(0, take));
 };
 
@@ -419,11 +411,8 @@ export const listPublishedActivitiesForExploreMapFromMongo = async (
     .find({
       status: ActivityStatus.PUBLISHED,
       joinMode: { $ne: 'private' },
-      $or: [
-        { startAt: { $gte: startOfToday } },
-        /** Member “looking for” stays discoverable while published — not gated like fixed hosted departures. */
-        mongoOnlyRetiredSeekingActivityMode,
-      ],
+      startAt: { $gte: startOfToday },
+      ...mongoExcludeRetiredSeekingActivityMode,
     })
     .sort({ startAt: 1 })
     .limit(Math.max(take + 80, take * 2))

@@ -16,7 +16,6 @@ import {
   serializePeopleListBrowseState,
 } from './peopleListBrowseUrl';
 import { LIST_CAT_PARAM, serializeBrowseListSearchParams } from '../../discovery/discoverySession';
-import { stripRetiredPeopleListTabParams } from '../../routing/productUrlInbound';
 
 /** Explore `pinKind` when opening the map from list browse state. */
 export const resolveListBrowseExplorePinKind = (
@@ -150,6 +149,5 @@ export const serializeBrowseListToExploreSearchParams = (
     params.set(LIST_CAT_PARAM, listCat);
   }
 
-  stripRetiredPeopleListTabParams(params);
   return params;
 };

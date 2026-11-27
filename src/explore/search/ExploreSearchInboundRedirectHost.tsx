@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useProductSearchParams } from '../../routing/useEffectiveLocation';
+import { useProductSearchParams } from '../../routing/useProductSearchParams';
 import { useExploreSearchParamRedirect } from '../shell/useExploreSearchParamRedirect';
 
 /** Map + list inbound `?search=1` → `/explore/search?searchHome=1`. */

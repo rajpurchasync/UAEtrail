@@ -57,7 +57,7 @@ describe('discoveryPortNamingGuard', () => {
     expect(listPorts).toEqual(expected);
   });
 
-  it('W97: explore discoveryPortExplore inventory locked at twenty ports', () => {
+  it('W97: explore discoveryPortExplore inventory locked at eighteen ports', () => {
     const root = join(process.cwd(), 'src/discovery');
     const explorePorts = readdirSync(root)
       .filter((f) => f.startsWith('discoveryPortExplore') && f.endsWith('.ts') && !f.endsWith('.test.ts'))
@@ -77,11 +77,9 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreMapChrome.ts',
       'discoveryPortExploreMapClient.ts',
       'discoveryPortExploreMapPin.ts',
-      'discoveryPortExploreOptionalFilterWire.ts',
       'discoveryPortExploreOptionalFilters.ts',
       'discoveryPortExploreRouting.ts',
       'discoveryPortExploreSearch.ts',
-      'discoveryPortExploreSearchFeed.ts',
       'discoveryPortExploreSearchRouting.ts',
     ];
     expect(explorePorts).toEqual(expected);
@@ -105,9 +103,7 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreBrowseUrl.ts',
       'discoveryPortExploreFlowChrome.ts',
       'discoveryPortExploreSearch.ts',
-      'discoveryPortExploreSearchFeed.ts',
       'discoveryPortExploreSearchRouting.ts',
-      'discoveryPortExploreOptionalFilterWire.ts',
       'discoveryPortExploreOptionalFilters.ts',
       'discoveryPortExploreRouting.ts',
       'discoveryPortExploreMapClient.ts',

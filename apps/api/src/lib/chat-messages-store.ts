@@ -123,22 +123,6 @@ const threadMatch = (currentUserId: string, partnerId: string) => ({
   ],
 });
 
-export const listThreadMessages = async (input: {
-  currentUserId: string;
-  partnerId: string;
-  skip: number;
-  take: number;
-}): Promise<ChatMessage[]> => {
-  const rows = await chatMessagesCollection()
-    .find(threadMatch(input.currentUserId, input.partnerId))
-    .sort({ createdAt: -1 })
-    .skip(input.skip)
-    .limit(input.take)
-    .toArray();
-
-  return rows.map(mapMessage);
-};
-
 /** Latest messages in chronological order (oldest → newest within the batch). */
 export const listThreadMessagesLatest = async (input: {
   currentUserId: string;

@@ -18,8 +18,8 @@ export const setAdminTenantStatus = async (input: {
     throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
   }
 
-  const prismaStatus = input.status === 'active' ? TenantStatus.ACTIVE : TenantStatus.SUSPENDED;
-  await updateAdminTenantStatus(input.tenantId, prismaStatus);
+  const storedStatus = input.status === 'active' ? TenantStatus.ACTIVE : TenantStatus.SUSPENDED;
+  await updateAdminTenantStatus(input.tenantId, storedStatus);
 
   await createAuditLog({
     actorId: input.actorId,

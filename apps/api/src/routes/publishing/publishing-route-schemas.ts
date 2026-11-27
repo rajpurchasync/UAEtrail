@@ -34,7 +34,7 @@ export const teamPatchSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
+export const membershipRoleToStored = (role: 'tenant_admin' | 'tenant_guide'): MembershipRole =>
   role === 'tenant_admin' ? MembershipRole.TENANT_ADMIN : MembershipRole.TENANT_GUIDE;
 
 export const hostParticipantRevokeSchema = z

@@ -1084,13 +1084,7 @@ export type AdminUserType =
   | 'business_host'
   | 'guide_host'
   | 'host_staff'
-  | 'platform_admin'
-  /** @deprecated Use business_host */
-  | 'business_organizer'
-  /** @deprecated Use guide_host */
-  | 'guide_organizer'
-  /** @deprecated Use host_staff */
-  | 'organizer_staff';
+  | 'platform_admin';
 
 export type AuthProviderType = 'email' | 'google';
 

@@ -21,11 +21,19 @@ describe('host-note canonical guard (COH-06)', () => {
   });
 
   it('Mongo mapper reads hostNote; new writes set hostNote', () => {
-    const store = read('apps/api/src/lib/activity-engagement-store.ts');
-    expect(store).toMatch(/hostNote: resolveHostNote\(doc\)/);
-    expect(store).toMatch(/hostNote: opts\.hostNote/);
-    expect(store).toMatch(/hostNote: input\.hostNote/);
-    expect(store).not.toMatch(/organizerNote/);
+    const internals = read('apps/api/src/lib/activity-engagement-store-internals.ts');
+    expect(internals).toMatch(/hostNote: resolveHostNote\(doc\)/);
+    const hostWrites = read('apps/api/src/lib/activity-engagement-host-writes.ts');
+    expect(hostWrites).toMatch(/hostNote: opts\.hostNote/);
+    expect(hostWrites).toMatch(/hostNote: input\.hostNote/);
+    for (const rel of [
+      'apps/api/src/lib/activity-engagement-store.ts',
+      'apps/api/src/lib/activity-engagement-store-internals.ts',
+      'apps/api/src/lib/activity-engagement-host-writes.ts',
+      'apps/api/src/lib/activity-engagement-join-writes.ts',
+    ]) {
+      expect(read(rel)).not.toMatch(/organizerNote/);
+    }
   });
 
   it('HTTP decide/revoke schemas accept hostNote only', () => {

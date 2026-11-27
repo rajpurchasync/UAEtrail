@@ -3,9 +3,6 @@
  * Legacy inbound aliases are not accepted; serializers emit canonical values from domain modules.
  */
 
-/** Retired pinKind query tokens — empty under GW-7 (parse rejects unknown keys). */
-export const EXPLORE_PIN_KIND_INBOUND_TOKENS = [] as const;
-
 export const CANONICAL_LIST_FILTER_AVAILABILITY = 'availability';
 
 export const listFilterMeansAvailabilityOnly = (filterParam: string | null | undefined): boolean =>
@@ -19,8 +16,6 @@ export const parseInboundExploreActivityMode = (
   if (value === 'hosted' || value === 'availability' || value === 'all') return value;
   return null;
 };
-
-export const canonicalizeExplorePinKindToken = (key: string): string => key;
 
 export const readExploreSearchScopeParam = (
   searchParams: Pick<URLSearchParams, 'get'>
@@ -50,14 +45,6 @@ export const PEOPLE_LIST_TAB_URL_PARAM = 'peopleTab';
 export const readPeopleCrewsTabParam = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): string | null => searchParams.get(PEOPLE_LIST_TAB_URL_PARAM)?.trim() || null;
-
-export const stripRetiredExploreOverlayParams = (_params: URLSearchParams): void => {
-  /* GW-7: no retired keys — serializers must not emit them. */
-};
-
-export const stripRetiredPeopleListTabParams = (_params: URLSearchParams): void => {
-  /* GW-7: no retired keys — serializers must not emit them. */
-};
 
 export const sanitizeInboundExplorePinId = (pin: string | null | undefined): string | null => {
   const raw = pin?.trim();

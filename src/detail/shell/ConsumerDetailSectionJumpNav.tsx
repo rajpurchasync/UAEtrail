@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { findEntityDetailScrollRoot, scrollEntityDetailToId } from './consumerDetailScrollTo';
 
 export type ConsumerDetailJumpLink = {
@@ -112,9 +113,15 @@ const JumpChip = ({
   children: ReactNode;
   active?: boolean;
 }) => {
+  const navigate = useNavigate();
+  const { hash } = useLocation();
   const onPress = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     scrollEntityDetailToId(sectionId);
+    const nextHash = `#${sectionId}`;
+    if (hash !== nextHash) {
+      navigate({ hash: nextHash }, { replace: true, preventScrollReset: true });
+    }
   };
   return (
   <a

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { MobileMonthCalendar } from '../../components/mobile/MobileMonthCalendar';
-import { todayIso } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import { todayIso } from '../../discovery/discoveryPortExploreOptionalFilters';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import { BrowseCompactRow } from '../browse/BrowseCompactRow';
 import { browseCardDateIso } from '../browse/browseCardMeta';

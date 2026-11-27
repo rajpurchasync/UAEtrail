@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
-import { useNavigate, useNavigationType } from 'react-router-dom';
-import { useProductLocation } from '../../routing/useEffectiveLocation';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { APP_SCROLL_ROOT_ID, resetAppScroll, shouldResetAppScrollOnNavigation } from '../../config/layoutScroll';
 import {
   applyViewReturnSnapshot,
@@ -25,7 +24,7 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
-  const location = useProductLocation();
+  const location = useLocation();
   const navigate = useNavigate();
   const navType = useNavigationType();
   const previousPath = useRef<string | null>(null);

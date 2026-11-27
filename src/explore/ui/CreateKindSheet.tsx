@@ -1,4 +1,4 @@
-import { useProductSearchParams } from '../../routing/useEffectiveLocation';
+import { useProductSearchParams } from '../../routing/useProductSearchParams';
 import { ChevronRight } from 'lucide-react';
 import { CreateKindGrid } from '../../create/CreateKindGrid';
 import type { IntentFixedComposeKind } from '@uaetrail/shared-types';

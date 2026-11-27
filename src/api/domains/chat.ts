@@ -20,26 +20,16 @@ export const chatApi = {
     getMessages: (
       userId: string,
       options?: {
-        page?: number;
-        pageSize?: number;
         limit?: number;
         beforeMessageId?: string;
       }
     ) => {
       const params = new URLSearchParams();
-      if (options?.beforeMessageId) {
-        params.set('beforeMessageId', options.beforeMessageId);
-        if (options.limit) params.set('limit', String(options.limit));
-      } else if (options?.limit !== undefined) {
-        params.set('limit', String(options.limit));
-      } else {
-        if (options?.page) params.set('page', String(options.page));
-        if (options?.pageSize) params.set('pageSize', String(options.pageSize));
-      }
+      if (options?.beforeMessageId) params.set('beforeMessageId', options.beforeMessageId);
+      if (options?.limit) params.set('limit', String(options.limit));
       const qs = params.toString();
       return apiRequest<{
         data: ChatMessageDTO[];
-        pagination?: { total: number; page: number; pageSize: number; totalPages: number };
         meta?: { hasMoreOlder?: boolean; total?: number };
       }>(`/chat/messages/${userId}${qs ? `?${qs}` : ''}`, { auth: true });
     },

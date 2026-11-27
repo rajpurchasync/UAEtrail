@@ -8,13 +8,13 @@ import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListExplorer } from './explorer/ListExplorer';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
 import {
-  useDiscoveryListExperienceModel,
-  type DiscoveryListExperienceProps,
-} from '../discovery/useDiscoveryExperienceModel';
+  useListDiscoveryExperienceModel,
+  type ListDiscoveryExperienceProps,
+} from './shell/useListDiscoveryExperienceModel';
 
-export type { DiscoveryListExperienceProps as ListDiscoveryExperienceProps } from '../discovery/useDiscoveryExperienceModel';
+export type { ListDiscoveryExperienceProps };
 
-export const ListDiscoveryExperience = (props: DiscoveryListExperienceProps) => {
+export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => {
   const {
     surface,
     onCloseMapOverlay,
@@ -76,7 +76,7 @@ export const ListDiscoveryExperience = (props: DiscoveryListExperienceProps) => 
     closeListMapColumn,
     handleCreateFabTap,
     createFabLabel,
-  } = useDiscoveryListExperienceModel(props);
+  } = useListDiscoveryExperienceModel(props);
 
   return (
     <div className={hubListRoot}>

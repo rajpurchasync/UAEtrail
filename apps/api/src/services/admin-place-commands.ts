@@ -14,6 +14,7 @@ import {
 import { activityDetailPath } from '../lib/member-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
+import { toStoredActivityType } from '../domain/activity-type.js';
 import { toLocationDto } from '../lib/mappers.js';
 import { invalidatePublishedDestinationsCache } from '../lib/destination-resolution.js';
 import { findDestinationById, updateAdminDestination } from '../lib/destinations-store.js';
@@ -77,29 +78,21 @@ export type AdminPlaceWriteInput = {
   unlockPriceAed?: number;
 };
 
-const toPrismaActivityType = (activityType: string): ActivityType => {
-  const normalized = activityType.toLowerCase();
-  if (normalized === 'hiking') return ActivityType.HIKING;
-  if (normalized === 'camping') return ActivityType.CAMPING;
-  if (normalized === 'shop') return ActivityType.SHOP;
-  return ActivityType.EVENT;
-};
-
-const toPrismaDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
+const toStoredDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
   if (!difficulty) return undefined;
   if (difficulty === 'easy') return Difficulty.EASY;
   if (difficulty === 'moderate') return Difficulty.MODERATE;
   return Difficulty.HARD;
 };
 
-const toPrismaAccessibility = (
+const toStoredAccessibility = (
   accessibility?: 'car-accessible' | 'remote'
 ): Accessibility | undefined => {
   if (!accessibility) return undefined;
   return accessibility === 'car-accessible' ? Accessibility.CAR_ACCESSIBLE : Accessibility.REMOTE;
 };
 
-const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): LocationStatus | undefined => {
+const toStoredLocationStatus = (status?: 'draft' | 'active' | 'inactive'): LocationStatus | undefined => {
   if (!status) return undefined;
   if (status === 'draft') return LocationStatus.DRAFT;
   return status === 'active' ? LocationStatus.ACTIVE : LocationStatus.INACTIVE;
@@ -152,16 +145,16 @@ export const createAdminPlaceRecord = async (input: { actorId: string; body: Adm
     placeHubLabel,
     destinationId: body.destinationId?.trim() || null,
     parentPlaceId,
-    activityType: toPrismaActivityType(body.activityType),
+    activityType: toStoredActivityType(body.activityType),
     description: body.description,
-    difficulty: toPrismaDifficulty(body.difficulty),
+    difficulty: toStoredDifficulty(body.difficulty),
     season: body.season,
     childFriendly: body.childFriendly ?? false,
     maxGroupSize: body.maxGroupSize,
-    accessibility: toPrismaAccessibility(body.accessibility),
+    accessibility: toStoredAccessibility(body.accessibility),
     images: body.images,
     featured: body.featured ?? false,
-    status: toPrismaLocationStatus(body.status) ?? LocationStatus.ACTIVE,
+    status: toStoredLocationStatus(body.status) ?? LocationStatus.ACTIVE,
     distance: body.distance,
     duration: body.duration,
     elevation: body.elevation,
@@ -198,7 +191,7 @@ export const updateAdminPlaceRecord = async (input: {
     throw new ApiError(404, 'location_not_found', 'Location not found.');
   }
 
-  const nextStatus = toPrismaLocationStatus(body.status);
+  const nextStatus = toStoredLocationStatus(body.status);
   const activating =
     nextStatus === LocationStatus.ACTIVE &&
     (existing.status === LocationStatus.DRAFT || existing.status === LocationStatus.INACTIVE);
@@ -219,9 +212,9 @@ export const updateAdminPlaceRecord = async (input: {
     }
 
     const activityType = body.activityType
-      ? toPrismaActivityType(body.activityType)
+      ? toStoredActivityType(body.activityType)
       : existing.activityType;
-    const difficulty = body.difficulty ? toPrismaDifficulty(body.difficulty) : existing.difficulty;
+    const difficulty = body.difficulty ? toStoredDifficulty(body.difficulty) : existing.difficulty;
     const parkingLink = body.parkingLink !== undefined ? body.parkingLink : existing.parkingLink;
     const latitude = body.latitude !== undefined ? body.latitude : existing.latitude;
     const longitude = body.longitude !== undefined ? body.longitude : existing.longitude;
@@ -288,13 +281,13 @@ export const updateAdminPlaceRecord = async (input: {
       : {}),
     parentPlaceId,
     countryCode: body.countryCode?.toUpperCase(),
-    activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
+    activityType: body.activityType ? toStoredActivityType(body.activityType) : undefined,
     description: body.description,
-    difficulty: toPrismaDifficulty(body.difficulty),
+    difficulty: toStoredDifficulty(body.difficulty),
     season: body.season,
     childFriendly: body.childFriendly,
     maxGroupSize: body.maxGroupSize,
-    accessibility: toPrismaAccessibility(body.accessibility),
+    accessibility: toStoredAccessibility(body.accessibility),
     images: body.images,
     featured: body.featured,
     status: nextStatus,

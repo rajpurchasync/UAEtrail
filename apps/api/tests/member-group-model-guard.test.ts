@@ -7,15 +7,16 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 describe('member group model split', () => {
   it('stores teams with kind team + teamLabel (not activity in create schema)', () => {
     const store = read('src/lib/social-groups-store.ts');
+    const internals = read('src/lib/social-groups-store-internals.ts');
     expect(store).toMatch(/kind: 'team'/);
-    expect(store).toMatch(/COLLECTIONS\.MEMBER_GROUPS/);
+    expect(internals).toMatch(/COLLECTIONS\.MEMBER_GROUPS/);
     const schema = read('src/routes/user/schemas.ts');
     expect(schema).toMatch(/teamLabel/);
     expect(schema).not.toMatch(/z\.enum\(\['family', 'friends', 'colleagues', 'activity'\]\)/);
   });
 
   it('outing crew chat uses kind outing_crew', () => {
-    const store = read('src/lib/social-groups-store.ts');
+    const store = `${read('src/lib/social-groups-store.ts')}\n${read('src/lib/social-groups-store-internals.ts')}`;
     expect(store).toMatch(/kind: 'outing_crew'/);
     const shared = read('../../packages/shared-types/src/member-group.ts');
     expect(shared).toMatch(/MEMBER_GROUP_KINDS = \['team', 'outing_crew'\]/);

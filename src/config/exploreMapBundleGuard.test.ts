@@ -25,7 +25,9 @@ describe('explore map bundle split (P3)', () => {
 
   it('explore map shows catalog pins, not geo-tree area bubbles', () => {
     const placesMap = read('src/components/ui/PlacesMap.tsx');
-    expect(placesMap).toMatch(/ClusteredMarkers/);
+    const cluster = read('src/components/ui/placesMapClusteredMarkers.tsx');
+    expect(placesMap).toMatch(/placesMapClusteredMarkers/);
+    expect(cluster).toMatch(/ClusteredMarkers/);
     expect(placesMap).not.toMatch(/ExploreMapGeoBubbleLayer/);
     expect(placesMap).not.toMatch(/exploreGeoBubblesForZoom/);
     expect(read('src/explore/ui/exploreMapGeoBubbles.ts')).not.toMatch(/from ['"]leaflet['"]/);

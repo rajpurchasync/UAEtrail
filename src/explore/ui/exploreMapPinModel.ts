@@ -112,7 +112,7 @@ export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: Ex
   if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);
-  return true;
+  return false;
 };
 
 export { matchesUnifiedTopicFilter } from '../exploreMapTopicFilterMatch';

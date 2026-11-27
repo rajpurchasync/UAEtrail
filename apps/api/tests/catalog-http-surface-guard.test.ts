@@ -138,4 +138,24 @@ describe('catalog HTTP surface guard', () => {
     }
     expect(violations).toEqual([]);
   });
+
+  it('place submit builder is one module — no place-submit.ts rename hop', () => {
+    expect(exists('apps/api/src/services/place-submit.ts')).toBe(false);
+    expect(read('apps/api/src/services/location-submit.ts')).toMatch(
+      /export const buildPlaceSubmitPayload/
+    );
+    expect(read('apps/api/src/services/location-submit.ts')).not.toMatch(/buildLocationCreateData/);
+    expect(read('apps/api/src/services/me-place-submit-commands.ts')).toMatch(
+      /buildPlaceSubmitPayload/
+    );
+    expect(read('apps/api/src/services/me-place-submit-commands.ts')).toMatch(
+      /from '\.\/location-submit\.js'/
+    );
+    expect(read('apps/api/src/services/publishing-submitted-location-commands.ts')).toMatch(
+      /buildPlaceSubmitPayload/
+    );
+    expect(read('apps/api/src/services/publishing-submitted-location-commands.ts')).not.toMatch(
+      /buildLocationCreateData/
+    );
+  });
 });

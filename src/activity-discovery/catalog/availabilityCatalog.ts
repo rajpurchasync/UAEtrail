@@ -3,7 +3,7 @@ import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import { sortExploreActivities } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   isFriendMapItem,

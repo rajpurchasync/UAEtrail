@@ -243,10 +243,10 @@ export const seedDevMonthlyActivities = async (
       const startAt = calendarStartAt(monthOffset, slot);
 
       const base: ActivityCreateInput = {
-        tenant: { connect: { id: tenantId } },
-        location: { connect: { id: locationId } },
-        createdBy: { connect: { id: createdBy } },
-        host: { connect: { id: hostId } },
+        tenantId: tenantId,
+        locationId: locationId,
+        createdById: createdBy,
+        hostId: hostId,
         activityType,
         title: titleFor(activityType, locationId, monthOffset, slot),
         description: `Dev calendar outing (${activityType}) anchored at ${locationId}.`,

@@ -13,6 +13,7 @@ import { runCatalogCpcMigrations } from './catalog-cpc-migrations.js';
 import { buildDetailRevampSnapshotFromLegacy } from './entity-builders.js';
 import { roundMeetingCoordForShell } from './activity-meeting-shell.js';
 import { loadTrackPreviewFieldsFromGpxKey } from './gpx-track-preview.js';
+import { runMongoMigrationSteps, type MongoMigrationStep } from './mongo-migration-runner.js';
 
 const migrateRetiredCollectionToCanonicalAndDrop = async (db: Db, from: string, to: string): Promise<void> => {
   const collections = await db.listCollections().toArray();
@@ -1199,99 +1200,152 @@ const dropEmptyRetiredSeekingCollections = async (db: Db): Promise<void> => {
   }
 };
 
-/** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112509;
+/** Bump when adding a new migration step id (named steps — do not replay the full chain). */
+export const MONGO_MIGRATION_VERSION = 2025112510;
+
+export const MONGO_MIGRATION_SEEKING_PURGE_STEP_ID = 'retired-seeking-storage-purge' as const;
+
+const buildMongoMigrationSteps = (): MongoMigrationStep[] => [
+  {
+    id: 'collections.events-to-activities',
+    run: (database) => migrateRetiredCollectionToCanonicalAndDrop(database, 'events', COLLECTIONS.ACTIVITIES),
+  },
+  {
+    id: 'collections.event-requests-to-activity-requests',
+    run: (database) =>
+      migrateRetiredCollectionToCanonicalAndDrop(database, 'event_requests', COLLECTIONS.ACTIVITY_REQUESTS),
+  },
+  {
+    id: 'collections.event-participants-to-activity-participants',
+    run: (database) =>
+      migrateRetiredCollectionToCanonicalAndDrop(database, 'event_participants', COLLECTIONS.ACTIVITY_PARTICIPANTS),
+  },
+  {
+    id: 'collections.organizer-applications-to-host-applications',
+    run: (database) =>
+      migrateRetiredCollectionToCanonicalAndDrop(database, 'organizer_applications', COLLECTIONS.HOST_APPLICATIONS),
+  },
+  {
+    id: 'collections.user-favorites-to-wishlist',
+    run: (database) => migrateRetiredCollectionToCanonicalAndDrop(database, 'user_favorites', COLLECTIONS.USER_WISHLIST),
+  },
+  {
+    id: 'fields.event-id-to-activity-id',
+    run: async (database) => {
+      for (const name of [
+        COLLECTIONS.ACTIVITY_REQUESTS,
+        COLLECTIONS.ACTIVITY_PARTICIPANTS,
+        COLLECTIONS.USER_WISHLIST,
+        'chat_messages',
+        'notifications',
+      ]) {
+        await renameFieldIfPresent(database, name, 'eventId', 'activityId');
+      }
+    },
+  },
+  {
+    id: 'activity-type-values.activities',
+    run: (database) => migrateActivityTypeValues(database, COLLECTIONS.ACTIVITIES),
+  },
+  {
+    id: 'activity-type-values.locations',
+    run: (database) => migrateActivityTypeValues(database, 'locations'),
+  },
+  { id: 'activity.location-id-aliases', run: migrateActivityLocationIdAliases },
+  { id: 'activity.retired-rideshare', run: migrateRetiredRideshareActivities },
+  { id: 'terminology.carpool-to-rideshare', run: migrateCarpoolTerminologyToRideshare },
+  {
+    id: 'fields.guide-id-to-host-id',
+    run: (database) => renameFieldIfPresent(database, COLLECTIONS.ACTIVITIES, 'guideId', 'hostId'),
+  },
+  { id: 'users.visitor-to-participant', run: migrateUserRoleVisitorToParticipant },
+  { id: 'audit-log.entity-types', run: migrateAuditLogEntityTypes },
+  { id: 'notifications.kinds', run: migrateNotificationKinds },
+  { id: 'activity.join-mode-from-requirements', run: migrateActivityJoinModeFromRequirements },
+  { id: 'activity.embedded-persona-intent-titles', run: migrateEmbeddedPersonaParticipantIntentTitles },
+  { id: 'merchant.profile-tenant-links', run: backfillMerchantProfileTenantLinks },
+  { id: 'merchant.provision-shop-tenants', run: provisionShopTenantsForOrphanMerchants },
+  { id: 'merchant.dedupe-tenant-ids', run: dedupeMerchantProfileTenantIds },
+  { id: 'activity.participant-slots-used', run: backfillParticipantSlotsUsed },
+  { id: 'activity.detail-schema-v2', run: migrateActivityDetailSchemaV2 },
+  { id: 'activity.incomplete-revamp-fields', run: backfillIncompleteActivityRevampFields },
+  { id: 'activity.waitlist-and-counts', run: backfillActivityWaitlistAndCounts },
+  { id: 'revamp.ensure-collections', run: ensureRevampCollectionsExist },
+  { id: 'location.heavy-fields-side-collections', run: migrateLocationHeavyFieldsToSideCollections },
+  { id: 'place.track-geometry-from-gpx', run: backfillPlaceTrackGeometryFromGpx },
+  { id: 'activity.meeting-coords-private-shell', run: migrateActivityMeetingCoordsToPrivateAndShell },
+  { id: 'activity.participant-intent-ids-string', run: migrateParticipantIntentIdsToString },
+  { id: 'activity.terminology-values', run: migrateActivityTerminologyValues },
+  { id: 'location.registry-listed', run: backfillLocationRegistryListed },
+  { id: 'wishlist.purge-retired-targets', run: purgeRetiredWishlistTargetRows },
+  { id: 'tenant.owner-memberships', run: backfillTenantOwnerMemberships },
+  { id: 'tenant.publishing-purpose', run: backfillTenantPublishingPurpose },
+  { id: 'catalog.cpc-migrations', run: runCatalogCpcMigrations },
+  { id: 'activity.organizer-note-to-host-note', run: migrateOrganizerNoteToHostNote },
+  { id: 'notifications.demand-explore-pin-paths', run: migrateDemandExplorePinPaths },
+  { id: 'commerce.drop-removed-collections', run: dropRemovedCommerceCollections },
+  { id: 'shop.public-contact-flags', run: backfillShopPublicContactFlags },
+  { id: 'member.group-model-split', run: migrateMemberGroupModelSplit },
+  { id: 'friend.graph-collections', run: migrateFriendGraphCollections },
+  { id: 'outing.crew-kind-rename', run: migrateOutingCrewKindRename },
+  {
+    id: MONGO_MIGRATION_SEEKING_PURGE_STEP_ID,
+    run: async (database) => {
+      const { purgeRetiredSeekingStorage } = await import('./retired-seeking-storage-purge.js');
+      const seekingPurge = await purgeRetiredSeekingStorage(database);
+      if (
+        seekingPurge.participantIntentsCancelled > 0 ||
+        seekingPurge.seekingActivitiesRetired > 0 ||
+        seekingPurge.participantIntentRequestsDeleted > 0
+      ) {
+        console.log(`[mongo] Retired seeking legacy storage: ${JSON.stringify(seekingPurge)}`);
+      }
+    },
+  },
+  {
+    id: 'geo.backfill-refs-on-pins',
+    run: async (database) => {
+      const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
+      await backfillGeoRefOnPins(database);
+    },
+  },
+  {
+    id: 'notifications.stale-bookmark-paths',
+    run: async (database) => {
+      const { migrateStaleNotificationBookmarkPaths } = await import(
+        './notification-bookmark-path-migration.js'
+      );
+      await migrateStaleNotificationBookmarkPaths(database);
+    },
+  },
+  { id: 'member-availability.buddies-to-friends', run: migrateMemberAvailabilityBuddiesVisibility },
+  {
+    id: 'destination.geo-migrations',
+    run: async (database) => {
+      const { runDestinationGeoMigrations } = await import('./destination-geo-migrations.js');
+      await runDestinationGeoMigrations(database);
+    },
+  },
+  {
+    id: 'activity.unset-denormalized-destination-id',
+    run: async (database) => {
+      const { unsetDenormalizedActivityDestinationId } = await import('./destination-geo-migrations.js');
+      await unsetDenormalizedActivityDestinationId(database);
+    },
+  },
+  { id: 'retired-seeking.drop-empty-collections', run: dropEmptyRetiredSeekingCollections },
+  {
+    id: 'catalogs.seed-if-empty',
+    run: async () => {
+      const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
+      await seedCatalogsIfEmpty();
+    },
+  },
+];
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
-  const meta = db.collection<{ _id: string; version?: number }>('schema_meta');
-  const state = await meta.findOne({ _id: 'migrations' });
-  if (typeof state?.version === 'number' && state.version >= MONGO_MIGRATION_VERSION) {
-    return;
-  }
-
-  await migrateRetiredCollectionToCanonicalAndDrop(db, 'events', COLLECTIONS.ACTIVITIES);
-  await migrateRetiredCollectionToCanonicalAndDrop(db, 'event_requests', COLLECTIONS.ACTIVITY_REQUESTS);
-  await migrateRetiredCollectionToCanonicalAndDrop(db, 'event_participants', COLLECTIONS.ACTIVITY_PARTICIPANTS);
-  await migrateRetiredCollectionToCanonicalAndDrop(db, 'organizer_applications', COLLECTIONS.HOST_APPLICATIONS);
-  await migrateRetiredCollectionToCanonicalAndDrop(db, 'user_favorites', COLLECTIONS.USER_WISHLIST);
-
-  for (const name of [
-    COLLECTIONS.ACTIVITY_REQUESTS,
-    COLLECTIONS.ACTIVITY_PARTICIPANTS,
-    COLLECTIONS.USER_WISHLIST,
-    'chat_messages',
-    'notifications',
-  ]) {
-    await renameFieldIfPresent(db, name, 'eventId', 'activityId');
-  }
-
-  await migrateActivityTypeValues(db, COLLECTIONS.ACTIVITIES);
-  await migrateActivityTypeValues(db, 'locations');
-  await migrateActivityLocationIdAliases(db);
-  await migrateRetiredRideshareActivities(db);
-  await migrateCarpoolTerminologyToRideshare(db);
-  await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, 'guideId', 'hostId');
-  await migrateUserRoleVisitorToParticipant(db);
-  await migrateAuditLogEntityTypes(db);
-  await migrateNotificationKinds(db);
-  await migrateActivityJoinModeFromRequirements(db);
-  await migrateEmbeddedPersonaParticipantIntentTitles(db);
-  await backfillMerchantProfileTenantLinks(db);
-  await provisionShopTenantsForOrphanMerchants(db);
-  await dedupeMerchantProfileTenantIds(db);
-  await backfillParticipantSlotsUsed(db);
-  await migrateActivityDetailSchemaV2(db);
-  await backfillIncompleteActivityRevampFields(db);
-  await backfillActivityWaitlistAndCounts(db);
-  await ensureRevampCollectionsExist(db);
-  await migrateLocationHeavyFieldsToSideCollections(db);
-  await backfillPlaceTrackGeometryFromGpx(db);
-  await migrateActivityMeetingCoordsToPrivateAndShell(db);
-  await migrateParticipantIntentIdsToString(db);
-  await migrateActivityTerminologyValues(db);
-  await backfillLocationRegistryListed(db);
-  await purgeRetiredWishlistTargetRows(db);
-  await backfillTenantOwnerMemberships(db);
-  await backfillTenantPublishingPurpose(db);
-  await runCatalogCpcMigrations(db);
-  await migrateOrganizerNoteToHostNote(db);
-  await migrateDemandExplorePinPaths(db);
-  await dropRemovedCommerceCollections(db);
-  await backfillShopPublicContactFlags(db);
-  await migrateMemberGroupModelSplit(db);
-  await migrateFriendGraphCollections(db);
-  await migrateOutingCrewKindRename(db);
-  const { purgeRetiredSeekingStorage } = await import('./retired-seeking-storage-purge.js');
-  const seekingPurge = await purgeRetiredSeekingStorage(db);
-  if (
-    seekingPurge.participantIntentsCancelled > 0 ||
-    seekingPurge.seekingActivitiesRetired > 0 ||
-    seekingPurge.participantIntentRequestsDeleted > 0
-  ) {
-    console.log(`[mongo] Retired seeking legacy storage: ${JSON.stringify(seekingPurge)}`);
-  }
-  const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
-  await backfillGeoRefOnPins(db);
-  const { migrateStaleNotificationBookmarkPaths } = await import(
-    './notification-bookmark-path-migration.js'
-  );
-  await migrateStaleNotificationBookmarkPaths(db);
-  await migrateMemberAvailabilityBuddiesVisibility(db);
-  const { runDestinationGeoMigrations, unsetDenormalizedActivityDestinationId } = await import(
-    './destination-geo-migrations.js'
-  );
-  await runDestinationGeoMigrations(db);
-  await unsetDenormalizedActivityDestinationId(db);
-  await dropEmptyRetiredSeekingCollections(db);
-  const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
-  await seedCatalogsIfEmpty();
-
-  await meta.updateOne(
-    { _id: 'migrations' },
-    { $set: { version: MONGO_MIGRATION_VERSION, appliedAt: new Date() } },
-    { upsert: true }
-  );
+  await runMongoMigrationSteps(db, buildMongoMigrationSteps(), MONGO_MIGRATION_VERSION);
 };
 
 /** One-time: stored availability visibility `buddies` → `friends`. */

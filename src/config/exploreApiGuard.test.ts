@@ -47,8 +47,14 @@ describe('exploreApiGuard (R8.1)', () => {
       join(process.cwd(), 'src/explore/ui/CreateHostingActivityFlow.tsx'),
       'utf8'
     );
-    expect(source).toMatch(/afterHostingActivityPublishClientRefresh/);
+    const publishSource = readFileSync(
+      join(process.cwd(), 'src/explore/ui/hostingActivityFlowPublish.ts'),
+      'utf8'
+    );
+    expect(source).toMatch(/runHostingActivityFlowPublish/);
+    expect(publishSource).toMatch(/afterHostingActivityPublishClientRefresh/);
     expect(source).not.toMatch(/\bapi\./);
+    expect(publishSource).not.toMatch(/\bapi\./);
   });
 
   it('explore does not add new direct api facade usage', () => {

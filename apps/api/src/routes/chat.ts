@@ -13,7 +13,6 @@ import {
 import {
   loadDirectMessageLatest,
   loadDirectMessageOlder,
-  loadDirectMessageThread,
 } from '../services/chat-direct-messages-read.js';
 import { sendDirectChatMessage } from '../services/chat-direct-messages-commands.js';
 import { toggleChatMessageReaction } from '../services/chat-message-reaction-commands.js';
@@ -69,22 +68,10 @@ chatRouter.get('/conversations', async (req, res, next) => {
 });
 
 const messageThreadSchema = z.object({ userId: z.string().min(1) });
-const dmThreadQuerySchema = z
-  .object({
-    page: z.coerce.number().int().positive().optional(),
-    pageSize: z.coerce.number().int().min(1).max(200).optional(),
-    limit: z.coerce.number().int().min(1).max(200).optional(),
-    beforeMessageId: z.string().min(1).optional(),
-  })
-  .refine(
-    (query) => {
-      if (query.beforeMessageId) {
-        return query.page === undefined && query.pageSize === undefined;
-      }
-      return true;
-    },
-    { message: 'beforeMessageId cannot be combined with page pagination' }
-  );
+const dmThreadQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+  beforeMessageId: z.string().min(1).optional(),
+});
 
 chatRouter.get(
   '/messages/:userId',
@@ -97,8 +84,8 @@ chatRouter.get(
 
       await assertCanMessageUser(currentUserId, partnerId);
 
+      const limit = query.limit ?? 50;
       if (query.beforeMessageId) {
-        const limit = query.limit ?? 20;
         const { messages, hasMoreOlder } = await loadDirectMessageOlder({
           currentUserId,
           partnerId,
@@ -112,31 +99,14 @@ chatRouter.get(
         return;
       }
 
-      if (query.limit !== undefined) {
-        const { messages, hasMoreOlder, total } = await loadDirectMessageLatest({
-          currentUserId,
-          partnerId,
-          limit: query.limit,
-        });
-        res.json({
-          data: await presentChatMessagesAsDtos(messages, currentUserId),
-          meta: { hasMoreOlder, total },
-        });
-        return;
-      }
-
-      const page = query.page ?? 1;
-      const pageSize = query.pageSize ?? 50;
-      const { total, messages } = await loadDirectMessageThread({
+      const { messages, hasMoreOlder, total } = await loadDirectMessageLatest({
         currentUserId,
         partnerId,
-        page,
-        pageSize,
+        limit,
       });
-
       res.json({
         data: await presentChatMessagesAsDtos(messages, currentUserId),
-        pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+        meta: { hasMoreOlder, total },
       });
     } catch (error) {
       next(error);

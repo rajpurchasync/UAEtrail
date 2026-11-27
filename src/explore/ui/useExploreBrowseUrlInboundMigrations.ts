@@ -8,11 +8,7 @@ import {
   parseBrowseDiscoverOpen,
 } from '../../discovery/discoverySession';
 import { compactExploreParentFilterSearchParams, EXPLORE_PIN_QUERY_KEY } from '../routing';
-import {
-  sanitizeInboundExplorePinId,
-  stripRetiredExploreOverlayParams,
-  stripRetiredPeopleListTabParams,
-} from '../../routing/productUrlInbound';
+import { sanitizeInboundExplorePinId } from '../../routing/productUrlInbound';
 
 const isPeopleView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
@@ -34,8 +30,6 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
     const sanitizedPin = sanitizeInboundExplorePinId(params.get(EXPLORE_PIN_QUERY_KEY));
     if (!sanitizedPin) params.delete(EXPLORE_PIN_QUERY_KEY);
     else params.set(EXPLORE_PIN_QUERY_KEY, sanitizedPin);
-    stripRetiredExploreOverlayParams(params);
-    stripRetiredPeopleListTabParams(params);
     const wireSanitized = params.toString() !== search;
     const browse = parseBrowseDiscoverOpen(params.get(BROWSE_DISCOVER_PARAM));
     const list = params.get('list') === '1';

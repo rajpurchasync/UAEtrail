@@ -1,6 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useProductLocation } from '../../routing/useEffectiveLocation';
+import { Navigate, useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
 import { isConsumerChromeHidden } from '../../config/platform';
 import {
@@ -34,7 +33,7 @@ const productViewportShellClass =
 /** Signed-in / product chrome — not used on guest marketing `/`. */
 export const ProductShell = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const location = useProductLocation();
+  const location = useLocation();
   const isMobile = useIsMobile();
 
   useEffect(() => {

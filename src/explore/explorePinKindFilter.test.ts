@@ -5,9 +5,10 @@ import {
 } from './explorePinKindFilter';
 
 describe('explorePinKindFilter', () => {
-  it('parses legacy trips wire as activities', () => {
-    expect(parseExplorePinKindFilter('trips')).toBe('activities');
+  it('parses canonical pin kinds', () => {
     expect(parseExplorePinKindFilter('activities')).toBe('activities');
+    expect(parseExplorePinKindFilter('places')).toBe('places');
+    expect(parseExplorePinKindFilter('shops')).toBe('shops');
     expect(parseExplorePinKindFilter(null)).toBe('all');
   });
 
@@ -16,7 +17,9 @@ describe('explorePinKindFilter', () => {
     expect(serializeExplorePinKindFilter('all')).toBeNull();
   });
 
-  it('parses legacy locations (area hub pins) as Spots', () => {
-    expect(parseExplorePinKindFilter('locations')).toBe('places');
+  it('rejects retired pinKind tokens', () => {
+    expect(parseExplorePinKindFilter('trips')).toBe('all');
+    expect(parseExplorePinKindFilter('locations')).toBe('all');
+    expect(parseExplorePinKindFilter('looking')).toBe('all');
   });
 });

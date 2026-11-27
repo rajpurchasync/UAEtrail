@@ -8,7 +8,6 @@ import {
   fetchPlaceCatalog,
   type PlaceCatalogQuery,
 } from '../api/domains/placeCatalogClient';
-import { api } from '../api/index';
 
 export type { PlaceCatalogQuery };
 export { fetchPlaceCatalog };
@@ -23,8 +22,3 @@ export const loadPlaceCatalogForPicker = async (
   fetchPlaceCatalogRows({
     placeType: activityType === 'rideshare' ? undefined : activityType,
   });
-
-export const listPublicPlacesCatalog = async (): Promise<PlaceDTO[]> => {
-  const res = await api.getPublicPlaces();
-  return res.data ?? [];
-};

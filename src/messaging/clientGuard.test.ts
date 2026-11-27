@@ -70,4 +70,14 @@ describe('messaging clientGuard', () => {
 
     expect(violations).toEqual([]);
   });
+
+  it('direct chat and crew wall lists are cursor-only', () => {
+    const chat = readFileSync(join(process.cwd(), 'src/api/domains/chat.ts'), 'utf8');
+    expect(chat).toMatch(/beforeMessageId/);
+    expect(chat).not.toMatch(/pageSize/);
+    expect(chat).not.toMatch(/\bpage\?:/);
+    const groups = readFileSync(join(process.cwd(), 'src/api/domains/groups.ts'), 'utf8');
+    expect(groups).toMatch(/beforeMessageId/);
+    expect(groups).not.toMatch(/before\?: string/);
+  });
 });

@@ -9,7 +9,7 @@ import type { PlaceDTO } from '@uaetrail/shared-types';
 import {
   DEFAULT_PLACE_CATALOG_COUNTRY,
   inferPlaceCatalogLadderFromRow,
-  resolvePlaceCatalogStateFromArea,
+  resolvePlaceCatalogStateFromDestination,
   type PlaceCatalogDestinationSearchHit,
 } from '../../places/placeCatalogDestinationIndex';
 import {
@@ -178,7 +178,7 @@ export const applyHostingDestinationSearchHit = (
     };
   }
   const area = areas.find((row) => row.id === hit.destinationId);
-  const state = area ? resolvePlaceCatalogStateFromArea(area, countryCode, areas) : '';
+  const state = area ? resolvePlaceCatalogStateFromDestination(area, countryCode, areas) : '';
   return {
     venueCascadeState: state,
     registryPlaceDestinationId: hit.destinationId,

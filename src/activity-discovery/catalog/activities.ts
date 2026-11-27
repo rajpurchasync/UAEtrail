@@ -6,17 +6,17 @@ import {
 } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesActivityDateFilter,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import { sortExploreActivities } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import { isFriendMapItem } from '../../discovery/discoveryPortExploreMapPin';
 import {
   exploreItemMatchesPriceFilter,
   type ExplorePriceFilter,
-} from '../../discovery/discoveryPortExploreOptionalFilterWire';
+} from '../../discovery/discoveryPortExploreOptionalFilters';
 import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreSearchRouting';
 import {
   selectAvailabilityFromMapItems,

@@ -1,22 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { ACTIVITY_DETAIL_TABS, parseActivityDetailTabParam } from '../../../activity/activityDetailTab';
 
 const read = (relativePath: string) =>
   readFileSync(join(process.cwd(), relativePath), 'utf8');
 
-describe('activityDetailShell (R6)', () => {
-  it('ActivityDetailView composes join surfaces and pricing sidebar', () => {
+describe('activityDetailShell (R6 contract)', () => {
+  it('detail tabs include crew and parse canonical tab param', () => {
+    expect(ACTIVITY_DETAIL_TABS).toContain('crew');
+    expect(parseActivityDetailTabParam('crew')).toBe('crew');
+  });
+
+  it('detail shell modules are split under src/components/activity/detail', () => {
+    const root = join(process.cwd(), 'src/components/activity/detail');
+    for (const file of [
+      'ActivityDetailBody.tsx',
+      'useActivityDetailViewModel.tsx',
+      'useActivityDetailJoinSurfaces.tsx',
+      'ActivityDetailPricingSidebar.tsx',
+    ]) {
+      expect(existsSync(join(root, file)), file).toBe(true);
+    }
+  });
+
+  it('ActivityDetailView stays a thin composition shell', () => {
     const view = read('src/components/activity/ActivityDetailView.tsx');
-    const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
-    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
     expect(view).toMatch(/useActivityDetailViewModel/);
     expect(view).toMatch(/ActivityDetailBody/);
-    expect(model).toMatch(/useActivityDetailJoinSurfaces/);
-    expect(body).toMatch(/ActivityDetailSidebarColumn/);
-    expect(read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx')).toMatch(
-      /ActivityDetailPricingSidebar/
-    );
     expect(view).not.toMatch(/ActivityDetailStickyFooter/);
+    expect(view.split(/\n/).length).toBeLessThan(400);
   });
 });

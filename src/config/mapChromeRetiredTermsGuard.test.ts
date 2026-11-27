@@ -9,7 +9,7 @@ describe('mapChromeRetiredTermsGuard (no Find-crew map pill)', () => {
     const pills = read('src/explore/explorePinKindFilter.ts');
     expect(pills).toMatch(/EXPLORE_PIN_KIND_PILLS/);
     expect(pills).not.toMatch(/key:\s*'looking'/);
-    expect(pills).toMatch(/canonicalizeExplorePinKindToken/);
+    expect(pills).toMatch(/parseExplorePinKindFilter/);
   });
 
   it('MAP-CHROME-02: topic pills omit retired looking', () => {

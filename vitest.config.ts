@@ -23,6 +23,7 @@ export default defineConfig({
   test: {
     pool: 'vmThreads',
     environment: 'jsdom',
+    setupFiles: [path.resolve(projectRoot, 'vitest.setup.ts')],
     include: [
       'src/**/*.test.ts',
       'src/**/*.test.tsx',

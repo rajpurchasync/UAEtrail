@@ -192,11 +192,8 @@ export const updateActivityDetailed = async (
   if (data.outingTopic !== undefined) patch.outingTopic = data.outingTopic;
   if (data.groupChatPostPolicy !== undefined) patch.groupChatPostPolicy = data.groupChatPostPolicy;
   if (data.discoverCommunityId !== undefined) patch.discoverCommunityId = data.discoverCommunityId;
-  if (data.host !== undefined) {
-    patch.hostId =
-      'disconnect' in data.host && data.host.disconnect ? null : data.host.connect?.id ?? null;
-  }
-  if (data.location?.connect?.id !== undefined) patch.locationId = data.location.connect.id;
+  if (data.hostId !== undefined) patch.hostId = data.hostId;
+  if (data.locationId !== undefined) patch.locationId = data.locationId;
 
   const revampTouched =
     data.itinerary !== undefined ||
@@ -355,10 +352,10 @@ export const duplicateTenantActivity = async (
   const hostId = source.hostId ?? source.createdById ?? createdById;
 
   const created = await createActivityDetailed({
-    tenant: { connect: { id: tenantId } },
-    location: { connect: { id: source.locationId } },
-    createdBy: { connect: { id: createdById } },
-    host: { connect: { id: hostId } },
+    tenantId,
+    locationId: source.locationId,
+    createdById,
+    hostId,
     title: copyTitle,
     description: source.description,
     startAt: source.startAt,

@@ -15,8 +15,9 @@ const destinationItem = (): ExploreMapItemDTO => ({
 });
 
 describe('Destination is not a map pin', () => {
-  it('legacy pinKind=locations maps to Spots, not destination hub rows', () => {
-    expect(parseExplorePinKindFilter('locations')).toBe('places');
+  it('Spots pinKind is places; destination hubs are not Spots', () => {
+    expect(parseExplorePinKindFilter('places')).toBe('places');
+    expect(parseExplorePinKindFilter('locations')).toBe('all');
     const destination = destinationItem();
     const place: ExploreMapItemDTO = {
       id: 'venue:1',
@@ -29,7 +30,5 @@ describe('Destination is not a map pin', () => {
     };
     expect(matchesExplorePinKindFilter(destination, 'places')).toBe(false);
     expect(matchesExplorePinKindFilter(place, 'places')).toBe(true);
-    expect(matchesExplorePinKindFilter(destination, 'locations')).toBe(false);
-    expect(matchesExplorePinKindFilter(place, 'locations')).toBe(true);
   });
 });

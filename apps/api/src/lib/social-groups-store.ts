@@ -1,277 +1,60 @@
-import type { Collection } from 'mongodb';
-import type {
-  GroupWallReplyPreviewDTO,
-  MemberGroupInboundType,
-  MemberGroupKind,
-  SocialTeamLabelType,
-} from '@uaetrail/shared-types';
-import { resolveMemberGroupShape } from '@uaetrail/shared-types';
-import { COLLECTIONS } from './collections.js';
-import { buildGroupWallReplyPreview } from './reply-preview.js';
+import type { SocialTeamLabelType } from '@uaetrail/shared-types';
 import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
-import { getMongoClient } from './mongo.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
 import {
   GROUP_WALL_REACTION_KINDS,
   type GroupWallReactionKind,
 } from '../domain/group-wall-reactions.js';
-import { isKidProfileComplete } from '../domain/family-kid-profile.js';
-
+import {
+  groupsCollection,
+  invitesCollection,
+  mapGroup,
+  mapInvite,
+  mapMember,
+  membersCollection,
+  normalizeInviteEmail,
+  wallCollection,
+  wallReactionsCollection,
+  type MongoGroup,
+  type MongoGroupInvite,
+  type MongoGroupMember,
+} from './social-groups-store-internals.js';
+import type {
+  GroupInviteRecord,
+  GroupInviteStatus,
+  GroupMemberRecord,
+  GroupMemberType,
+  GroupRecord,
+  GroupRole,
+  GroupStatus,
+  GroupType,
+  GroupWallPostPolicy,
+} from './social-groups-store-types.js';
+export {
+  createGroupWallMessage,
+  listGroupWallMessages,
+  presentGroupWallMessage,
+  toggleGroupWallReaction,
+} from './social-groups-wall-store.js';
 export { GROUP_WALL_REACTION_KINDS, type GroupWallReactionKind };
+export type {
+  GroupInviteRecord,
+  GroupInviteStatus,
+  GroupMemberRecord,
+  GroupMemberType,
+  GroupRecord,
+  GroupRole,
+  GroupStatus,
+  GroupType,
+  GroupWallMessageRecord,
+  GroupWallPostPolicy,
+  GroupWallReactionSummary,
+  ListGroupWallMessagesOptions,
+  ListGroupWallMessagesResult,
+  PresentedGroupWallMessage,
+} from './social-groups-store-types.js';
 
-/** @deprecated Use {@link MemberGroupKind} + {@link SocialTeamLabelType}. */
-export type GroupType = MemberGroupInboundType;
-export type GroupRole = 'admin' | 'member';
-export type GroupMemberType = 'adult' | 'kid';
-export type GroupInviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
-
-export type GroupStatus = 'active' | 'suspended';
-
-export type GroupWallPostPolicy = 'all_members' | 'admins_only';
-
-export type GroupRecord = {
-  id: string;
-  kind: MemberGroupKind;
-  teamLabel: SocialTeamLabelType | null;
-  /** @deprecated API compat — derived from kind + teamLabel. */
-  type: MemberGroupInboundType;
-  name: string;
-  slogan: string | null;
-  bannerUrl: string | null;
-  photoUrl: string | null;
-  adminUserId: string;
-  activityId: string | null;
-  status: GroupStatus;
-  wallPostPolicy: GroupWallPostPolicy;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type GroupMemberRecord = {
-  id: string;
-  groupId: string;
-  userId: string | null;
-  role: GroupRole;
-  memberType: GroupMemberType;
-  displayName: string | null;
-  invitedEmail: string | null;
-  createdByUserId: string;
-  createdAt: Date;
-  isActive: boolean;
-  /** Kid profile — required for outing attach. */
-  dateOfBirth?: Date | null;
-  emergencyContactName?: string | null;
-  emergencyContactPhone?: string | null;
-  emergencyContactRelation?: string | null;
-  medicalConditions?: string | null;
-  gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
-  photoUrl?: string | null;
-  profileComplete?: boolean;
-};
-
-export type GroupInviteRecord = {
-  id: string;
-  groupId: string;
-  invitedByUserId: string;
-  email: string;
-  role: GroupRole;
-  token: string;
-  status: GroupInviteStatus;
-  acceptedByUserId: string | null;
-  acceptedAt: Date | null;
-  expiresAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type GroupWallReactionSummary = {
-  kind: GroupWallReactionKind;
-  count: number;
-  reactedByMe: boolean;
-};
-
-export type GroupWallMessageRecord = {
-  id: string;
-  groupId: string;
-  authorUserId: string;
-  body: string;
-  replyToMessageId?: string | null;
-  createdAt: Date;
-  reactions?: GroupWallReactionSummary[];
-};
-
-export type PresentedGroupWallMessage = GroupWallMessageRecord & {
-  author: {
-    id: string;
-    displayName: string;
-    avatarUrl: string | null;
-  };
-  reactions: GroupWallReactionSummary[];
-  replyToPreview?: GroupWallReplyPreviewDTO | null;
-};
-
-type MongoGroup = {
-  _id: string;
-  kind?: MemberGroupKind;
-  teamLabel?: SocialTeamLabelType | null;
-  type: MemberGroupInboundType;
-  name: string;
-  slogan: string | null;
-  bannerUrl: string | null;
-  photoUrl: string | null;
-  adminUserId: string;
-  activityId?: string | null;
-  status?: GroupStatus;
-  wallPostPolicy?: GroupWallPostPolicy;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type MongoGroupMember = {
-  _id: string;
-  groupId: string;
-  userId: string | null;
-  role: GroupRole;
-  memberType: GroupMemberType;
-  displayName: string | null;
-  invitedEmail: string | null;
-  createdByUserId: string;
-  createdAt: Date;
-  isActive?: boolean;
-  wallLastReadAt?: Date;
-  dateOfBirth?: Date | null;
-  emergencyContactName?: string | null;
-  emergencyContactPhone?: string | null;
-  emergencyContactRelation?: string | null;
-  medicalConditions?: string | null;
-  gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
-  photoUrl?: string | null;
-};
-
-type MongoGroupInvite = {
-  _id: string;
-  groupId: string;
-  invitedByUserId: string;
-  email: string;
-  role: GroupRole;
-  token: string;
-  status: GroupInviteStatus;
-  acceptedByUserId: string | null;
-  acceptedAt: Date | null;
-  expiresAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type MongoGroupWallMessage = {
-  _id: string;
-  groupId: string;
-  authorUserId: string;
-  body: string;
-  replyToMessageId?: string | null;
-  createdAt: Date;
-};
-
-type MongoGroupWallReaction = {
-  _id: string;
-  groupId: string;
-  messageId: string;
-  userId: string;
-  kind: GroupWallReactionKind;
-  createdAt: Date;
-};
-
-const groupsCollection = (): Collection<MongoGroup> =>
-  getMongoClient()!.db().collection<MongoGroup>(COLLECTIONS.MEMBER_GROUPS);
-
-const membersCollection = (): Collection<MongoGroupMember> =>
-  getMongoClient()!.db().collection<MongoGroupMember>(COLLECTIONS.MEMBER_GROUP_MEMBERS);
-
-const invitesCollection = (): Collection<MongoGroupInvite> =>
-  getMongoClient()!.db().collection<MongoGroupInvite>(COLLECTIONS.MEMBER_GROUP_INVITES);
-
-const wallCollection = (): Collection<MongoGroupWallMessage> =>
-  getMongoClient()!.db().collection<MongoGroupWallMessage>(COLLECTIONS.MEMBER_GROUP_WALL);
-
-const wallReactionsCollection = (): Collection<MongoGroupWallReaction> =>
-  getMongoClient()!.db().collection<MongoGroupWallReaction>(COLLECTIONS.MEMBER_GROUP_WALL_REACTIONS);
-
-const mapGroup = (row: MongoGroup): GroupRecord => {
-  const shape = resolveMemberGroupShape({
-    kind: row.kind ?? null,
-    teamLabel: row.teamLabel ?? null,
-    type: row.type,
-  });
-  return {
-    id: row._id,
-    kind: shape.kind,
-    teamLabel: shape.teamLabel,
-    type: shape.inboundType,
-    name: row.name,
-    slogan: row.slogan,
-    bannerUrl: row.bannerUrl,
-    photoUrl: row.photoUrl,
-    adminUserId: row.adminUserId,
-    activityId: row.activityId ?? null,
-    status: row.status ?? 'active',
-    wallPostPolicy: row.wallPostPolicy ?? 'all_members',
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-};
-
-const mapMember = (row: MongoGroupMember): GroupMemberRecord => {
-  const base: GroupMemberRecord = {
-    id: row._id,
-    groupId: row.groupId,
-    userId: row.userId,
-    role: row.role,
-    memberType: row.memberType,
-    displayName: row.displayName,
-    invitedEmail: row.invitedEmail,
-    createdByUserId: row.createdByUserId,
-    createdAt: row.createdAt,
-    isActive: row.isActive ?? true,
-    dateOfBirth: row.dateOfBirth ?? null,
-    emergencyContactName: row.emergencyContactName ?? null,
-    emergencyContactPhone: row.emergencyContactPhone ?? null,
-    emergencyContactRelation: row.emergencyContactRelation ?? null,
-    medicalConditions: row.medicalConditions ?? null,
-    gender: row.gender ?? null,
-    photoUrl: row.photoUrl ?? null,
-  };
-  if (row.memberType === 'kid') {
-    base.profileComplete = isKidProfileComplete(base);
-  }
-  return base;
-};
-
-const mapInvite = (row: MongoGroupInvite): GroupInviteRecord => ({
-  id: row._id,
-  groupId: row.groupId,
-  invitedByUserId: row.invitedByUserId,
-  email: row.email,
-  role: row.role,
-  token: row.token,
-  status: row.status,
-  acceptedByUserId: row.acceptedByUserId,
-  acceptedAt: row.acceptedAt,
-  expiresAt: row.expiresAt,
-  createdAt: row.createdAt,
-  updatedAt: row.updatedAt
-});
-
-const mapWall = (row: MongoGroupWallMessage): GroupWallMessageRecord => ({
-  id: row._id,
-  groupId: row.groupId,
-  authorUserId: row.authorUserId,
-  body: row.body,
-  replyToMessageId: row.replyToMessageId ?? null,
-  createdAt: row.createdAt
-});
-
-const normalizeInviteEmail = (email: string) => email.trim().toLowerCase();
 
 export const findGroupById = async (groupId: string): Promise<GroupRecord | null> => {
   const row = await groupsCollection().findOne({ _id: groupId });
@@ -1029,255 +812,6 @@ export const updateKidGroupMember = async (
   return mapMember(result);
 };
 
-
-const displayNameForUser = (
-  user: Awaited<ReturnType<typeof findAuthUsersByIds>>[number] | undefined
-) => user?.profile.displayName ?? user?.email.split('@')[0] ?? 'Member';
-
-const presentGroupWallMessages = async (
-  groupId: string,
-  messages: GroupWallMessageRecord[],
-  viewerUserId?: string
-): Promise<PresentedGroupWallMessage[]> => {
-  if (messages.length === 0) return [];
-
-  const replyParentIds = [
-    ...new Set(
-      messages.map((m) => m.replyToMessageId?.trim()).filter((id): id is string => Boolean(id))
-    ),
-  ];
-  const parentRows =
-    replyParentIds.length > 0
-      ? await wallCollection().find({ groupId, _id: { $in: replyParentIds } }).toArray()
-      : [];
-  const parentById = new Map(parentRows.map((row) => [row._id, mapWall(row)]));
-
-  const authorIds = [
-    ...new Set([
-      ...messages.map((m) => m.authorUserId),
-      ...parentRows.map((row) => row.authorUserId),
-    ]),
-  ];
-  const users = await findAuthUsersByIds(authorIds);
-  const userMap = new Map(users.map((u) => [u._id, u]));
-
-  const messageIds = messages.map((message) => message.id);
-  const reactionRows = await wallReactionsCollection()
-    .find({ groupId, messageId: { $in: messageIds } })
-    .toArray();
-
-  const reactionsByMessage = new Map<string, GroupWallReactionSummary[]>();
-  for (const reaction of reactionRows) {
-    const existing = reactionsByMessage.get(reaction.messageId) ?? [];
-    const summary = existing.find((item) => item.kind === reaction.kind);
-    if (summary) {
-      summary.count += 1;
-      if (viewerUserId && reaction.userId === viewerUserId) {
-        summary.reactedByMe = true;
-      }
-    } else {
-      existing.push({
-        kind: reaction.kind,
-        count: 1,
-        reactedByMe: Boolean(viewerUserId && reaction.userId === viewerUserId)
-      });
-    }
-    reactionsByMessage.set(reaction.messageId, existing);
-  }
-
-  return messages.map((message) => {
-    const user = userMap.get(message.authorUserId);
-    const replyId = message.replyToMessageId?.trim() || null;
-    const parent = replyId ? parentById.get(replyId) : undefined;
-    const parentUser = parent ? userMap.get(parent.authorUserId) : undefined;
-    const replyToPreview =
-      replyId && parent
-        ? buildGroupWallReplyPreview(
-            replyId,
-            displayNameForUser(parentUser),
-            parent.body
-          )
-        : null;
-
-    return {
-      ...message,
-      author: {
-        id: message.authorUserId,
-        displayName: displayNameForUser(user),
-        avatarUrl: user?.profile.avatarUrl ?? null,
-      },
-      reactions: reactionsByMessage.get(message.id) ?? [],
-      replyToPreview,
-    };
-  });
-};
-
-export type ListGroupWallMessagesOptions = {
-  limit?: number;
-  viewerUserId?: string;
-  /** Return messages strictly after this timestamp (ascending, for poll / SSE). */
-  since?: Date;
-  /** Return messages strictly before this timestamp (ascending batch, for history). */
-  before?: Date;
-  /** Return messages older than this wall message (compound cursor with createdAt). */
-  beforeMessageId?: string;
-};
-
-export type ListGroupWallMessagesResult = {
-  messages: PresentedGroupWallMessage[];
-  /** True when the query hit `limit` and older messages may still exist. */
-  hasMoreOlder: boolean;
-};
-
-export const listGroupWallMessages = async (
-  groupId: string,
-  options: ListGroupWallMessagesOptions = {}
-): Promise<ListGroupWallMessagesResult> => {
-  const limit = options.limit ?? 100;
-  const viewerUserId = options.viewerUserId;
-
-  const historyCursorCount = [options.before, options.beforeMessageId].filter(Boolean).length;
-  if (options.since && (options.before || options.beforeMessageId)) {
-    throw new Error('wall_list_since_before_conflict');
-  }
-  if (historyCursorCount > 1) {
-    throw new Error('wall_list_before_conflict');
-  }
-
-  if (options.since) {
-    const rows = await wallCollection()
-      .find({ groupId, createdAt: { $gt: options.since } })
-      .sort({ createdAt: 1 })
-      .limit(limit)
-      .toArray();
-    const messages = rows.map(mapWall);
-    const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
-    return { messages: presented, hasMoreOlder: false };
-  }
-
-  if (options.beforeMessageId) {
-    const anchor = await wallCollection().findOne({ _id: options.beforeMessageId, groupId });
-    if (!anchor) {
-      return { messages: [], hasMoreOlder: false };
-    }
-    const rows = await wallCollection()
-      .find({
-        groupId,
-        $or: [
-          { createdAt: { $lt: anchor.createdAt } },
-          { createdAt: anchor.createdAt, _id: { $lt: anchor._id } },
-        ],
-      })
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(limit)
-      .toArray();
-    const messages = rows.map(mapWall).reverse();
-    const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
-    return { messages: presented, hasMoreOlder: rows.length === limit };
-  }
-
-  if (options.before) {
-    const rows = await wallCollection()
-      .find({ groupId, createdAt: { $lt: options.before } })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .toArray();
-    const messages = rows.map(mapWall).reverse();
-    const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
-    return { messages: presented, hasMoreOlder: rows.length === limit };
-  }
-
-  const rows = await wallCollection().find({ groupId }).sort({ createdAt: -1 }).limit(limit).toArray();
-  const messages = rows.map(mapWall).reverse();
-  const presented = await presentGroupWallMessages(groupId, messages, viewerUserId);
-  return { messages: presented, hasMoreOlder: rows.length === limit };
-};
-
-export const presentGroupWallMessage = async (
-  groupId: string,
-  message: GroupWallMessageRecord,
-  viewerUserId?: string
-) => {
-  const [presented] = await presentGroupWallMessages(groupId, [message], viewerUserId);
-  return presented;
-};
-
-export const createGroupWallMessage = async (input: {
-  groupId: string;
-  authorUserId: string;
-  body: string;
-  replyToMessageId?: string | null;
-}): Promise<GroupWallMessageRecord> => {
-  const replyToMessageId = input.replyToMessageId?.trim() || null;
-  if (replyToMessageId) {
-    const parent = await wallCollection().findOne({ _id: replyToMessageId, groupId: input.groupId });
-    if (!parent) {
-      throw new Error('reply_not_found');
-    }
-  }
-
-  const doc: MongoGroupWallMessage = {
-    _id: newEntityId(),
-    groupId: input.groupId,
-    authorUserId: input.authorUserId,
-    body: input.body.trim(),
-    replyToMessageId,
-    createdAt: new Date()
-  };
-  await wallCollection().insertOne(doc);
-  return { ...mapWall(doc), reactions: [] };
-};
-
-export const toggleGroupWallReaction = async (input: {
-  groupId: string;
-  messageId: string;
-  userId: string;
-  kind: GroupWallReactionKind;
-}): Promise<{ reactions: GroupWallReactionSummary[] }> => {
-  const message = await wallCollection().findOne({ _id: input.messageId, groupId: input.groupId });
-  if (!message) {
-    throw new Error('Message not found.');
-  }
-
-  const existing = await wallReactionsCollection().findOne({
-    messageId: input.messageId,
-    userId: input.userId,
-    kind: input.kind
-  });
-
-  if (existing) {
-    await wallReactionsCollection().deleteOne({ _id: existing._id });
-  } else {
-    await wallReactionsCollection().insertOne({
-      _id: newEntityId(),
-      groupId: input.groupId,
-      messageId: input.messageId,
-      userId: input.userId,
-      kind: input.kind,
-      createdAt: new Date()
-    });
-  }
-
-  const reactionRows = await wallReactionsCollection().find({ messageId: input.messageId }).toArray();
-  const reactions: GroupWallReactionSummary[] = [];
-  for (const reaction of reactionRows) {
-    const summary = reactions.find((item) => item.kind === reaction.kind);
-    if (summary) {
-      summary.count += 1;
-      if (reaction.userId === input.userId) {
-        summary.reactedByMe = true;
-      }
-    } else {
-      reactions.push({
-        kind: reaction.kind,
-        count: 1,
-        reactedByMe: reaction.userId === input.userId
-      });
-    }
-  }
-
-  return { reactions };
-};
 
 export const countSocialGroups = async (): Promise<number> => groupsCollection().countDocuments();
 

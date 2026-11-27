@@ -99,8 +99,5 @@ export const scrollEntityDetailToId = (
   }
 
   root.scrollTo({ top: Math.max(0, next), behavior });
-  if (typeof window !== 'undefined' && window.location.hash !== `#${id}`) {
-    window.history.replaceState(null, '', `#${id}`);
-  }
   return true;
 };

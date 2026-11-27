@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { useProductLocation, useProductSearchParams } from '../routing/useEffectiveLocation';
+import { useProductSearchParams } from '../routing/useProductSearchParams';
 import { useDiscoveryGuestMapReload } from './useDiscoveryGuestMapReload';
 
 /**
@@ -13,7 +13,7 @@ export const useDiscoveryProductSession = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const location = useProductLocation();
+  const location = useLocation();
   const { pathname, search, state: locationState } = location;
   const [searchParams, setSearchParams] = useProductSearchParams();
 

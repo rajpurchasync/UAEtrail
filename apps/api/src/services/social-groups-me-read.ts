@@ -66,7 +66,6 @@ export const listMyGroupWallMessages = async (
   query: {
     limit?: number;
     since?: string;
-    before?: string;
     beforeMessageId?: string;
   }
 ) => {
@@ -78,7 +77,6 @@ export const listMyGroupWallMessages = async (
     limit: query.limit ?? 120,
     viewerUserId: userId,
     since: query.since ? new Date(query.since) : undefined,
-    before: query.before ? new Date(query.before) : undefined,
     beforeMessageId: query.beforeMessageId,
   });
   return { messages, hasMoreOlder };

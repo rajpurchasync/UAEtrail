@@ -1,4 +1,4 @@
-import type { TripMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import type { TripMapTopicKey } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /** Trip topic row — same axis as explore map `tripTypes=` (hiking · camping · rideshare). */

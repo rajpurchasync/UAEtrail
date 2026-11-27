@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import type { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { RewardAction } from '../domain/enums.js';
-import { fromPrismaActivityType } from '../domain/activity-type.js';
+import { fromStoredActivityType } from '../domain/activity-type.js';
 import { createLocationRecord } from '../lib/activities-store.js';
 import { createAuditLog } from '../lib/audit.js';
 import { toLocationDto } from '../lib/mappers.js';
@@ -9,7 +9,7 @@ import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { findAuthUserById } from '../lib/auth-users-store.js';
 import { notifyAdminsCatalogSubmitted } from './catalog-submit-notifications.js';
 import { resolvePlaceSubmitDestination } from './place-submit-destination.js';
-import { buildPlaceSubmitPayload } from './place-submit.js';
+import { buildPlaceSubmitPayload } from './location-submit.js';
 import { awardPoints } from './rewards.js';
 
 export const submitMyPlace = async (
@@ -51,7 +51,7 @@ export const submitMyPlace = async (
     kind: 'place',
     entityId: created.id,
     name: created.name,
-    catalogLabel: fromPrismaActivityType(created.activityType),
+    catalogLabel: fromStoredActivityType(created.activityType),
     submitterLabel,
   });
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useProductLocation } from '../../routing/useEffectiveLocation';
+import { useLocation } from 'react-router-dom';
 import { ProductNavLink } from '../navigation/ProductNavLink';
 import { ClipboardList, Home, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
 
@@ -47,7 +47,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
 /** Mobile tab bar — Trips · Places · Crews · Chat · Plans (`MOBILE_FIVE_TAB_ORDER`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
-  const { pathname, search } = useProductLocation();
+  const { pathname, search } = useLocation();
   const tabs = mobileBottomTabOrder();
   const activeTab = resolveMobileBottomTab(pathname, search);
   const unreadMessages = useInboxUnreadCount();

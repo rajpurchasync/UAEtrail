@@ -39,7 +39,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
   });
 
   it('P4B-PHASE-04: guard wired in verify:domain:fe', () => {
-    const verifyFe = read('scripts/verify/verify-domain-fe.mjs');
+    const verifyFe = read('scripts/verify/domain-fe-vitest-files.mjs');
     expect(verifyFe).toMatch(/p4bPhaseProgramGuard\.test\.ts/);
     expect(verifyFe).toMatch(/p4bS10fProgramGuard\.test\.ts/);
     expect(verifyFe).toMatch(/releaseOpsProgramGuard\.test\.ts/);

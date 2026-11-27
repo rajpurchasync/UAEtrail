@@ -15,10 +15,10 @@ import type {
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browse/browseListCopy';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { ExplorePriceFilter } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExplorePriceFilter } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
-import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExploreActivityDatePreset } from '../../discovery/discoveryPortExploreOptionalFilters';
 import { ListExplorerCalendar } from './ListExplorerCalendar';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';

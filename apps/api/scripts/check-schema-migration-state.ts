@@ -30,8 +30,15 @@ const main = async (): Promise<void> => {
   const dbVersion = typeof state?.version === 'number' ? state.version : null;
   const appliedAt = state?.appliedAt instanceof Date ? state.appliedAt.toISOString() : state?.appliedAt;
 
+  const appliedSteps = Array.isArray(state?.appliedSteps) ? state.appliedSteps : null;
+
   console.log(`[check] schema_meta.migrations.version: ${dbVersion ?? '(missing)'}`);
   if (appliedAt) console.log(`[check] schema_meta.migrations.appliedAt: ${appliedAt}`);
+  if (appliedSteps) {
+    console.log(`[check] schema_meta.migrations.appliedSteps: ${appliedSteps.length} recorded`);
+  } else {
+    console.log('[check] schema_meta.migrations.appliedSteps: (missing — integer-only version row)');
+  }
 
   if (dbVersion === null) {
     console.log('[check] Status: migrations never recorded — API startup will run full migration chain once.');

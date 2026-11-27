@@ -68,11 +68,7 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import {
-  INBOUND_SEARCH_SCOPE_FOCUS_PARAM,
-  stripRetiredExploreOverlayParams,
-  stripRetiredPeopleListTabParams,
-} from '../routing/productUrlInbound';
+import { INBOUND_SEARCH_SCOPE_FOCUS_PARAM } from '../routing/productUrlInbound';
 export type ExploreBrowseListMode = 'default' | 'crews';
 
 export type ExploreBrowseUrlSyncPatch = {
@@ -277,7 +273,6 @@ export const buildExploreBrowseSearchParams = (input: {
     params.delete(PEOPLE_LIST_TAB_URL_PARAM);
     params.delete(PEOPLE_FACET_URL_PARAM);
   }
-  stripRetiredPeopleListTabParams(params);
 
   params.delete('followedKind');
 
@@ -302,7 +297,6 @@ export const buildExploreBrowseSearchParams = (input: {
   /* Keep create/join overlays (`compose`, etc.) — browse sync must not dismiss FAB sessions. */
   params.delete('contribute');
   params.delete('request');
-  stripRetiredExploreOverlayParams(params);
 
   if (patch.listCat === null) params.delete(LIST_CAT_PARAM);
   else if (patch.listCat) params.set(LIST_CAT_PARAM, patch.listCat);

@@ -1,7 +1,6 @@
 /**
  * B-UNIFY-02 — merge list browse filter patches into URLSearchParams (explore overlay + list routes).
  */
-import { stripRetiredPeopleListTabParams } from '../routing/productUrlInbound';
 import type { BrowseListFilterState } from '../list/browse/browseListFilters';
 import type { BrowseMainCategoryKey } from '../list/browse/browseListTaxonomy';
 import { scopeBrowseListStateForListCat } from '../list/browse/browseListMapHandoff';
@@ -135,6 +134,4 @@ export const mergeDiscoveryBrowseListUrlParams = (
     if (resultsView === 'map') params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
     else params.delete(EXPLORE_SEARCH_VIEW_PARAM);
   }
-
-  stripRetiredPeopleListTabParams(params);
 };

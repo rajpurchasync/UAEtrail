@@ -172,7 +172,7 @@
       "apiFiles": [
         "apps/api/src/services/place-catalog.ts",
         "apps/api/src/services/place-registry.ts",
-        "apps/api/src/services/place-submit.ts",
+        "apps/api/src/services/location-submit.ts",
         "apps/api/src/services/catalog-submit-notifications.ts",
         "apps/api/src/services/platform-alerts-read.ts",
         "apps/api/src/services/platform-alerts-admin.ts",

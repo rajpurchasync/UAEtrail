@@ -1,10 +1,17 @@
-/** Retired Mongo `activities.activityMode` — ops residue only (MIG-DISCO-REG). */
-export const RETIRED_SEEKING_ACTIVITY_MODE = 'seeking' as const;
+/**
+ * Retired Mongo `activities.activityMode` — ops residue only (MIG-DISCO-REG).
+ * Literal lives in shared-types; this module is Mongo query helpers.
+ */
+import {
+  RETIRED_SEEKING_ACTIVITY_MODE,
+  isRetiredSeekingActivityModeValue,
+  type RetiredSeekingActivityModeWire,
+} from '@uaetrail/shared-types';
 
-export type RetiredSeekingActivityMode = typeof RETIRED_SEEKING_ACTIVITY_MODE;
+export { RETIRED_SEEKING_ACTIVITY_MODE };
+export type RetiredSeekingActivityMode = RetiredSeekingActivityModeWire;
 
-export const isRetiredSeekingActivityMode = (mode: unknown): mode is RetiredSeekingActivityMode =>
-  mode === RETIRED_SEEKING_ACTIVITY_MODE;
+export const isRetiredSeekingActivityMode = isRetiredSeekingActivityModeValue;
 
 export const publicActivityModeFromStored = (
   mode: string | null | undefined
@@ -19,8 +26,10 @@ export const mongoOnlyRetiredSeekingActivityMode = {
   activityMode: RETIRED_SEEKING_ACTIVITY_MODE,
 } as const;
 
-export const mongoUpcomingPublishedOrRetiredSeeking = (now: Date) => ({
-  $or: [mongoOnlyRetiredSeekingActivityMode, { startAt: { $gte: now } }],
+/** Upcoming hosted publish — retired seeking rows are excluded, not OR'd in. */
+export const mongoUpcomingPublished = (now: Date) => ({
+  startAt: { $gte: now },
+  ...mongoExcludeRetiredSeekingActivityMode,
 });
 
 export const mongoPastPublishedExcludeRetiredSeeking = (now: Date) => ({

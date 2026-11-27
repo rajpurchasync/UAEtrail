@@ -1,3 +1,7 @@
+/**
+ * Place catalog submit payload builder (writes `locations` place rows).
+ * Member and publishing commands import `buildPlaceSubmitPayload` from this module.
+ */
 import {
   deriveVenueAccessibilityFromAccessibleBy,
   encodeCommunityShopTags,
@@ -9,12 +13,12 @@ import {
 } from '@uaetrail/shared-types';
 import { Accessibility } from '../domain/enums.js';
 import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
-import { toPrismaActivityType } from '../domain/activity-type.js';
+import { toStoredActivityType } from '../domain/activity-type.js';
 import type { LocationSubmitBody } from '../domain/location-submit.js';
 
 const toActivityType = (
   activityType: LocationSubmitBody['activityType']
-): ActivityType => toPrismaActivityType(activityType);
+): ActivityType => toStoredActivityType(activityType);
 
 const toDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | undefined => {
   if (!difficulty) return undefined;
@@ -23,7 +27,7 @@ const toDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | u
   return Difficulty.HARD;
 };
 
-export type LocationCreateData = {
+export type PlaceSubmitCreateData = {
   name: string;
   countryCode: string;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
@@ -54,7 +58,7 @@ export type LocationCreateData = {
   season: string[];
   status: LocationStatus;
   registryListed: boolean;
-  submittedBy: { connect: { id: string } };
+  submittedById: string;
 };
 
 const isShopSubmit = (body: LocationSubmitBody): boolean => body.activityType.toLowerCase() === 'shop';
@@ -71,10 +75,10 @@ const toAccessibility = (
       : undefined;
 };
 
-export const buildLocationCreateData = (
+export const buildPlaceSubmitPayload = (
   body: LocationSubmitBody,
   submittedById: string
-): LocationCreateData => {
+): PlaceSubmitCreateData => {
   const shop = isShopSubmit(body);
   const facilityKind =
     body.facilityKind && isAddableFacilityPlaceKind(body.facilityKind as PlaceKind)
@@ -139,6 +143,6 @@ export const buildLocationCreateData = (
   season: ['year-round'],
   status: body.mapPin || body.activityAnchor ? LocationStatus.ACTIVE : LocationStatus.DRAFT,
   registryListed: body.mapPin || body.activityAnchor ? false : false,
-  submittedBy: { connect: { id: submittedById } }
+  submittedById
 };
 };

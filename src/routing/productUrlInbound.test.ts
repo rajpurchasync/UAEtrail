@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { parseExploreActivityModeFilter } from '../explore/exploreActivityModeFilter';
+import { parseExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import {
-  canonicalizeExplorePinKindToken,
   listFilterMeansAvailabilityOnly,
   normalizeExploreSearchScopeInbound,
   parseInboundExploreActivityMode,
@@ -22,11 +23,6 @@ describe('productUrlInbound (GW-7 canonical only)', () => {
     expect(parseInboundExploreActivityMode('hosted')).toBe('hosted');
   });
 
-  it('pinKind tokens pass through unchanged', () => {
-    expect(canonicalizeExplorePinKindToken('activities')).toBe('activities');
-    expect(canonicalizeExplorePinKindToken('looking')).toBe('looking');
-  });
-
   it('search scope reads searchScope only and normalizes known keys', () => {
     expect(readExploreSearchScopeParam(new URLSearchParams('searchFocus=people'))).toBeNull();
     expect(readExploreSearchScopeParam(new URLSearchParams('searchScope=people'))).toBe('people');
@@ -42,5 +38,24 @@ describe('productUrlInbound (GW-7 canonical only)', () => {
   it('sanitizes empty pins only', () => {
     expect(sanitizeInboundExplorePinId('demand:int-1')).toBe('demand:int-1');
     expect(sanitizeInboundExplorePinId('  ')).toBeNull();
+  });
+});
+
+describe('productUrlInbound delegation (R6)', () => {
+  it('browse list availability filter rejects legacy looking token', () => {
+    expect(listFilterMeansAvailabilityOnly('looking')).toBe(false);
+    expect(listFilterMeansAvailabilityOnly('availability')).toBe(true);
+  });
+
+  it('explore activity mode filter delegates and drops retired seeking', () => {
+    expect(parseExploreActivityModeFilter('seeking')).toBe('all');
+    expect(parseExploreActivityModeFilter('availability')).toBe('availability');
+    expect(parseExploreActivityModeFilter('hosted')).toBe('hosted');
+  });
+
+  it('explore pin kind filter accepts known lens keys only', () => {
+    expect(parseExplorePinKindFilter('places')).toBe('places');
+    expect(parseExplorePinKindFilter('demand')).toBe('all');
+    expect(parseExplorePinKindFilter(null)).toBe('all');
   });
 });

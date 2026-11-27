@@ -9,7 +9,7 @@ export const sharedActivityTypeSchema = z
 
 export type SharedActivityType = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop';
 
-export const toPrismaActivityType = (activityType: string): ActivityType => {
+export const toStoredActivityType = (activityType: string): ActivityType => {
   const normalized = activityType.toLowerCase();
   if (normalized === 'hiking') return ActivityType.HIKING;
   if (normalized === 'camping') return ActivityType.CAMPING;
@@ -18,7 +18,7 @@ export const toPrismaActivityType = (activityType: string): ActivityType => {
   return ActivityType.EVENT;
 };
 
-export const fromPrismaActivityType = (activityType: ActivityType | string): SharedActivityType => {
+export const fromStoredActivityType = (activityType: ActivityType | string): SharedActivityType => {
   const normalized = String(activityType).toUpperCase();
   if (normalized === 'HIKING') return 'hiking';
   if (normalized === 'CAMPING') return 'camping';
@@ -31,8 +31,8 @@ export const resolveActivityDtoType = (
   activity: Pick<Activity, 'activityType' | 'rideshareEnabled'>,
   location: Pick<Location, 'activityType'>
 ): SharedActivityType => {
-  if (activity.activityType) return fromPrismaActivityType(activity.activityType);
-  return fromPrismaActivityType(location.activityType);
+  if (activity.activityType) return fromStoredActivityType(activity.activityType);
+  return fromStoredActivityType(location.activityType);
 };
 
 export const assertLocationMatchesActivityType = (
@@ -41,7 +41,7 @@ export const assertLocationMatchesActivityType = (
 ): void => {
   if (requested === 'rideshare') return;
 
-  const normalized = fromPrismaActivityType(locationActivityType);
+  const normalized = fromStoredActivityType(locationActivityType);
   if (normalized !== requested) {
     throw new ApiError(
       400,

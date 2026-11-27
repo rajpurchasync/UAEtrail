@@ -93,6 +93,7 @@ describe('consumerDetailQaMatrixGuard (plan §8 entity detail)', () => {
     const verifyScript = [
       read('scripts/verify/verify-domain-canonicals.mjs'),
       read('scripts/verify/verify-domain-fe.mjs'),
+      read('scripts/verify/domain-fe-vitest-files.mjs'),
       read('scripts/verify/verify-domain-api.mjs'),
     ].join('\n');
     const missing: string[] = [];

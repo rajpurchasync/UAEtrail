@@ -1,4 +1,4 @@
-import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
+import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilters';
 import { useCrewDiscoverFeed } from '../discover/useCrewDiscoverFeed';
 
 type Args = {

@@ -75,6 +75,6 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     );
     expect(choke?.rule).toMatch(/readPeopleCrewsTabParam/);
     expect(read('src/routing/productUrlInbound.ts')).toMatch(/export const readPeopleCrewsTabParam/);
-    expect(read('src/routing/productUrlInbound.ts')).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(read('src/routing/productUrlInbound.ts')).not.toMatch(/stripRetiredPeopleListTabParams/);
   });
 });

@@ -311,7 +311,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/explorer/ListExplorerFilterPop.tsx',
-        facade: /discoveryPortExploreOptionalFilterWire/,
+        facade: /discoveryPortExploreOptionalFilters/,
       },
       {
         rel: 'src/list/explorer/ListDiscoverySearchField.tsx',
@@ -324,11 +324,11 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
-        facade: /discoveryPortExploreSearch(Feed|Routing)/,
+        facade: /discoveryPortExploreSearchRouting/,
       },
       {
         rel: 'src/list/explorer/FindCrewResultsSection.tsx',
-        facade: /discoveryPortExploreSearch(Feed)?/,
+        facade: /discoveryPortExploreSearchRouting/,
         avoidDirect: /explore\/search\/exploreSearchJoinablePools/,
       },
     ];
@@ -373,11 +373,11 @@ describe('discoverySessionParamsGuard', () => {
     }
     expect(violations).toEqual([]);
     expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
-    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilterWire/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilters/);
     expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRouting/);
-    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/parseExplorePriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/parseExplorePriceFilter/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/ExploreOptionalFilterRow/);
-    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).not.toMatch(
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(
       /from '\.\.\/explore\/exploreOptionalFilters'/
     );
     expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(/parseMapFilter/);
@@ -453,19 +453,19 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/list/explorer/FindCrewCommunityCard.tsx')).not.toMatch(/routingCatalog/);
     expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreSearchScopesForQuery/);
     expect(read('src/list/explorer/ListDiscoverySearchField.tsx')).toMatch(/exploreSearchScopesForQuery/);
-    expect(read('src/discovery/discoveryPortExploreSearchFeed.ts')).toMatch(/resolveExploreSearchTripPool/);
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/resolveExploreSearchTripPool/);
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/resolveExploreSearchTripPool/);
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/discoveryPortExploreSearchRouting/);
-    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(
-      /discoveryPortExploreSearchFeed/
-    );
     expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(
       /discoveryPortExploreSearchRouting/
     );
     expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).not.toMatch(
+      /discoveryPortExploreSearchFeed/
+    );
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).not.toMatch(
       /discoveryPortExploreSearch['"]/
     );
-    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/exploreMapItemPathFromAvailabilityRow/);
     expect(read('src/discovery/discoveryPortExploreFlowChrome.ts')).toMatch(/AvailabilityMatchPreview/);
@@ -482,18 +482,20 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
       /discoveryPortExploreSearch(Routing)?/
     );
-    expect(read('src/activity-discovery/catalog/activities.ts')).toMatch(/discoveryPortExploreOptionalFilterWire/);
-    expect(read('src/activity-discovery/catalog/activities.ts')).not.toMatch(/discoveryPortExploreOptionalFilters/);
+    expect(read('src/activity-discovery/catalog/activities.ts')).toMatch(/discoveryPortExploreOptionalFilters/);
+    expect(read('src/activity-discovery/catalog/activities.ts')).not.toMatch(
+      /discoveryPortExploreOptionalFilterWire/
+    );
   });
 
-  it('W11 list module imports activity date preset via discoveryPortExploreOptionalFilterWire', () => {
+  it('W11 list module imports activity date preset via discoveryPortExploreOptionalFilters', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
       if (/explore\/exploreActivityDateFilter/.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/serializeExploreActivityDatePreset/);
-    expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/parseExploreActivityDatePreset/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/serializeExploreActivityDatePreset/);
+    expect(read('src/discovery/discoveryPortExploreOptionalFilters.ts')).toMatch(/parseExploreActivityDatePreset/);
   });
 
   it('W10 list module imports explore search via discoveryPortExploreSearch facade', () => {

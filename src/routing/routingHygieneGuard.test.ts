@@ -12,13 +12,18 @@ describe('routingHygieneGuard', () => {
     expect(() => read('src/routing/RouterLocationReconcile.tsx')).toThrow();
   });
 
-  it('installs history notify once at boot', () => {
-    expect(read('src/main.tsx')).toMatch(/installHistoryChangeNotify/);
-  });
-
-  it('matches routes with reconciled product location on pathname desync', () => {
-    expect(read('src/routing/AppRoutes.tsx')).toMatch(/location=\{location\}/);
-    expect(read('src/App.tsx')).toMatch(/AppRoutesWithLocation/);
+  it('does not patch history or reconcile a second location source', () => {
+    expect(() => read('src/routing/routerLocationReconcile.ts')).toThrow();
+    expect(() => read('src/routing/RouterDesyncDebug.tsx')).toThrow();
+    expect(() => read('src/routing/useEffectiveLocation.ts')).toThrow();
+    expect(() => read('src/routing/useEffectiveLocation.tsx')).toThrow();
+    expect(read('src/main.tsx')).not.toMatch(/installHistoryChangeNotify/);
+    expect(read('src/App.tsx')).not.toMatch(
+      /AppRoutesWithLocation|EffectiveLocationProvider|RouterDesyncDebug|useProductLocation/
+    );
+    expect(read('src/routing/AppRoutes.tsx')).not.toMatch(/location=\{location\}/);
+    expect(read('src/detail/shell/consumerDetailScrollTo.ts')).not.toMatch(/history\.replaceState/);
+    expect(read('src/detail/shell/ConsumerDetailSectionJumpNav.tsx')).toMatch(/preventScrollReset/);
   });
 
   it('does not rewrite legacy compose=1 on mount (canonical wire is still "1")', () => {

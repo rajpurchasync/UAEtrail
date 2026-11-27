@@ -7,7 +7,7 @@ import {
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
-} from '@/discovery/discoveryPortExploreOptionalFilterWire';
+} from '@/discovery/discoveryPortExploreOptionalFilters';
 
 export type SocialMapChipAvatar = {
   id: string;

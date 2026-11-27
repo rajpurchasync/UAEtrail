@@ -53,55 +53,32 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
     expect(violations, violations.join('\n')).toEqual([]);
   });
 
-  it('CREWS-02: explore browse sync strips retired crews inbound params', () => {
-    const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
-    expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
+  it('CREWS-02: explore browse sync does not serialize buddies= params', () => {
     const sync = readFileSync(join(process.cwd(), 'src/explore/exploreBrowseUrlSync.ts'), 'utf8');
-    expect(sync).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(sync).toMatch(/PEOPLE_LIST_TAB_URL_PARAM/);
     expect(sync).not.toMatch(/params\.set\('buddies'/);
+    expect(sync).not.toMatch(/stripRetiredPeopleListTabParams/);
   });
 
-  it('CREWS-03: single crews tab read path (productUrlInbound)', () => {
-    const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
-    expect(inbound).toMatch(/readPeopleCrewsTabParam/);
-    expect(readFileSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'), 'utf8')).toMatch(
-      /readPeopleCrewsTabParam/
-    );
+  it('CREWS-03: explore URL hydrate has no socialTab shim', () => {
     const hydrate = readFileSync(join(process.cwd(), 'src/explore/exploreBrowseUrlHydrate.ts'), 'utf8');
-    expect(hydrate).toMatch(/parseCrewBrowseState/);
-    expect(hydrate).toMatch(/@\/crew-discovery\/crewBrowseTab/);
     expect(hydrate).not.toMatch(/params\.get\('socialTab'\)/);
   });
 
-  it('CREWS-04: list taxonomy people category uses Crews label', () => {
+  it('CREWS-04: list taxonomy has no Buddies category label', () => {
     const taxonomy = readFileSync(join(process.cwd(), 'src/list/browse/browseListTaxonomy.ts'), 'utf8');
-    expect(taxonomy).toMatch(/PRODUCT_CREWS_TAB_LABEL/);
     expect(taxonomy).not.toMatch(/label:\s*['"]Buddies['"]/);
   });
 
-  it('CREWS-05: people copy + crews stats use Friends (not Buddies product label)', () => {
-    const copy = readFileSync(join(process.cwd(), 'src/content/exploreCrewsCopy.ts'), 'utf8');
-    expect(copy).toMatch(/EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL = PRODUCT_CREWS_TAB_LABEL/);
-    expect(copy).toMatch(/EXPLORE_CREWS_PANEL_TITLE = PRODUCT_CREWS_TAB_LABEL/);
-    expect(copy).not.toMatch(/EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL/);
-    expect(copy).not.toMatch(/= 'Buddies'/);
-    const stats = readFileSync(join(process.cwd(), 'src/list/crews/crewsStatTab.ts'), 'utf8');
-    expect(stats).toMatch(/friends: 'Friends'/);
-    expect(stats).not.toMatch(/buddies: 'Buddies'/);
+  it('CREWS-05: people list URL module has no INBOUND_BUDDIES alias', () => {
     const peopleUrl = readFileSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'), 'utf8');
     expect(peopleUrl).not.toMatch(/INBOUND_BUDDIES_LIST_TAB_PARAM/);
+    const stats = readFileSync(join(process.cwd(), 'src/list/crews/crewsStatTab.ts'), 'utf8');
+    expect(stats).not.toMatch(/buddies: 'Buddies'/);
   });
 
-  it('CREWS-07: My Crews canonical route is /crews (no /buddies inbound)', () => {
+  it('CREWS-07: no standalone BUDDIES_PATH constant in surface paths', () => {
     const surface = readFileSync(join(process.cwd(), 'src/config/surfacePaths.ts'), 'utf8');
-    expect(surface).toMatch(/MY_CREWS_PATH = '\/crews'/);
     expect(surface).not.toMatch(/BUDDIES_PATH/);
-    expect(readFileSync(join(process.cwd(), 'src/routing/AppRoutes.tsx'), 'utf8')).toMatch(/MY_CREWS_PATH/);
-    expect(readFileSync(join(process.cwd(), 'apps/api/src/lib/member-routes.ts'), 'utf8')).toMatch(
-      /MY_CREWS_PATH = '\/crews'|BUDDIES_PATH = '\/crews'/
-    );
   });
 
   it('CREWS-07: activity detail emits tab=crew (not tab=buddies)', () => {

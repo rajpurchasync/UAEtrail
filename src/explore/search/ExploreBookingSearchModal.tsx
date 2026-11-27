@@ -12,7 +12,7 @@ import { ExploreBookingSearchMapMatches } from './ExploreBookingSearchMapMatches
 import {
   EXPLORE_SEARCH_MAP_MATCHES_TITLE,
   resolveExploreSearchBookingWherePlaceholder,
-} from '../../discovery/discoveryPortExploreSearchFeed';
+} from '../../discovery/discoveryPortExploreSearchRouting';
 import { useExploreBookingSearchState } from './useExploreBookingSearchState';
 import { ExploreBookingRecentSearches } from './ExploreBookingRecentSearches';
 import type { ExploreSearchScopeCounts } from '../exploreBrowseTaxonomy';

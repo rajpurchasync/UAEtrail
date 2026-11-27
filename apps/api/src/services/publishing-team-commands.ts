@@ -13,7 +13,7 @@ import {
   upsertTenantMembership,
 } from '../lib/tenant-access.js';
 import {
-  membershipRoleToPrisma,
+  membershipRoleToStored,
   type teamCreateSchema,
   type teamPatchSchema,
 } from '../routes/publishing/publishing-route-schemas.js';
@@ -23,7 +23,7 @@ export const addPublishingTeamMember = async (
   actorUserId: string,
   body: z.infer<typeof teamCreateSchema>
 ) => {
-  const role = membershipRoleToPrisma(body.role);
+  const role = membershipRoleToStored(body.role);
 
   const tenant = await findTenantById(tenantId);
   if (!tenant) {
@@ -88,7 +88,7 @@ export const patchPublishingTeamMember = async (
   if (body.role) {
     const updatedRoleMembership = await updateTenantMembershipRole(
       membership.id,
-      membershipRoleToPrisma(body.role)
+      membershipRoleToStored(body.role)
     );
     updated = {
       id: updatedRoleMembership.id,

@@ -49,7 +49,7 @@ describe('p4bS10fProgramGuard (P4b S10f ops)', () => {
   });
 
   it('S10F-OPS-04: S10f guards stay in verify:domain:fe vitest bundle', () => {
-    const verifyFe = read('scripts/verify/verify-domain-fe.mjs');
+    const verifyFe = read('scripts/verify/domain-fe-vitest-files.mjs');
     expect(verifyFe).toMatch(/p4bS10fProgramGuard\.test\.ts/);
     expect(verifyFe).toMatch(/activityDetailS10fBridgeGuard\.test\.ts/);
     expect(verifyFe).toMatch(/consumerDetailQaMatrixGuard\.test\.ts/);

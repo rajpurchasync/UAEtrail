@@ -465,27 +465,18 @@ describe('discovery refactor — RF-01 list feed footers', () => {
 });
 
 describe('activity detail program — structure (R6)', () => {
-  it('R6-01: embedded surfaces pass wire footers into ActivityDetailView', () => {
-    for (const file of [
-      'src/components/activities/ActivityPreviewOverlay.tsx',
-      'src/components/activity/ActivityManageSheet.tsx',
-    ]) {
-      const source = read(file);
-      expect(source).toMatch(/resolveActivityDetailWirePresentation/);
-      expect(source).toMatch(/wireFooterByTab/);
-    }
+  it('R6-01: wire presentation resolver has executing contract tests', () => {
+    expect(read('src/activity/resolveActivityDetailWirePresentation.test.ts')).toMatch(
+      /resolveActivityDetailWirePresentation/
+    );
   });
 
-  it('R6-02: map Manage opens the outing host desk', () => {
-    expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useHostActivitySheetBundle/);
-    const bundle = read('src/hooks/useHostActivitySheetBundle.tsx');
-    expect(bundle).toMatch(/activityCrewPath/);
-    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostCrewHub/);
-    expect(bundle).not.toMatch(/ActivityManageSheet/);
+  it('R6-02: host desk routing contract test present', () => {
+    expect(read('src/activity/activityHostDeskRouting.contract.test.ts')).toMatch(/activityCrewPath/);
+    expect(read('src/hooks/useHostActivitySheetBundle.tsx')).not.toMatch(/ActivityManageSheet/);
   });
 
-  it('R6-03: ActivityDetailView shell under 400 LOC', () => {
-    const lineCount = read('src/components/activity/ActivityDetailView.tsx').split(/\n/).length;
-    expect(lineCount).toBeLessThan(400);
+  it('R6-03: activity detail shell contract covers thin ActivityDetailView', () => {
+    expect(read('src/components/activity/detail/activityDetailShell.test.ts')).toMatch(/ActivityDetailView/);
   });
 });

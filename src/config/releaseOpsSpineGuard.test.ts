@@ -27,7 +27,7 @@ describe('releaseOpsSpineGuard (DMCP Phase 8)', () => {
   it('RELEASE-SPINE-03: program guards roll up in verify-release-ops', () => {
     expect(read('package.json')).toMatch(/verify:release-ops/);
     expect(existsSync(join(process.cwd(), 'scripts/verify/verify-release-ops.mjs'))).toBe(true);
-    expect(read('scripts/verify/verify-domain-fe.mjs')).toMatch(/releaseOpsSpineGuard\.test\.ts/);
+    expect(read('scripts/verify/domain-fe-vitest-files.mjs')).toMatch(/releaseOpsSpineGuard\.test\.ts/);
   });
 
   it('RELEASE-SPINE-04: PRE_DEPLOY lists same gates as platform-governance authorization', () => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useProductSearchParams } from '../../routing/useEffectiveLocation';
+import { useProductSearchParams } from '../../routing/useProductSearchParams';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { serializeExploreActivityDatePreset } from '../routing';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';

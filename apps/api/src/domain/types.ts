@@ -1,6 +1,5 @@
 /**
- * Entity types mirroring Prisma models (scalar fields only).
- * Use instead of `@prisma/client` model types in store layers.
+ * Mongo document shapes (scalar fields only).
  */
 
 import type {

@@ -55,7 +55,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
 
   it('DISC-03-06: GW-7 browse leaves use discoveryPortExplore facades', () => {
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discovery\/discoveryPortExplore/);
-    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilterWire/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreOptionalFilters/);
     expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discoveryPortExploreRouting/);
     expect(existsSync(join(process.cwd(), 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
   });
@@ -101,7 +101,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
-  it('DISC-03-16: W104 list avoids exploreSearchHomeCopy (SearchFeed port only)', () => {
+  it('DISC-03-16: W104 list avoids exploreSearchHomeCopy (SearchRouting wire port only)', () => {
     const direct = /from ['"][^'"]*explore\/search\/exploreSearchHomeCopy['"]/;
     const violations: string[] = [];
     const walk = (dir: string) => {
@@ -118,12 +118,12 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     };
     walk('src/list');
     expect(violations).toEqual([]);
-    expect(read('src/list/explorer/FindCrewSearchChrome.tsx')).toMatch(/discoveryPortExploreSearchFeed/);
+    expect(read('src/list/explorer/FindCrewSearchChrome.tsx')).toMatch(/discoveryPortExploreSearchRouting/);
     expect(read('src/explore/guestMapPreviewPolicy.test.ts')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
-  it('DISC-03-15: W103 booking where resolver via SearchFeed on search home surfaces', () => {
-    const feed = /discoveryPortExploreSearchFeed/;
+  it('DISC-03-15: W103 booking where resolver via SearchRouting on search home surfaces', () => {
+    const feed = /discoveryPortExploreSearchRouting/;
     expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(feed);
     expect(read('src/explore/search/ExploreSearchHome.tsx')).not.toMatch(
       /from ['"]\.\/exploreSearchHomeCopy['"]/
@@ -177,7 +177,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     for (const root of roots) walk(root);
     expect(violations).toEqual([]);
     expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/guestExplorePreviewCanSearch/);
-    expect(read('src/discovery/discoveryPortExploreSearchFeed.ts')).toMatch(
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(
       /resolveExploreSearchBookingWherePlaceholder/
     );
   });

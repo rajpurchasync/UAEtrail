@@ -58,7 +58,7 @@ describe('releaseOpsProgramGuard (staging release ops spine)', () => {
   });
 
   it('RELEASE-OPS-04: program guards stay in verify:domain:fe bundle', () => {
-    const verifyFe = read('scripts/verify/verify-domain-fe.mjs');
+    const verifyFe = `${read('scripts/verify/verify-domain-fe.mjs')}\n${read('scripts/verify/domain-fe-vitest-files.mjs')}`;
     const missing = PROGRAM_GUARDS.filter((g) => !verifyFe.includes(g));
     expect(missing).toEqual([]);
   });

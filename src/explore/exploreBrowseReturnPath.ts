@@ -1,9 +1,6 @@
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../discovery/discoverySession';
-import {
-  PEOPLE_LIST_TAB_URL_PARAM,
-  stripRetiredPeopleListTabParams,
-} from '../routing/productUrlInbound';
+import { PEOPLE_LIST_TAB_URL_PARAM } from '../routing/productUrlInbound';
 
 /**
  * After full-screen Find People, return to the map — not the mobile list sheet or discover browse.
@@ -18,7 +15,6 @@ export const exploreMapPathAfterPeopleFullScreen = (returnTo: string): string =>
   params.delete(BROWSE_DISCOVER_PARAM);
   params.delete('view');
   params.delete(PEOPLE_LIST_TAB_URL_PARAM);
-  stripRetiredPeopleListTabParams(params);
   params.delete(LIST_CAT_PARAM);
 
   const qs = params.toString();

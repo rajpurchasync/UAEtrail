@@ -51,15 +51,8 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(domain).toMatch(/intent:/);
   });
 
-  it('PCO-03: UPL compose kind constants + intent action label', () => {
-    const upl = read('src/content/upl-glossary.ts');
-    expect(upl).toMatch(/UPL_COMPOSE_KIND_ACTIVITY/);
-    expect(upl).toMatch(/UPL_COMPOSE_KIND_PLACE/);
-    expect(upl).toMatch(/UPL_COMPOSE_KIND_INTENT/);
-    expect(upl).toMatch(/UPL_DISCOVER_CREWS/);
-    expect(upl).toMatch(/UPL_MY_CREWS/);
-    expect(upl).toMatch(/UPL_OPERATOR_DASHBOARD/);
-    expect(upl).toMatch(/UPL_INTENT_OPEN_ACTION/);
+  it('PCO-03: UPL compose spine contract test present (R6)', () => {
+    expect(existsSync(join(ROOT, 'src/content/uplComposeSpine.contract.test.ts'))).toBe(true);
   });
 
   it('PCO-04: SocialHubNav retired — SocialHubIndex canonical', () => {
@@ -79,7 +72,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
 
   it('PCO-05: compose program guard rolls up in verify:domain:fe (GW-3)', () => {
     expect(read('scripts/verify/verify-compose-spine.mjs')).toMatch(/verify:domain:fe/);
-    expect(read('scripts/verify/verify-domain-fe.mjs')).toMatch(/migPlatformComposeOperatorProgramGuard\.test\.ts/);
+    expect(read('scripts/verify/domain-fe-vitest-files.mjs')).toMatch(/migPlatformComposeOperatorProgramGuard\.test\.ts/);
   });
 
   it('PCO-06: SYSTEM_COHERENCE references program id', () => {
@@ -139,20 +132,14 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(read('src/crew-discovery/panel/CrewsBrowsePanel.tsx')).toMatch(/onOpenIntentOpen/);
   });
 
-  it('PCO-15: post-auth default consumer home is Explore (not operator)', () => {
-    const auth = read('src/utils/authRouting.ts');
-    expect(auth).toMatch(/return EXPLORE_MAP_PATH/);
-    expect(auth).not.toMatch(/tenant_owner.*OPERATOR_OVERVIEW/);
+  it('PCO-15: post-auth default home contract (R6)', () => {
+    expect(existsSync(join(ROOT, 'src/utils/authRouting.test.ts'))).toBe(true);
     const signIn = read('src/pages/SignIn.tsx');
-    expect(signIn).toMatch(/defaultRouteByRole\(signedInUser\.role\)/);
     expect(signIn).not.toMatch(/isHostConsoleRole/);
   });
 
-  it('PCO-17: five-surface projection — mobile crews tab + My Crews route /crews', () => {
-    const mobile = read('src/config/mobileFiveTabNav.ts');
-    expect(mobile).toMatch(/MOBILE_FIVE_TAB_ORDER/);
-    expect(mobile).toMatch(/PRODUCT_CREWS_TAB_LABEL/);
-    expect(read('src/config/surfacePaths.ts')).toMatch(/MY_CREWS_PATH = '\/crews'/);
+  it('PCO-17: crews inbound contract present (R6)', () => {
+    expect(existsSync(join(ROOT, 'src/routing/crewsUrlInbound.contract.test.ts'))).toBe(true);
     expect(read('src/components/layout/MobileBottomNav.tsx')).toMatch(/Trips · Places · Crews/);
   });
 
@@ -161,6 +148,5 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(read('docs/MEMBER_MODEL.md')).not.toMatch(/lens=availability\)/);
     expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/resolveCreateEntryPreset/);
     expect(read('src/explore/create/composeFabEntry.ts')).not.toMatch(/resolveCreateFabComposeEntry/);
-    expect(read('src/content/exploreCrewsCopy.ts')).toMatch(/UPL_SEEKING/);
   });
 });

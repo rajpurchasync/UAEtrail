@@ -47,11 +47,20 @@ describe('discoveryExperienceSpineGuard (B-UNIFY Phase B)', () => {
     expect(read('src/explore/ui/exploreBrowseUrlPublicApi.ts')).toMatch(/listBrowseSession/);
   });
 
-  it('B-UNIFY-06: consumer trees import discovery experience model barrel', () => {
-    expect(read('src/discovery/useDiscoveryExperienceModel.ts')).toMatch(/useDiscoveryMapExperienceModel/);
-    expect(read('src/discovery/useDiscoveryExperienceModel.ts')).toMatch(/useDiscoveryListExperienceModel/);
-    expect(read('src/explore/ui/ExploreExperience.tsx')).toMatch(/useDiscoveryMapExperienceModel/);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useDiscoveryListExperienceModel/);
+  it('B-UNIFY-06: consumer trees import experience models from explore/list shells', () => {
+    expect(existsSync(join(process.cwd(), 'src/discovery/useDiscoveryExperienceModel.ts'))).toBe(
+      false
+    );
+    expect(read('src/explore/ui/ExploreExperience.tsx')).toMatch(
+      /from '\.\.\/shell\/useExploreExperienceModel'/
+    );
+    expect(read('src/explore/ui/ExploreExperience.tsx')).toMatch(/useExploreExperienceModel/);
+    expect(read('src/explore/ui/ExploreExperience.tsx')).not.toMatch(/useDiscoveryMapExperienceModel/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(
+      /from '\.\/shell\/useListDiscoveryExperienceModel'/
+    );
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useListDiscoveryExperienceModel/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/useDiscoveryExperienceModel/);
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useDiscoveryExperienceComposeBridge/);
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).not.toMatch(/useExploreCreateFlowBridge\(/);
   });
@@ -59,6 +68,7 @@ describe('discoveryExperienceSpineGuard (B-UNIFY Phase B)', () => {
   it('B-UNIFY-09: experience orchestration stays in explore/list shells (no duplicate discovery/*Model copies)', () => {
     expect(existsSync(join(process.cwd(), 'src/discovery/discoveryExperienceMapModel.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/discovery/discoveryExperienceListModel.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/discovery/useDiscoveryExperienceModel.ts'))).toBe(false);
   });
 
   it('B-UNIFY-04: list browse URL session read + merge live in discovery spine', () => {

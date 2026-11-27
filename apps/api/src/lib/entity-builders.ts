@@ -19,8 +19,6 @@ import { isRetiredSeekingActivityMode } from '../domain/retired-seeking-activity
 
 const asStringArray = (value: unknown): string[] => (Array.isArray(value) ? value : []);
 
-export type RelationConnect = { connect?: { id?: string }; disconnect?: true };
-
 export type LocationCreateInput = {
   name: string;
   region?: string;
@@ -59,18 +57,17 @@ export type LocationCreateInput = {
   guideMarkdown?: string | null;
   guidePreview?: string | null;
   unlockPriceAed?: number;
-  submittedBy?: RelationConnect;
+  submittedById?: string | null;
   registryListed?: boolean;
   externalSource?: 'catalog' | 'osm' | null;
   externalId?: string | null;
 };
 
 export type ActivityCreateInput = {
-  tenant?: RelationConnect;
-  location?: RelationConnect;
-  createdBy?: RelationConnect;
-  host?: RelationConnect;
-  guide?: RelationConnect;
+  tenantId: string;
+  locationId: string;
+  createdById: string;
+  hostId?: string | null;
   activityType?: ActivityType | string;
   title: string;
   description?: string;
@@ -180,8 +177,8 @@ export type ActivityUpdateInput = {
   status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
-  host?: RelationConnect;
-  location?: RelationConnect;
+  hostId?: string | null;
+  locationId?: string;
   outingCategory?: string | null;
   outingTopic?: string | null;
   activityMode?: 'hosted' | null;
@@ -189,13 +186,6 @@ export type ActivityUpdateInput = {
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   destinationId?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
-};
-
-const extractConnectedId = (relation?: RelationConnect): string | null => {
-  if (relation && typeof relation === 'object' && 'connect' in relation) {
-    return relation.connect?.id ?? null;
-  }
-  return null;
 };
 
 export const buildLocationFromCreateInput = (data: LocationCreateInput, id: string): Location => {
@@ -239,7 +229,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     guideMarkdown: data.guideMarkdown ?? null,
     guidePreview: data.guidePreview ?? null,
     unlockPriceAed: data.unlockPriceAed ?? 29,
-    submittedById: extractConnectedId(data.submittedBy),
+    submittedById: data.submittedById ?? null,
     registryListed: data.registryListed !== false,
     externalSource: data.externalSource ?? null,
     externalId: data.externalId ?? null,
@@ -425,11 +415,11 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
 
   return {
     _id: id,
-    tenantId: extractConnectedId(data.tenant)!,
-    locationId: extractConnectedId(data.location)!,
+    tenantId: data.tenantId,
+    locationId: data.locationId,
     activityType: (data.activityType as ActivityType | undefined) ?? null,
-    createdById: extractConnectedId(data.createdBy)!,
-    hostId: extractConnectedId(data.host) ?? extractConnectedId(data.guide),
+    createdById: data.createdById,
+    hostId: data.hostId ?? null,
     title: data.title,
     description: data.description ?? '',
     startAt: data.startAt,

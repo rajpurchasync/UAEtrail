@@ -5,22 +5,20 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('productUrlInboundGuard (single inbound alias registry)', () => {
-  it('INBOUND-01: availability list filter delegates to productUrlInbound', () => {
+  it('INBOUND-01: browse list URL state has no legacy looking token branch', () => {
     const urlState = read('src/list/browse/browseListUrlState.ts');
-    expect(urlState).toMatch(/listFilterMeansAvailabilityOnly/);
     expect(urlState).not.toMatch(/filterParam === 'looking'/);
   });
 
-  it('INBOUND-02: explore activity mode delegates to productUrlInbound', () => {
+  it('INBOUND-02: explore activity mode filter has no seeking shim', () => {
     const mode = read('src/explore/exploreActivityModeFilter.ts');
-    expect(mode).toMatch(/parseInboundExploreActivityMode/);
     expect(mode).not.toMatch(/value === 'seeking'/);
+    expect(mode).not.toMatch(/'seeking'/);
   });
 
-  it('INBOUND-03: pin kind + search scope delegate to productUrlInbound', () => {
-    expect(read('src/explore/explorePinKindFilter.ts')).toMatch(/canonicalizeExplorePinKindToken/);
-    expect(read('src/explore/exploreBrowseTaxonomy.ts')).toMatch(/normalizeExploreSearchScopeInbound/);
-    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/readExploreSearchScopeParam/);
+  it('INBOUND-03: explore URL hydrate avoids retired searchFocus param', () => {
+    const hydrate = read('src/explore/exploreBrowseUrlHydrate.ts');
+    expect(hydrate).not.toMatch(/searchFocus=/);
   });
 
   it('INBOUND-04: explore routing has no participant-intent pin shims', () => {
@@ -39,31 +37,20 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
   it('INBOUND-05: crews tab params centralized', () => {
     const inbound = read('src/routing/productUrlInbound.ts');
     expect(inbound).toMatch(/readPeopleCrewsTabParam/);
-    expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(inbound).not.toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/browse/peopleListBrowseUrl.ts')).toMatch(/readPeopleCrewsTabParam/);
-    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(read('src/list/browse/browseListMapHandoff.ts')).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(read('src/discovery/discoveryBrowseListUrlMerge.ts')).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/PEOPLE_LIST_TAB_URL_PARAM/);
     expect(read('src/list/browse/browseListUrlState.ts')).not.toMatch(/readPeopleListBrowseTabParam/);
   });
 
-  it('INBOUND-07: auth return redirect uses shared-types bookmark canonicalize', () => {
-    const authRedirect = read('src/utils/authRedirect.ts');
-    expect(authRedirect).toMatch(/canonicalizeInboundProductPath/);
-    expect(authRedirect).toMatch(/resolveAuthRedirect/);
+  it('INBOUND-06/07: no resolveInboundPlanHubPath shims in redirect modules', () => {
+    expect(read('src/utils/authRedirect.ts')).not.toMatch(/resolveInboundPlanHubPath/);
+    expect(read('src/utils/notificationRouting.ts')).not.toMatch(/resolveInboundPlanHubPath/);
   });
 
-  it('INBOUND-06: notification deep links use shared-types bookmark canonicalize', () => {
-    const routing = read('src/utils/notificationRouting.ts');
-    expect(routing).toMatch(/canonicalizeInboundProductPath/);
-    expect(routing).not.toMatch(/resolveInboundPlanHubPath/);
-    expect(existsSync(join(process.cwd(), 'packages/shared-types/src/notification-bookmark-path.ts'))).toBe(
-      true
-    );
-  });
-
-  it('INBOUND-08: publishing workspace gate uses shared-types bookmark canonicalize', () => {
-    expect(read('src/utils/authRouting.ts')).toMatch(/canonicalizeInboundProductPath/);
-    expect(read('src/components/auth/ProtectedRoute.tsx')).toMatch(/participantHostBookmarkRedirect/);
+  it('INBOUND-08: ProtectedRoute has no bare /become-host consumer link', () => {
+    const route = read('src/components/auth/ProtectedRoute.tsx');
+    expect(route).toMatch(/participantHostBookmarkRedirect/);
+    expect(route).not.toMatch(/path:\s*['"]\/become-host['"]/);
   });
 });

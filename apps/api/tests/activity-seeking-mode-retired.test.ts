@@ -8,7 +8,7 @@ describe('activityMode seeking retired (MIG-DISCO-REG)', () => {
       buildActivityFromCreateInput(
         {
           activityMode: 'seeking',
-          tenant: { connect: { id: 't1' } },
+          tenantId: 't1',
           title: 'Legacy',
           activityType: 'HIKING',
           startAt: new Date(),
@@ -23,7 +23,7 @@ describe('activityMode seeking retired (MIG-DISCO-REG)', () => {
     await expect(
       createActivityDetailed({
         activityMode: 'seeking',
-        tenant: { connect: { id: 't1' } },
+        tenantId: 't1',
         title: 'Legacy',
         activityType: 'HIKING',
         startAt: new Date(),

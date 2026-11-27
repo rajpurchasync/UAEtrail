@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useProductSearchParams } from '../../routing/useEffectiveLocation';
+import { useProductSearchParams } from '../../routing/useProductSearchParams';
 import {
   useBrowseGeoScopeHydration,
   useBrowseListFeed,

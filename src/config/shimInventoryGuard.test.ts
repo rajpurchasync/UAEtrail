@@ -135,7 +135,7 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
       /exploreSearchJoinablePools/.test(listSearchFeed) ||
         /resolveExploreSearch(?:Trip|Venue)Pool/.test(listSearchFeed)
     ).toBe(true);
-    expect(read('src/discovery/discoveryPortExploreSearchFeed.ts')).toMatch(/exploreSearchJoinablePools/);
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreSearchJoinablePools/);
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/exploreSearchJoinablePools/);
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/discoveryPortExploreSearchRouting/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/explore\/hub\/exploreHubJoinableTrips/);
