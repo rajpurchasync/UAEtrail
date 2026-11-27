@@ -2,7 +2,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ConsumerDetailSection } from '../../detail/shell/ConsumerDetailSection';
 import { ActivityHostParticipantsRollcallEntry } from './ActivityHostParticipantsRollcallEntry';
-import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
+import { ActivityJoinRequestCard } from '../../operator/desk/ActivityJoinRequestCard';
 import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
 export type ConsumerDetailHostParticipantsSurface = {
   tenantId: string;

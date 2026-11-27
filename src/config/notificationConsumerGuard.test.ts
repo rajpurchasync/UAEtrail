@@ -48,7 +48,7 @@ describe('notificationConsumerGuard (S5)', () => {
   });
 
   it('publishing Overview no longer hosts a notification inbox (bell + settings own it)', () => {
-    const overview = read('src/pages/publishing/Overview.tsx');
+    const overview = read('src/operator/desk/Overview.tsx');
     expect(overview).not.toMatch(/NotificationListItem|notificationInboxApi/);
     expect(overview, 'Overview must not call api.*').not.toMatch(/\bapi\./);
   });

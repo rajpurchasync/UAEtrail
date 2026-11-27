@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   availabilityExploreMapItem,
   hostedExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
 } from './exploreMapItemFixtures';
 import {
   exploreMapItemMatchesActivityModeFilter,
@@ -22,7 +22,7 @@ describe('exploreActivityModeFilter', () => {
 
   it('matches hosted vs availability (legacy seeking activities excluded)', () => {
     const hosted = hostedExploreMapItem();
-    const legacySeeking = seekingExploreMapItem();
+    const legacySeeking = excludedSeekingActivityMapItem();
     const availability = availabilityExploreMapItem();
     expect(exploreMapItemMatchesActivityModeFilter(hosted, 'hosted')).toBe(true);
     expect(exploreMapItemMatchesActivityModeFilter(legacySeeking, 'hosted')).toBe(false);

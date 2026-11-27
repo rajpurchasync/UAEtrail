@@ -12,12 +12,12 @@ import {
 } from './listPosterPresentation';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { seekingExploreMapItem } from '../../explore/exploreMapItemFixtures';
+import { excludedSeekingActivityMapItem } from '../../explore/exploreMapItemFixtures';
 
 describe('list poster presentation', () => {
   it('joins seeking highlight and date with a space', () => {
     const card = buildDiscoveryCardViewModelCard({
-      ...seekingExploreMapItem({ intentId: 'd1', kind: 'hiking', title: 'Looking' }),
+      ...excludedSeekingActivityMapItem({ intentId: 'd1', kind: 'hiking', title: 'Looking' }),
       latitude: 25,
       longitude: 56,
       presentation: {

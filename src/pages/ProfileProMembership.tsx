@@ -7,12 +7,12 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
-import { ProProfileApplicationFlow } from '../components/organisation-console/ProProfileApplicationFlow';
+import { ProProfileApplicationFlow } from '../operator/apply/ProProfileApplicationFlow';
 import {
   parseHostFlowIntent,
   proMembershipPathIntent,
   type HostFlowIntent,
-} from '../components/organisation-console/hostWizardFlow';
+} from '../operator/apply/hostWizardFlow';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';

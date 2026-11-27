@@ -60,7 +60,6 @@ export {
   isFindCrewDiscoveryListPath,
   listDiscoveryPath,
   listDiscoveryPathFromExploreSearch,
-  listPeopleDiscoveryPath,
   tripsListHomePath,
   venuesListHomePath,
 } from './discoveryPortListUrl';

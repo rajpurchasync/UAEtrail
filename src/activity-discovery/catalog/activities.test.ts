@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   availabilityExploreMapItem,
   hostedExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
 } from '../../explore/exploreMapItemFixtures';
 import { selectActivitiesFromMapItems } from './activities';
 
@@ -17,7 +17,7 @@ const baseFilters = {
 describe('selectActivitiesFromMapItems', () => {
   it('returns hosted activities when mode is hosted', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
-    const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
+    const seeking = excludedSeekingActivityMapItem({ id: 'activity:seek-1' });
     const result = selectActivitiesFromMapItems([hosted, seeking], {
       ...baseFilters,
       activityModeFilter: 'hosted',
@@ -28,7 +28,7 @@ describe('selectActivitiesFromMapItems', () => {
   it('returns fixed availability when mode filter is seeking (legacy param)', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
     const availability = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
-    const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
+    const seeking = excludedSeekingActivityMapItem({ id: 'activity:seek-1' });
     const result = selectActivitiesFromMapItems([hosted, seeking, availability], {
       ...baseFilters,
       activityModeFilter: 'availability',
@@ -38,7 +38,7 @@ describe('selectActivitiesFromMapItems', () => {
 
   it('excludes legacy seeking activities from the default trips map pool', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
-    const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
+    const seeking = excludedSeekingActivityMapItem({ id: 'activity:seek-1' });
     const availability = availabilityExploreMapItem();
     const result = selectActivitiesFromMapItems([hosted, seeking, availability], baseFilters);
     expect(result.map((i) => i.id).sort()).toEqual([availability.id, 'activity:host-1'].sort());

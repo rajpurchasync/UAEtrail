@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { formatExploreEventDateLabel, resolveHostNote } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../api/types';
-import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
-import { RideshareRiderReputationSummary } from '../components/rideshare/RideshareRiderReputationSummary';
-import { MemberJoinProfileHostBlock } from '../components/profile/MemberJoinProfileHostBlock';
-import { MemberMedicalSafetyHostBlock } from '../components/profile/MemberMedicalSafetyHostBlock';
-import { GlassCard } from '../components/mobile/GlassCard';
-import { AppButton } from '../components/mobile/AppButton';
+import type { ActivityRequestView } from '../../api/types';
+import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
+import { RideshareRiderReputationSummary } from '../../components/rideshare/RideshareRiderReputationSummary';
+import { MemberJoinProfileHostBlock } from '../../components/profile/MemberJoinProfileHostBlock';
+import { MemberMedicalSafetyHostBlock } from '../../components/profile/MemberMedicalSafetyHostBlock';
+import { GlassCard } from '../../components/mobile/GlassCard';
+import { AppButton } from '../../components/mobile/AppButton';
 
 const statusStyle: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',

@@ -143,9 +143,6 @@ export const resolveHostCreateKindFromAvailabilityMapItem = (item: {
   return 'event';
 };
 
-/** @deprecated Use {@link resolveHostCreateKindFromAvailabilityMapItem} */
-export const resolveHostCreateKindFromSeekingMapItem = resolveHostCreateKindFromAvailabilityMapItem;
-
 /** Map peek pin id — `availability:` or published `activity:` only (no bare intent / `demand:`). */
 export const resolveCrewExploreMapItemId = (input: {
   intentId: string;
@@ -158,9 +155,6 @@ export const resolveCrewExploreMapItemId = (input: {
   if (activityId) return `activity:${activityId}`;
   return null;
 };
-
-/** @deprecated Use {@link resolveCrewExploreMapItemId} */
-export const resolveSeekingExploreMapItemId = resolveCrewExploreMapItemId;
 
 const activityDetailPathFromWireId = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}`;

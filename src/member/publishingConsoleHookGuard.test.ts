@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOTS = [
-  'src/pages/publishing',
-  'src/console',
+  'src/operator/desk',
+  'src/operator/public',
+  'src/operator/apply',
   'src/components/activity',
   'src/components/plan',
   'src/pages/activities',
@@ -13,6 +14,7 @@ const ROOTS = [
 const MANAGE_ACTIONS_CANONICAL = 'src/hooks/useHostActivityManageActions.ts';
 
 const collectTs = (dir: string): string[] => {
+  if (!existsSync(dir)) return [];
   const files: string[] = [];
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);

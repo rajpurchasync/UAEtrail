@@ -30,7 +30,7 @@ describe('pro-application HTTP canonical guard (COH-03)', () => {
   });
 
   it('FE clients call canonical Pro-application HTTP', () => {
-    const org = read('src/api/domains/organisation.ts');
+    const org = read('src/api/domains/operatorPublic.ts');
     const admin = read('src/api/domains/admin.ts');
     expect(org).toMatch(/\/me\/pro-application/);
     expect(org).not.toMatch(/\/me\/host-application/);

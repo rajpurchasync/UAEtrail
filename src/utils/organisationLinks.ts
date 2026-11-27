@@ -5,8 +5,6 @@ import {
 
 export {
   memberProfilePath,
-  organisationProfilePath,
-  resolveOrganisationProfilePath,
   hostBrandProfilePath,
   inferHostStorefrontKindFromTenantWire,
 } from '@uaetrail/shared-types';

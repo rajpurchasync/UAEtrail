@@ -5,7 +5,7 @@ import { buildListFeedCards } from './discoveryPortListFeed';
 import { buildDiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   hostedExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
   venueExploreMapItem,
 } from '../explore/exploreMapItemFixtures';
 import { resolveVenueBrowsePosterCopy } from './discoveryPortListPeek';
@@ -52,7 +52,7 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
         date: '2026-11-15',
       } as ExploreMapItemDTO['activity'],
     });
-    const seeking = seekingExploreMapItem({
+    const seeking = excludedSeekingActivityMapItem({
       activity: {
         id: 'act-seek',
         title: 'Looking for Hatta',

@@ -49,9 +49,6 @@ export const CREW_BROWSE_LANE_LABELS: Record<CrewBrowseLane, string> = {
   trips: 'Trips',
 };
 
-/** @deprecated Find crew UI order — use `FIND_CREW_PEOPLE_STAT_ORDER`. */
-export const CREW_PEOPLE_FACET_ORDER: CrewPeopleFacet[] = ['available', 'everyone'];
-
 export const CREW_PEOPLE_FACET_LABELS: Record<CrewPeopleFacet, string> = {
   recommended: 'Available',
   friends: 'Available',

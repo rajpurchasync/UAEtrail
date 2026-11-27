@@ -27,12 +27,6 @@ export type MapPlaceWireSource = 'place';
 /** Explore map wire — Facility amenity pin with coords for navigation. */
 export type MapFacilityWireSource = 'facility';
 
-/** @deprecated Read compat — normalize via `isPlaceMapSource`. */
-export type MapVenueWireSource = 'venue';
-
-/** @deprecated Brief COH-02 name — use `place`. */
-export type MapCatalogPlaceWireSource = 'catalog_place';
-
 /** Admin-curated outdoor **Destination** (`destinations` collection; wire `destinationId`). Not a map pin. */
 export type GeographyDestinationName = 'destination';
 

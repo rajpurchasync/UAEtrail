@@ -29,6 +29,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
 
   it('retired duplicate console stack under src/pages/operator stays deleted', () => {
     expect(existsSync(join(ROOT, 'src/pages/operator'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/pages/publishing'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/hooks/useOperatorActivityManageActions.ts'))).toBe(false);
   });
 
@@ -43,6 +44,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(app).not.toMatch(/path="\/publishing\/messages"/);
     expect(app).not.toMatch(/path="\/operator\/messages"/);
     expect(app).toMatch(/ORGANISATION_MANAGE_PATH/);
+    expect(app).toMatch(/PublishingManage/);
   });
 
   it('surfacePaths exposes operator workspace (/operator) paths', () => {
@@ -80,7 +82,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
   });
 
   it('operator console pages do not call member /me activity CRUD (O3)', () => {
-    const dir = join(ROOT, 'src/pages/publishing');
+    const dir = join(ROOT, 'src/operator/desk');
     const violations: string[] = [];
     for (const file of collectTs(dir)) {
       const text = readFileSync(join(ROOT, file), 'utf8');

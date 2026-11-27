@@ -14,7 +14,6 @@ import {
   exploreCenteredSheetPopupBodyClass,
   exploreCenteredSheetPopupPanelClass,
   exploreComposeMenuCloseButtonClass,
-  exploreComposeMenuPopupBodyClass,
   exploreDesktopPopupCloseButtonClass,
 } from '../exploreDesktopPopup';
 import { MobileSheetDragHandle } from '../../components/mobile/MobileSheetDragHandle';
@@ -160,7 +159,7 @@ export const ExploreResponsiveSheet = ({
   const centeredBodyScroll =
     centered && !composeWizard && !fullscreen
       ? composeMenu
-        ? exploreComposeMenuPopupBodyClass
+        ? EXPLORE_COMPOSE.pickerBody
         : centeredPopup
           ? exploreCenteredSheetPopupBodyClass
           : CONSUMER_MODAL_LAYOUT.scrollBody

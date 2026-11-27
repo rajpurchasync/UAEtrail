@@ -94,7 +94,7 @@ const resolveTargetMetaFromContext = (
     const merchant = ctx.merchants.get(tenant.id);
     return {
       targetLabel: tenant.name,
-      targetPath: `${shopPublicPath({ merchantId: merchant?.id, slug: tenant.slug })}${reviewsHash}`,
+      targetPath: `${shopPublicPath({ shopId: merchant?.id, slug: tenant.slug })}${reviewsHash}`,
     };
   }
 

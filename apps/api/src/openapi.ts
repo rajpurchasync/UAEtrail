@@ -11,7 +11,7 @@ export const openApiTags = [
       'Publishing console — tenant activities, team, places (`/publishing/*`).',
   },
   { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/publishing/*` paths in new clients.' },
-  { name: 'Shop', description: 'Shop organisation profiles (`/shop/shops/:id`, merchant manage). No product catalog.' },
+  { name: 'Shop', description: 'Shop profiles (`/shop/shops/:id`; manage `/shop/merchant/*`). No product catalog.' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
   { name: 'Social', description: 'Reviews, buddies, and groups.' },
@@ -150,12 +150,12 @@ export const openApiSpec = swaggerJsdoc({
           }
         }
       },
-      '/shop/organisation/profile': {
+      '/shop/merchant/profile': {
         get: {
           tags: ['Shop', 'Host'],
-          summary: 'Get managed shop organisation profile',
+          summary: 'Get managed shop profile',
           description:
-            'Scope via `shopId` or `tenantId` query.',
+            'Canonical shop manage. Scope via `shopId` or `tenantId` query. Inbound alias: `/shop/organisation/profile`.',
           security: [{ bearerAuth: [] }],
           responses: {
             200: { description: 'Shop profile (`id` and `shopId`).' }
@@ -169,7 +169,7 @@ export const openApiSpec = swaggerJsdoc({
           description: 'Public shop page.',
           parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
           responses: {
-            200: { description: 'Public shop organisation profile.' }
+            200: { description: 'Public shop profile.' }
           }
         }
       },
@@ -246,7 +246,7 @@ export const openApiSpec = swaggerJsdoc({
         post: {
           tags: ['Engagement', 'Members'],
           summary: 'Follow an entity',
-          description: 'Body: exactly one of `locationId`, `tenantId`, `merchantId`.',
+          description: 'Body: exactly one of `locationId`, `tenantId`, `shopId` (`merchantId` inbound compat).',
           security: [{ bearerAuth: [] }],
           responses: { 201: { description: 'Follow row.' } }
         }

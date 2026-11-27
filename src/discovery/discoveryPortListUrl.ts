@@ -17,7 +17,6 @@ export {
   isFindCrewDiscoveryListPath,
   listDiscoveryPath,
   listDiscoveryPathFromExploreSearch,
-  listPeopleDiscoveryPath,
   tripsListHomePath,
   venuesListHomePath,
 } from '../list/browse/browseListRouting';

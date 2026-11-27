@@ -6,7 +6,6 @@ import {
   crewsHubHomePath,
   findCrewDiscoveryListPath,
   isFindCrewDiscoveryListPath,
-  listPeopleDiscoveryPath,
 } from './browseListRouting';
 
 describe('list discovery routing', () => {
@@ -25,10 +24,6 @@ describe('list discovery routing', () => {
     );
     expect(isFindCrewDiscoveryListPath('/list', 'listCat=people')).toBe(false);
     expect(isFindCrewDiscoveryListPath('/explore/search', 'searchScope=crew')).toBe(false);
-  });
-
-  it('listPeopleDiscoveryPath aliases find crew discover', () => {
-    expect(listPeopleDiscoveryPath()).toBe(findCrewDiscoveryListPath());
   });
 
   it('listDiscoveryPath maps Trips + venues browse topics', () => {

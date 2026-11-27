@@ -209,20 +209,6 @@ export const crewBrowseAvailabilityDetailFromPerson = (
   };
 };
 
-/** @deprecated Prefer {@link crewBrowseAvailabilityDetailFromPerson}. */
-export const crewBrowseAvailabilityDetailFromSlots = (
-  slots: MemberAvailabilitySlotDTO[],
-  personKinds: AvailabilityKind[] = [],
-  person?: Pick<ExploreAvailablePersonDTO, 'region' | 'destinationSlug' | 'profileRoleLabel'>
-): CrewBrowseAvailabilityDetail | null =>
-  crewBrowseAvailabilityDetailFromPerson({
-    slots,
-    kinds: personKinds,
-    region: person?.region ?? null,
-    destinationSlug: person?.destinationSlug ?? null,
-    profileRoleLabel: person?.profileRoleLabel ?? null,
-  });
-
 export const CREW_BROWSE_SOCIAL_LABEL_FRIEND = 'Friend';
 export const CREW_BROWSE_SOCIAL_LABEL_FOLLOWED = 'Followed';
 

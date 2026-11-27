@@ -18,7 +18,7 @@ Canonical detail: **`docs/DOCS_INDEX.md`** · **`docs/SYSTEM_COHERENCE.md`** · 
 | **Discover browse** | `/explore?browse=1`, `/list` | Everyone | Visual categories/rails/posters — not the map list panel |
 | **Personal hub** | `/profile`, `/settings` | Signed in | Your crew, up next, app settings |
 | **Entity detail** | `/activity`, `/trail`, `/camp`, `/shop`, `/operator`, … | Public / signed in | Understand the plan → connect → join |
-| **Host console** | `/host/*` | Approved hosts | Enable others to go together (secondary audience) |
+| **Operator desk** | `/operator/*` | Approved operators (any kind) | Enable others to go together (secondary audience) |
 | **Admin** | `/admin/*` | Platform admins | Moderation, approvals |
 
 **Do not conflate Marketing (`/`) with Browse (`/explore`).** Members never use `/` as home.
@@ -37,7 +37,8 @@ Canonical detail: **`docs/DOCS_INDEX.md`** · **`docs/SYSTEM_COHERENCE.md`** · 
 
 ## Layer boundaries
 
-- **Hosting UI** → `/host/*` only — not on `/explore` browse chrome or `/` marketing  
+- **Operator desk UI** → `/operator/*` only — not on `/explore` browse chrome or `/` marketing  
+
 - **Explore copy** → `src/explore/exploreCopy.ts`  
 - **Create / FAB** → `docs/CREATE_FLOW.md` + `src/explore/ui/*Create*`  
 - **Landing copy** → `src/content/homeMarketing.ts` + `docs/LANDING.md` + `docs/NORTHSTAR.md` (+ fallback activities in `homeLanding.ts`)  

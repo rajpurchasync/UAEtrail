@@ -32,7 +32,7 @@ export const merchantProfileSchema = z.object({
 
 export const merchantProfilePatchSchema = merchantProfileSchema.partial();
 
-/** Live dual prefixes — `/organisation/*` stays next to `/merchant/*` (not a leftover file). */
+/** Canonical `/merchant/*`; inbound alias `/organisation/*` (do not emit from new clients). */
 export const shopOrganisationManagePrefixes = ['/merchant', '/organisation'] as const;
 
 export const serializeMerchantProfile = (profile: {
@@ -52,7 +52,6 @@ export const serializeMerchantProfile = (profile: {
 }) => ({
   id: profile.id,
   shopId: profile.id,
-  merchantId: profile.id,
   tenantId: profile.tenantId ?? null,
   shopName: profile.shopName,
   description: profile.description,

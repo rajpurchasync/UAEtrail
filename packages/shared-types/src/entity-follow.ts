@@ -1,7 +1,13 @@
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 
 /** Follow a venue (place), host brand, or shop — outing alerts when something is published there. People use member follow (`/me/following`). */
-export type EntityFollowKind = 'location' | 'tenant' | 'merchant';
+export type EntityFollowKind = 'location' | 'tenant' | 'shop';
+
+/** Mongo `entity_follows.kind` — `merchant` rows normalize to {@link EntityFollowKind} `shop` on read. */
+export type EntityFollowKindStored = EntityFollowKind | 'merchant';
+
+export const normalizeEntityFollowKind = (kind: EntityFollowKindStored): EntityFollowKind =>
+  kind === 'merchant' ? 'shop' : kind;
 
 export interface EntityFollowDTO {
   id: string;
@@ -17,7 +23,7 @@ export interface EntityFollowDTO {
     logoUrl?: string | null;
     brandProfileKind?: PublishingProfileKind;
   } | null;
-  merchant?: { id: string; shopName: string; logo?: string | null } | null;
+  shop?: { id: string; shopName: string; logo?: string | null } | null;
 }
 
 export interface EntityFollowCheckDTO {

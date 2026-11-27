@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { buildExploreSelectionSelectedCard } from './exploreSelectionSelectedCard';
-import { hostedExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
+import { hostedExploreMapItem, excludedSeekingActivityMapItem } from './exploreMapItemFixtures';
 
 describe('buildExploreSelectionSelectedCard', () => {
   it('uses activity wire peek when viewer hosts a seeking activity', () => {
-    const item = seekingExploreMapItem({
+    const item = excludedSeekingActivityMapItem({
       intentId: 'int-1',
       activityId: 'seek-1',
       requesterUserId: 'user-host',

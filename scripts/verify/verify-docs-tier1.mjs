@@ -46,7 +46,7 @@ const BANNED = [
   { pattern: /profile chips route to `\/become-host/i, label: 'Update ENGINEERING-style chip routing to PRO_MEMBERSHIP_PATH' },
   { pattern: /request to become (a )?host/i, label: 'Buddy Organize is profile complete + canPublish, not host application' },
   { pattern: /POST [`']\/operator\//, label: 'Tenant activity write is POST /publishing/*, not /operator/' },
-  { pattern: /is [`'`]\/operator\/\*[`'`]/, label: 'Publishing workspace SPA is /publishing/*, not /operator/*' },
+  { pattern: /canonical SPA [`'`]\/publishing\/\*[`'`]/i, label: 'Operator desk SPA is /operator/*; HTTP is /publishing/*' },
 ];
 
 let failed = false;

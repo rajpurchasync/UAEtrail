@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
-import { AppSegmented } from '../mobile/AppSegmented';
-import { OrganisationPublicProfile } from '../organisation-console/OrganisationPublicProfile';
-import { AgencyTeamSection } from '../organisation-console/AgencyTeamSection';
+import { AppSegmented } from '../../components/mobile/AppSegmented';
+import { OrganisationPublicProfile } from '../public/OrganisationPublicProfile';
+import { AgencyTeamSection } from './AgencyTeamSection';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { agencyProfilePath, organisationManagePath } from '../../config/routingCatalog';
+import { agencyProfilePath, OPERATOR_PROFILE_PATH } from '../../config/routingCatalog';
 
 type Tab = 'profile' | 'team';
 
@@ -47,8 +47,8 @@ export const AgencyOrganisationPanel = () => {
         <OrganisationPublicProfile
           slug={agency.slug}
           mode="owner"
-          backTo={organisationManagePath('agency')}
-          backLabel="Manage agency"
+          backTo={OPERATOR_PROFILE_PATH}
+          backLabel="Operator desk"
         />
       ) : (
         <AgencyTeamSection tenantId={agency.tenantId} />

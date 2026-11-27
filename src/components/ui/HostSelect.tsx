@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchOrganisationTeam, type TeamMember } from '../../hooks/organisationConsoleApi';
+import { fetchOrganisationTeam, type TeamMember } from '../../hooks/operatorDeskClientApi';
 import { useAuth } from '../../context/AuthContext';
 import { AppSelect } from './AppSelect';
 

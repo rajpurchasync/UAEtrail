@@ -327,7 +327,7 @@
       "label": "Public agency / partner storefront",
       "axis": "C_STOREFRONT",
       "contextId": "shop_profiles",
-      "resolver": { "module": "src/hooks/organisationConsoleApi.ts", "symbol": "fetchOrganisationProfileBySlug" },
+      "resolver": { "module": "src/hooks/operatorDeskClientApi.ts", "symbol": "fetchOrganisationProfileBySlug" },
       "http": { "method": "GET", "path": "/organisations/:slug" }
     },
     {

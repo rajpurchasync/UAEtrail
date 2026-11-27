@@ -113,7 +113,7 @@
       "label": "Member publish capabilities",
       "apiFiles": ["apps/api/src/services/member-status.ts"],
       "routeRegistrars": ["apps/api/src/routes/user/registerMemberStatusRoutes.ts"],
-      "feDomains": ["src/api/domains/member.ts", "src/api/domains/organisation.ts"],
+      "feDomains": ["src/api/domains/member.ts", "src/api/domains/operatorPublic.ts"],
       "feRoots": ["src/member"]
     },
     {
@@ -132,15 +132,15 @@
         "src/api/domains/publishingWorkspace.ts",
         "src/hooks/publishingJoinQueueClientApi.ts",
         "src/hooks/tenantActivityClientApi.ts",
-        "src/hooks/organisationConsoleApi.ts"
+        "src/hooks/operatorDeskClientApi.ts"
       ],
       "feRoots": [
-        "src/pages/publishing",
+        "src/operator/desk",
+        "src/operator/public",
+        "src/operator/apply",
         "src/pages/ActivityDetail.tsx",
-        "src/console",
         "src/components/activity",
-        "src/activity",
-        "src/components/organisation-console"
+        "src/activity"
       ]
     },
     {
@@ -434,7 +434,7 @@
         "src/pages/admin/Submissions.tsx",
         "src/pages/admin/Places.tsx",
         "src/pages/admin/Destinations.tsx",
-        "src/pages/admin/Organisations.tsx",
+        "src/pages/admin/Operators.tsx",
         "src/pages/admin/Activities.tsx",
         "src/pages/admin/Members.tsx",
         "src/pages/admin/Groups.tsx",

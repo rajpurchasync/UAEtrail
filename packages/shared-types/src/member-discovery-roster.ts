@@ -1,15 +1,6 @@
 import type { MemberBrowseCardDTO } from './member-pro-engagement.js';
 import type { SocialPersonRowDTO } from './social-people.js';
 
-/** @deprecated Client map helper — roster uses `friendsGoing` / `hostsGoing`. */
-export type MemberDiscoveryOnTripRowDTO = {
-  userId: string;
-  displayName: string;
-  avatarUrl: string | null;
-  activityId: string;
-  activityTitle: string;
-};
-
 /** Member with a fixed **availability** pin on explore (`source: availability`). */
 export type MemberDiscoveryAvailabilityRowDTO = {
   userId: string;

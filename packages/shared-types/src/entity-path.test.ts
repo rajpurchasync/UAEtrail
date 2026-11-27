@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { memberDiscoverProfilePath, memberProfilePath } from './entity-path.js';
+import { memberProfilePath } from './entity-path.js';
 
 describe('memberProfilePath', () => {
   it('uses plain path for organic opens', () => {
@@ -9,9 +9,6 @@ describe('memberProfilePath', () => {
 
   it('tags discover directory opens for quota', () => {
     expect(memberProfilePath('u1', { discover: true, lens: 'discover' })).toBe(
-      '/member/u1?discover=1&from=discover&source=discover'
-    );
-    expect(memberDiscoverProfilePath('u1')).toBe(
       '/member/u1?discover=1&from=discover&source=discover'
     );
   });

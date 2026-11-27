@@ -57,8 +57,6 @@ export const EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION =
 export const EXPLORE_CREWS_DISCOVER_ON_TRIPS_TITLE = 'On outings';
 export const EXPLORE_CREWS_DISCOVER_FRIENDS_GOING_TITLE = 'Friends';
 export const EXPLORE_CREWS_DISCOVER_HOSTS_GOING_TITLE = 'Hosts';
-/** @deprecated Section title removed — use Flexible/Fixed row labels. */
-export const EXPLORE_CREWS_MAP_SIGNALS_TITLE = 'On the map';
 export const EXPLORE_CREWS_EMPTY_MAP_SIGNALS =
   'No fixed-time availability here — try another filter or share your intent.';
 
@@ -280,15 +278,10 @@ export const crewBrowseAvailabilitySentence = (
 const CREW_BROWSE_AVAILABILITY_MAX_SCHEDULE_LINES = 4;
 
 export type CrewBrowseAvailabilitySchedule = {
-  /** @deprecated Prefer narrative title; keep null for new UI. */
-  metaLine: string | null;
   whenPhrase: string | null;
   /** Low-emphasis exact dates when needed. */
   detailLines: string[];
   detailMoreCount: number;
-  /** @deprecated Use `detailLines`. */
-  footerLines: string[];
-  footerMoreCount: number;
 };
 
 export const crewBrowseAvailabilitySchedule = (
@@ -299,12 +292,9 @@ export const crewBrowseAvailabilitySchedule = (
   const whenPhrase = crewBrowseAvailabilityWhenPhrase(slots, now);
   if (sorted.length === 0) {
     return {
-      metaLine: null,
       whenPhrase: 'soon',
       detailLines: [],
       detailMoreCount: 0,
-      footerLines: [],
-      footerMoreCount: 0,
     };
   }
 
@@ -313,12 +303,9 @@ export const crewBrowseAvailabilitySchedule = (
   const detailMoreCount = Math.max(0, allLines.length - CREW_BROWSE_AVAILABILITY_MAX_SCHEDULE_LINES);
 
   return {
-    metaLine: null,
     whenPhrase,
     detailLines,
     detailMoreCount,
-    footerLines: detailLines,
-    footerMoreCount: detailMoreCount,
   };
 };
 

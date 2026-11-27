@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { useConsoleHubData } from '../console/useHubData';
+import { useConsoleHubData } from '../operator/desk/useHubData';
 import { useHostActivityManageActions } from '../hooks/useHostActivityManageActions';
 import { PlanHostingManageSheets } from '../components/plan/PlanHostingManageSheets';
 import { usePlanHostingManageDeepLink } from './usePlanHostingManageDeepLink';

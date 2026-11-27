@@ -7,13 +7,6 @@ export const exploreCenteredSheetPopupPanelClass =
 export const exploreCenteredSheetPopupBodyClass =
   'explore-desktop-popup-body min-h-0 flex-1 overflow-y-auto overscroll-contain';
 
-/** @deprecated Use {@link EXPLORE_COMPOSE.pickerBody} in exploreTheme. */
-export const exploreComposeMenuPopupBodyClass =
-  'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-6 pt-3';
-
-/** @deprecated Use {@link CONSUMER_MODAL_CLOSE.button}. */
-export const EXPLORE_SHEET_CLOSE_BUTTON_SURFACE = CONSUMER_MODAL_CLOSE.button;
-
 /** Close control — panel top-right (search modal, guest gate, centered sheets). */
 export const exploreDesktopPopupCloseButtonClass = `${CONSUMER_MODAL_CLOSE.corner} ${CONSUMER_MODAL_CLOSE.button}`;
 

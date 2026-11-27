@@ -11,7 +11,7 @@ describe('consumerDetailSurfacesAcceptance', () => {
     const app = readAppRouteRegistry();
     expect(app).not.toMatch(/path="\/people"/);
     expect(app).not.toMatch(/PeopleRedirect/);
-    expect(read('src/list/browse/browseListRouting.ts')).toMatch(/listPeopleDiscoveryPath/);
+    expect(read('src/list/browse/browseListRouting.ts')).toMatch(/findCrewDiscoveryListPath/);
   });
 
   it('entity detail views use tab wire modules and shared tab chrome', () => {
@@ -32,12 +32,12 @@ describe('consumerDetailSurfacesAcceptance', () => {
         tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
-        file: 'src/pages/OrganisationProfile.tsx',
+        file: 'src/operator/public/OrganisationProfile.tsx',
         wire: 'organisationPublicDetailTab',
         tabChrome: /OrganisationPublicProfile/,
       },
       {
-        file: 'src/components/organisation-console/OrganisationPublicProfile.tsx',
+        file: 'src/operator/public/OrganisationPublicProfile.tsx',
         wire: 'organisationPublicDetailTab',
         tabChrome: /ConsumerEntityTabBar/,
       },

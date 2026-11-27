@@ -17,7 +17,7 @@ import {
   type DiscoveryBrowseListUrlMergePatch,
 } from '../../discovery/discoverySession';
 import { CREWS_AVAILABILITY_SHEET_PARAM } from '../crews/crewsOpenSegment';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '../crews/crewsOpenSegment';
 import type { BrowseListLayout } from './browseListLayout';
 import type { BrowseListSortMode } from './listBrowseSort';
 
@@ -64,7 +64,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         listCat?: BrowseMainCategoryKey | null;
         layout?: BrowseListLayout;
         sort?: BrowseListSortMode;
-        crewsOpen?: CrewsAvailableOpenLens | null;
+        crewsOpen?: CrewsAvailabilityShapeFilter | null;
         crewsAvailGuide?: CrewsAvailabilityGuideFilter | null;
       }
     ) => {

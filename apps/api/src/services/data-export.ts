@@ -44,7 +44,7 @@ export interface UserDataExport {
     createdAt: string;
     locationName: string | null;
     tenantName: string | null;
-    merchantName: string | null;
+    shopName: string | null;
   }>;
   memberGoals: Array<{
     id: string;
@@ -134,7 +134,7 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
     createdAt: row.createdAt,
     locationName: row.location?.name ?? null,
     tenantName: row.tenant?.name ?? null,
-    merchantName: row.merchant?.shopName ?? null,
+    shopName: row.shop?.shopName ?? null,
   }));
 
   return {

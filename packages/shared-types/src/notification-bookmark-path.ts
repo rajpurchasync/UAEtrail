@@ -23,6 +23,8 @@ const JOURNEY_MAP_PATH = '/profile/history/map';
 const PROFILE_BADGES_PATH = '/profile/badges';
 const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
 const OPERATOR_PREFIX = '/operator';
+const OPERATOR_PROFILE_PATH = '/operator/profile';
+const ORGANISATION_MANAGE_PATH = '/organisation/manage';
 const CHAT_PATH = '/chat';
 const SETTINGS_PATH = '/settings';
 const PROFILE_SETTINGS_PREFIX = '/profile/settings';
@@ -67,6 +69,10 @@ export const rewriteStaleNotificationBookmarkPath = (raw: string): string | null
 
   if (pathname === BECOME_HOST_PATH || pathname === BECOME_ORGANIZER_PATH) {
     return joinPath(PRO_MEMBERSHIP_PATH, search, hash);
+  }
+
+  if (pathname === ORGANISATION_MANAGE_PATH || pathname.startsWith(`${ORGANISATION_MANAGE_PATH}/`)) {
+    return joinPath(OPERATOR_PROFILE_PATH, search, hash);
   }
 
   if (pathname === '/map' || pathname === '/discovery') {

@@ -225,7 +225,7 @@ describe('crossContextFoundationsGuard', () => {
   });
 
   it('CTX-FOUND-14: operator console UI uses publishing workspace API (not GET /me/activities)', () => {
-    const scanDirs = ['src/pages/publishing', 'src/hosting'];
+    const scanDirs = ['src/operator/desk', 'src/hosting'];
     const violations: string[] = [];
     for (const dirRel of scanDirs) {
       const dir = join(ROOT, dirRel);

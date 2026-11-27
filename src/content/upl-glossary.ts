@@ -42,8 +42,6 @@ export const UPL_FOLLOWING = 'Following';
 /** My Plans surface (`/plan`) — not a generic “plan the weekend” verb */
 export const UPL_PLAN = 'My Plans';
 export const UPL_GOALS = 'Goals';
-/** @deprecated Product term is Intent — storage field remains `member_availability` (BWL). */
-export const UPL_AVAILABILITY = 'Availability';
 
 /** Intent — open calendar signal (compose `intent:open` → `member_availability` open slots). */
 export const UPL_INTENT = 'Intent';
@@ -57,8 +55,8 @@ export const UPL_COMPOSE_KIND_INTENT = 'Intent';
 export const UPL_DISCOVER_CREWS = 'Discover crews';
 export const UPL_MY_CREWS = 'My crew';
 
-/** Profile → host dashboard (`/operator`) — not “Publishing workspace” in member chrome */
-export const UPL_OPERATOR_DASHBOARD = 'Dashboard';
+/** Profile → operator desk (`/operator`) */
+export const UPL_OPERATOR_DASHBOARD = 'Operator desk';
 
 /** Plan Add a Plan → publish open intent (DEC-008) */
 export const UPL_INTENT_OPEN_ACTION = "Share when I'm free";
@@ -99,10 +97,10 @@ export const UPL_CREW_PILLAR_INTENT = 'Looking for crew';
  */
 export const UPL_PRO_MEMBERSHIP = 'Pro membership';
 
-/** Shop or agency business brand (UI). Not the HTTP publishing console. */
+/** Any publishing identity (community host, guide, shop, agency, partner). Not shop/agency only. */
 export const UPL_OPERATOR_BUSINESS = 'Operator';
 
-/** Console shell (manage outings, team, join queue) */
+/** Wire/capability name for tenant HTTP `/publishing/*`. UI = Operator desk (`UPL_OPERATOR_DASHBOARD`). */
 export const UPL_PUBLISHING_WORKSPACE = 'Publishing workspace';
 
 export const UPL_WISHLIST = 'Wishlist';

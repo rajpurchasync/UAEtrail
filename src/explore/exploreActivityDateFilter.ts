@@ -37,9 +37,6 @@ export const EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS: ReadonlyArray<{
   { value: 'nextyear', label: 'Next year' },
 ];
 
-/** @deprecated Use {@link EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS} on explore map. */
-export const EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS = EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS;
-
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const todayIso = (): string => {

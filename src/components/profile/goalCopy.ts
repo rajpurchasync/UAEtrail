@@ -18,12 +18,6 @@ export const GOAL_ACTIVITY_SEGMENTS: { value: MemberGoalActivityFilter; label: s
   { value: 'all_outings', label: 'Any outing' },
 ];
 
-/** @deprecated Use GOAL_ACTIVITY_SEGMENTS */
-export const GOAL_ACTIVITY_OPTIONS = GOAL_ACTIVITY_SEGMENTS.map((s) => ({
-  value: s.value,
-  label: s.label === 'Any outing' ? 'Other activities' : s.label,
-}));
-
 export const GOAL_QUICK_TARGETS = [4, 6, 8, 10, 12] as const;
 
 export const todayIsoDateLocal = (): string => {

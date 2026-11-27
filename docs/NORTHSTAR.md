@@ -94,7 +94,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | **Browse** | `/explore` | **Find people and plans** — map/list of what's on + FAB to organize, find, or add |
 | **Entity detail** | `/activity`, `/trail`, … | **Understand the plan** → **I'm going** or **request to join** (see [`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 | **Personal hub** | `/profile` | **Your crew & what's next** — up next, messages, repeat outings |
-| **Publishing workspace** | `/host/*` | **Organizer / operator tools** — enable others to go together (secondary audience; not landing lead) |
+| **Operator desk** | `/operator/*` | **Operator tools** (any publishing kind) — enable others to go together (secondary audience; not landing lead) |
 
 **Hard rules**
 
@@ -122,7 +122,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 - “Hiking and camping only” as product definition  
 - Feature grids that read like an architecture brief  
 - Three identical UI patterns stacked (trust strip clone × 3)  
-- Explaining seeking, buddies, publishing workspace, or shops on guest landing  
+- Explaining seeking, buddies, operator desk, or shops on guest landing  
 
 ---
 

@@ -7,12 +7,12 @@ import { buildDiscoveryCardViewModelCard } from '../discovery';
 import {
   availabilityExploreMapItem,
   hostedExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
 } from './exploreMapItemFixtures';
 
 describe('exploreActivityMode (availability catalog)', () => {
   it('resolveExploreMapActivityMode uses explicit activityMode only', () => {
-    expect(resolveExploreMapActivityMode(seekingExploreMapItem())).toBe(null);
+    expect(resolveExploreMapActivityMode(excludedSeekingActivityMapItem())).toBe(null);
     expect(resolveExploreMapActivityMode(hostedExploreMapItem())).toBe('hosted');
     expect(
       resolveExploreMapActivityMode({
@@ -24,7 +24,7 @@ describe('exploreActivityMode (availability catalog)', () => {
 
   it('discovery VM badges availability pins only', () => {
     const item = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
-    const legacy = seekingExploreMapItem();
+    const legacy = excludedSeekingActivityMapItem();
     const availabilityCard = buildDiscoveryCardViewModelCard(item);
     const legacyCard = buildDiscoveryCardViewModelCard(legacy);
     expect(availabilityCard.source).toBe('availability');

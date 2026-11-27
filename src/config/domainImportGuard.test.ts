@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const SCAN_ROOTS = [
@@ -9,7 +9,7 @@ const SCAN_ROOTS = [
   join(process.cwd(), 'src', 'utils'),
   join(process.cwd(), 'src', 'list'),
   join(process.cwd(), 'src', 'services'),
-  join(process.cwd(), 'src', 'console'),
+  join(process.cwd(), 'src', 'operator'),
   join(process.cwd(), 'src', 'discovery'),
   join(process.cwd(), 'src', 'context'),
   join(process.cwd(), 'src', 'member'),
@@ -27,6 +27,7 @@ const DOMAIN_IMPORT_BASELINE = new Set<string>([]);
 const DOMAIN_IMPORT = /from ['"][^'"]*\/api\/domains\//;
 
 const collectSourceFiles = (dir: string): string[] => {
+  if (!existsSync(dir)) return [];
   const entries = readdirSync(dir);
   const files: string[] = [];
   for (const entry of entries) {

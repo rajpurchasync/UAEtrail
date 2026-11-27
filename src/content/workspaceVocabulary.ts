@@ -1,8 +1,8 @@
 /**
  * Canonical product vocabulary — three axes (do not conflate):
  *
- * 1. **UI actor labels** — **Host** = individual on an outing; **Guide / Pro host** = individual Pro on
- *    `/member/:userId`; **Operator** = shop or agency **business** (tenant profile), not the community host ladder.
+ * 1. **UI actor labels** — **Host** = individual on an outing; **Operator** = any publishing identity
+ *    (community host, guide, shop, agency) at **`/operator/*`**; joiner copy still says Host / brand name.
  * 2. **Capabilities** — **Host** / **publish** (`GET /me/status` → `publish.*`, `canPublish`);
  *    not HTTP personas or duplicate `/me/publishing-*` routes.
  * 3. **Gates** — **`profileComplete`** to host/publish; **signed in** suffices to participate
@@ -12,6 +12,8 @@
  * Mongo collections. Do not rename wire because UPL says Host; map in presentation layer only.
  * @see docs/SYSTEM_COHERENCE.md §8.8 · docs/MEMBER_MODEL.md § Naming vocabulary
  */
+
+import type { PublishingProfileKind } from '@uaetrail/shared-types';
 
 /** Individual leading this outing (consumer UI). */
 export const ACTIVITY_HOST_NOUN_TITLE = 'Host';
@@ -25,17 +27,28 @@ export const HOST_APPROVAL_REQUIRED = 'Host approval required to join';
 
 export const HOST_FALLBACK_DISPLAY_NAME = ACTIVITY_HOST_NOUN_TITLE;
 
-export type WorkspaceBrandKind = 'guide' | 'agency' | 'shop';
+export type WorkspaceBrandKind = 'host' | 'guide' | 'agency' | 'shop';
 
 export const normalizeWorkspaceBrandKind = (
   value?: string | null
 ): WorkspaceBrandKind | null => {
   if (!value) return null;
   const key = value.toLowerCase();
-  if (key === 'individual' || key === 'guide') return 'guide';
-  if (key === 'agency') return 'agency';
-  if (key === 'shop') return 'shop';
+  if (key === 'community' || key === 'host') return 'host';
+  if (key === 'individual' || key === 'guide' || key === 'pro_guide') return 'guide';
+  if (key === 'agency' || key === 'partner' || key === 'hospitality') return 'agency';
+  if (key === 'shop' || key === 'ecommerce') return 'shop';
   return null;
+};
+
+export const publishingProfileKindToDeskBrand = (
+  kind: PublishingProfileKind
+): WorkspaceBrandKind => {
+  if (kind === 'community') return 'host';
+  if (kind === 'pro_guide') return 'guide';
+  if (kind === 'shop' || kind === 'ecommerce') return 'shop';
+  if (kind === 'agency' || kind === 'hospitality' || kind === 'partner') return 'agency';
+  return 'host';
 };
 
 /**
@@ -43,10 +56,11 @@ export const normalizeWorkspaceBrandKind = (
  * Community hosts see community schedule on **`/operator/overview`** (`UPL_OPERATOR_DASHBOARD`).
  */
 export const workspaceConsoleLabel = (kind?: WorkspaceBrandKind | null): string => {
-  if (kind === 'guide') return 'Guide workspace';
-  if (kind === 'agency') return 'Operator workspace';
-  if (kind === 'shop') return 'Operator workspace';
-  return 'Operator dashboard';
+  if (kind === 'host') return 'Hosting desk';
+  if (kind === 'guide') return 'Guide desk';
+  if (kind === 'agency') return 'Agency desk';
+  if (kind === 'shop') return 'Shop desk';
+  return 'Operator desk';
 };
 
 export const workspaceProfileLabel = (kind?: WorkspaceBrandKind | null): string => {
@@ -74,7 +88,7 @@ export const workspaceSetupTitle = (kind?: WorkspaceBrandKind | null): string =>
   if (kind === 'guide') return 'Set up as a guide';
   if (kind === 'agency') return 'Set up your agency';
   if (kind === 'shop') return 'Set up your shop';
-  return 'Set up publishing';
+  return 'Set up hosting';
 };
 
 /** Activity form — tenant the activity is published under. */

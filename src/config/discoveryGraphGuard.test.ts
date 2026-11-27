@@ -370,7 +370,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const filePaths = [
       'src/components/shop/ShopPublicPage.tsx',
-      'src/components/organisation-console/ProProfileApplicationFlow.tsx',
+      'src/operator/apply/ProProfileApplicationFlow.tsx',
       'src/components/place/detail/PlaceDetailGuestGate.tsx',
       'src/facility/detail/templates/FacilityDetailSections.tsx',
       'src/hooks/useHostActivityManageActions.ts',
@@ -402,7 +402,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
         }
       }
     };
-    walk('src/pages/publishing');
+    walk('src/operator/desk');
     walk(join('src/pages/admin'));
     expect(violations).toEqual([]);
   });

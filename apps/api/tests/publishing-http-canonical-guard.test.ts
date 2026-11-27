@@ -16,7 +16,7 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
 
   it('FE clients call /publishing only from publishingWorkspace domain module', () => {
     const workspace = read('src/api/domains/publishingWorkspace.ts');
-    const org = read('src/api/domains/organisation.ts');
+    const org = read('src/api/domains/operatorPublic.ts');
     const places = read('src/api/domains/places.ts');
     const activities = read('src/api/domains/activities.ts');
     expect(workspace).toMatch(/\/publishing\/requests/);

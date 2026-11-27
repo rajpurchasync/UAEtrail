@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { usesDirectApiFacade } from './apiGuardPatterns';
 
-const CONSOLE_ROOT = join(process.cwd(), 'src', 'console');
+const CONSOLE_ROOT = join(process.cwd(), 'src', 'operator', 'desk');
 
 /** R8.1 — host console UI must not call `api.*` / `apiRequest` directly. */
 const API_DOT_BASELINE = new Set<string>([]);
@@ -37,7 +37,7 @@ describe('consoleApiGuard (R8.1)', () => {
 
     expect(
       offenders,
-      `New api.* in src/console — move fetch to hooks/*ClientApi:\n${offenders.join('\n')}`
+      `New api.* in src/operator/desk — move fetch to hooks/*ClientApi:\n${offenders.join('\n')}`
     ).toEqual([]);
   });
 });

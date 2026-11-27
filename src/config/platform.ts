@@ -64,7 +64,7 @@ export const LIST_DISCOVERY_PATH = '/list' as const;
 /** Drawer / landing list entry paths (aligned with `tripsListHomePath` / `venuesListHomePath` scoping). */
 export const TRIPS_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=activities` as const;
 export const VENUES_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=venues` as const;
-/** Crews tab list home (`listPeopleDiscoveryPath` minimal). */
+/** Crews tab list home (`crewsHubHomePath` / find-crew discover list). */
 export const CREWS_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=people` as const;
 
 /**
@@ -92,8 +92,8 @@ export const DOMAIN_GLOSSARY = {
     publicRoute: '/activity/:id',
   },
   Organisation: {
-    product: 'Organisation',
-    description: 'Host tenant — guide, agency, partner, or shop brand profiles.',
+    product: 'Operator',
+    description: 'Publishing identity — community host, guide, agency, partner, or shop. Wire: organisation.',
     storage: 'Tenant',
     api: '/publishing, /tenants/:slug',
     consoleRoute: '/operator/*',
@@ -102,8 +102,8 @@ export const DOMAIN_GLOSSARY = {
   },
   Shop: {
     product: 'Shop',
-    description: 'Merchant storefront and catalog.',
-    storage: 'MerchantProfile',
+    description: 'Outdoor gear shop profile (storefront only — no in-app catalog).',
+    storage: 'merchant_profiles',
     api: '/shop',
     publicRoute: '/shop/:id',
   },
@@ -237,10 +237,6 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     ],
   },
 ];
-
-/** @deprecated Host-mode drawer retired — same consumer menu for all roles (PCO-14). */
-export const hostModeHamburgerMenu = (_hostingHubPath?: string): readonly ConsumerHamburgerMenuItem[] =>
-  CONSUMER_HAMBURGER_MENU;
 
 /**
  * User taxonomy (admin + product):

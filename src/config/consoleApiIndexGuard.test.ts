@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const CONSOLE_ROOT = join(process.cwd(), 'src', 'console');
+const CONSOLE_ROOT = join(process.cwd(), 'src', 'operator', 'desk');
 
 /** R8.1 — host console UI uses `api/types` for DTOs, not the `api` facade barrel. */
 const API_INDEX_IMPORT = /from ['"][^'"]*\/api(?:\/index)?['"]/;

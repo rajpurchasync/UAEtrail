@@ -35,21 +35,21 @@ describe('doc coherence (Tier 1)', () => {
     expect(member).toMatch(/profileComplete/);
   });
 
-  it('Tier-1 docs do not teach /operator HTTP or SPA workspace alias', () => {
-    const banned = [
+  it('Tier-1 docs teach operator desk SPA /operator/* and HTTP /publishing/* (not /operator HTTP)', () => {
+    const bannedHttp = [
       /alias `\/operator/i,
       /Alias `\/operator/i,
       /POST [`']\/operator\//,
-      /is [`'`]\/operator\/\*[`'`]/,
     ];
-    const legacyAllow = new Set(['DOMAIN_CANONICALS.md', 'DOMAIN.md', 'NAVIGATION.md']);
     for (const name of tier1) {
       const text = readFileSync(join(DOCS, name), 'utf8');
-      for (const pattern of banned) {
-        if (legacyAllow.has(name) && pattern.source.includes('operator')) continue;
-        expect(pattern.test(text), `docs/${name} teaches stale /operator alias`).toBe(false);
+      for (const pattern of bannedHttp) {
+        expect(pattern.test(text), `docs/${name} teaches /operator as HTTP`).toBe(false);
       }
     }
+    const member = readFileSync(join(DOCS, 'MEMBER_MODEL.md'), 'utf8');
+    expect(member).toMatch(/SPA \*\*`\/operator\/\*`\*\*/);
+    expect(member).toMatch(/HTTP \*\*`\/publishing\/\*`\*\*/);
   });
 
   it('ARCHITECTURE describes shipped HTTP (no live seeking-posts)', () => {

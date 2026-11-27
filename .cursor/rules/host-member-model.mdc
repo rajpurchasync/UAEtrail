@@ -17,9 +17,9 @@ alwaysApply: true
 | **Buddy Host** on map | `profileComplete` → `publish.canPublish` (`GET /me/status`) → `/welcome` if incomplete | `/become-host`, host application |
 | **Pro / agency / shop** | `/profile/pro-membership`, `host_applications` | Bare “become host” funnel in consumer UI |
 | **Join / participate** on an outing | `activity_requests`, `POST /activities/:id/requests` (signed-in only) | Profile completion, publish tier, or host onboarding |
-| **Host reviews joiners** | `GET/PATCH /operator/requests` (**activity** queue; legacy `/host/*` rewritten) | `registerHost*JoinRequest*` without **Activity** in the name |
+| **Host reviews joiners** | `GET/PATCH /publishing/requests` (**activity** queue; SPA `/operator/requests`) | `registerHost*JoinRequest*` without **Activity** in the name |
 
-**UI labels:** **Host** = individual on an outing; **Operator** = agency/shop workspace — not `/me/*` API names. **`UserRole` (TENANT_GUIDE, …) ≠ publish tier.** Gates: **`MemberStatusDTO`** / **`status.publish`** from `api.getMemberStatus()` / `useMemberStatus`.
+**UI labels:** **Host** = individual on an outing; **Operator** = any publishing identity + desk (`/operator/*`) — not `/me/*` API names. **`UserRole` (TENANT_GUIDE, …) ≠ publish tier.** Gates: **`MemberStatusDTO`** / **`status.publish`** from `api.getMemberStatus()` / `useMemberStatus`.
 
 ## Code placement
 

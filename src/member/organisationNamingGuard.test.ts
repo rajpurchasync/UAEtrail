@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 const ROOT = process.cwd();
 const SCAN_ROOT = join(ROOT, 'src');
 
-/** Retired host-console / form-modal stack — must not exist on disk (use `pages/publishing/*`, Explore Host). */
+/** Retired host-console / form-modal stack — must not exist on disk (use `src/operator/desk/*`, Explore Host). */
 const RETIRED_PATHS = [
   'src/pages/OrganisationActivities.tsx',
   'src/pages/OrganisationConsoleOverview.tsx',
@@ -36,22 +36,26 @@ const RETIRED_PATHS = [
   'src/components/organisation-console/OrganisationJoinRequestDeclineDialog.tsx',
   'src/components/organisation-console/OrganisationRatingChip.tsx',
   'src/hooks/useOperatorActivityManageActions.ts',
+  'src/pages/OrganisationProfile.tsx',
+  'src/hooks/organisationConsoleApi.ts',
+  'src/api/domains/organisation.ts',
+  'src/pages/admin/Organisations.tsx',
 ];
 
 const DEPRECATED_HOST_PAGE_IMPORTS = RETIRED_PATHS.filter((p) => p.startsWith('src/pages/Organisation'));
 
-/** `pages/Organisation*.tsx` allowed — public tenant storefront, not host console. */
-const ALLOWED_ORGANISATION_PAGE_FILES = new Set(['OrganisationProfile.tsx']);
+/** Public tenant storefront lives under `src/operator/public/`, not `src/pages/Organisation*`. */
+const ALLOWED_ORGANISATION_PAGE_FILES = new Set<string>();
 
 const REQUIRED_HOST_CONSOLE_PAGES = [
-  'src/pages/publishing/Overview.tsx',
-  'src/pages/publishing/Activities.tsx',
-  'src/pages/publishing/JoinRequests.tsx',
-  'src/pages/publishing/Team.tsx',
-  'src/pages/publishing/Places.tsx',
-  'src/pages/publishing/History.tsx',
-  'src/pages/publishing/PublicProfileEdit.tsx',
-  'src/pages/publishing/Manage.tsx',
+  'src/operator/desk/Overview.tsx',
+  'src/operator/desk/Activities.tsx',
+  'src/operator/desk/JoinRequests.tsx',
+  'src/operator/desk/Team.tsx',
+  'src/operator/desk/Places.tsx',
+  'src/operator/desk/History.tsx',
+  'src/operator/desk/PublicProfileEdit.tsx',
+  'src/operator/desk/Manage.tsx',
 ];
 
 const collectSourceFiles = (dir: string): string[] => {
@@ -75,12 +79,23 @@ describe('organisationNamingGuard', () => {
     expect(present).toEqual([]);
   });
 
-  it('publishing console route pages live under src/pages/publishing/', () => {
+  it('stale organisation/publishing UI folders stay deleted', () => {
+    const staleDirs = [
+      'src/pages/publishing',
+      'src/console',
+      'src/components/organisation-console',
+      'src/components/organisation',
+      'src/organisation',
+    ];
+    expect(staleDirs.filter((rel) => existsSync(join(ROOT, rel)))).toEqual([]);
+  });
+
+  it('publishing console route pages live under src/operator/desk/', () => {
     const missing = REQUIRED_HOST_CONSOLE_PAGES.filter((rel) => !existsSync(join(ROOT, rel)));
     expect(missing).toEqual([]);
   });
 
-  it('only OrganisationProfile remains under pages/ for Organisation* shell names', () => {
+  it('no Organisation* route pages remain under src/pages/', () => {
     const pagesDir = join(ROOT, 'src/pages');
     if (!existsSync(pagesDir)) {
       expect(pagesDir).toBeTruthy();
@@ -102,7 +117,7 @@ describe('organisationNamingGuard', () => {
       for (const legacy of DEPRECATED_HOST_PAGE_IMPORTS) {
         const short = legacy.replace('src/pages/', '');
         if (content.includes(`/${legacy}`) || content.includes(`'./${short}`) || content.includes(`"./${short}`)) {
-          violations.push(`${file}: use src/pages/publishing/* instead of ${legacy}`);
+          violations.push(`${file}: use src/operator/desk/* instead of ${legacy}`);
         }
       }
     }
@@ -122,7 +137,7 @@ describe('organisationNamingGuard', () => {
       tracked = [];
     }
     const retiredTracked = tracked.filter(
-      (p) => p !== 'src/pages/OrganisationProfile.tsx' && p.startsWith('src/pages/Organisation')
+      (p) => p !== 'src/operator/public/OrganisationProfile.tsx' && p.startsWith('src/pages/Organisation')
     );
     expect(retiredTracked).toEqual([]);
   });

@@ -6,7 +6,7 @@ import { entityFollowsQueryKey } from './clientQueryKeys';
 export type EntityFollowTarget = {
   tenantId?: string;
   locationId?: string;
-  merchantId?: string;
+  shopId?: string;
 };
 
 export const fetchEntityFollowState = async (

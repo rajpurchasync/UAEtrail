@@ -60,7 +60,7 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Individual Pro | `tenants` (professional) + member | `/member/:userId` | No |
 | Agency (organisation) | `tenants` (agency) | `/agency/:slug` | No |
 
-Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/organisation/manage?kind=shop`: contact, branding). Saving there syncs both and invalidates the explore map cache.
+Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/operator/profile`, inbound `/organisation/manage?kind=shop`: contact, branding). Saving there syncs both and invalidates the explore map cache.
 
 ## Frontend (`src`)
 

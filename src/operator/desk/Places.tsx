@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PlaceDTO } from '@uaetrail/shared-types';
 import { getActiveTenantId } from '../../api/tenant';
-import { ConsoleShell } from '../../console/ConsoleShell';
+import { ConsoleShell } from './ConsoleShell';
 import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../../components/ui';
 import { placeSharePath } from '../../utils/share';
 import { useOrganisationSubmittedPlaces } from '../../hooks/usePublishingConsoleQueries';
@@ -12,7 +12,7 @@ const statusLabel = (status: PlaceDTO['status']) => {
   return 'Inactive';
 };
 
-/** Organisation console for submitting places. Canonical route: `/publishing/places`. */
+/** Operator desk: submit places. SPA `/operator/places`; HTTP `/publishing` place submit. */
 export const Places = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const {

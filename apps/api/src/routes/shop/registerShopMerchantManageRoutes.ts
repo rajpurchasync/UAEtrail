@@ -20,7 +20,7 @@ import {
   type ShopManageScope,
 } from './shop-route-schemas.js';
 
-/** Merchant + organisation manage (`/shop/merchant/*`, `/shop/organisation/*` profile aliases). */
+/** Shop manage: canonical `/shop/merchant/*`; inbound alias `/shop/organisation/*`. */
 export const registerShopMerchantManageRoutes = (router: Router): void => {
   shopOrganisationManagePrefixes.forEach((prefix) => {
     router.get(`${prefix}/stores`, requireAuth, requireVerifiedEmail, async (req, res, next) => {

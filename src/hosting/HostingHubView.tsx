@@ -12,7 +12,7 @@ import {
   UsersRound,
 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { useConsoleHubData } from '../console/useHubData';
+import { useConsoleHubData } from '../operator/desk/useHubData';
 import { useHostActivityManageActions } from '../hooks/useHostActivityManageActions';
 import {
   usePlanHostedPastPreview,

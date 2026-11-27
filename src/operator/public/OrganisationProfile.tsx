@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
-import { EntityPublicDetailShell } from '../components/entity-public/EntityPublicDetailShell';
+import { OrganisationPublicProfile } from './OrganisationPublicProfile';
+import { EntityPublicDetailShell } from '../../components/entity-public/EntityPublicDetailShell';
 import type { TenantPublicDTO } from '@uaetrail/shared-types';
-import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
-import { shopPublicPath } from '../utils/shopPaths';
-import { detailBackPath } from '../config/routingCatalog';
-import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
+import { fetchOrganisationProfileBySlug } from '../../hooks/operatorDeskClientApi';
+import { shopPublicPath } from '../../utils/shopPaths';
+import { detailBackPath } from '../../config/routingCatalog';
+import { AsyncLoadingState } from '../../components/ui/AsyncLoadingState';
 import {
   ORGANISATION_PUBLIC_TAB_QUERY,
   parseOrganisationPublicDetailTabParam,
   type OrganisationPublicDetailTabId,
-} from '../organisation/organisationPublicDetailTab';
+} from './organisationPublicDetailTab';
 
 const isShopTenant = (tenant: TenantPublicDTO): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
@@ -53,7 +53,7 @@ export const OrganisationProfile = () => {
   if (loading) {
     return (
       <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false}>
-        <AsyncLoadingState variant="centered" className="py-16" label="Loading organisation" />
+        <AsyncLoadingState variant="centered" className="py-16" label="Loading profile" />
       </EntityPublicDetailShell>
     );
   }
@@ -61,7 +61,7 @@ export const OrganisationProfile = () => {
   if (tenant && isShop) {
     return (
       <Navigate
-        to={shopPublicPath({ merchantId: tenant.shopId, slug: tenant.slug })}
+        to={shopPublicPath({ shopId: tenant.shopId, slug: tenant.slug })}
         replace
       />
     );

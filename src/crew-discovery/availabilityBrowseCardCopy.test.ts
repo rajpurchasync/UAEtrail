@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   availabilityMatchesFindCrewSearchDates,
   crewBrowseAvailabilityDetailFromPerson,
-  crewBrowseAvailabilityDetailFromSlots,
   crewBrowseAvailabilitySocialLabel,
   crewBrowseAvailabilityDateWindows,
   findCrewTrustBadgesFromProfileRole,
@@ -27,9 +26,12 @@ describe('availabilityBrowseCardCopy', () => {
         scheduleKind: 'open' as const,
       },
     ];
-    const detail = crewBrowseAvailabilityDetailFromSlots(slots, [], {
+    const detail = crewBrowseAvailabilityDetailFromPerson({
+      slots,
+      kinds: [],
       region: 'Dubai',
       destinationSlug: null,
+      profileRoleLabel: null,
     });
     expect(detail).not.toBeNull();
     expect(detail!.forLabels).toEqual(['Hiking', 'Camping']);

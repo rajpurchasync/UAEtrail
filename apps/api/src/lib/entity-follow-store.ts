@@ -2,7 +2,9 @@ import type { Collection } from 'mongodb';
 import {
   inferHostStorefrontKindFromTenantWire,
   type EntityFollowDTO,
+  normalizeEntityFollowKind,
   type EntityFollowKind,
+  type EntityFollowKindStored,
   type PublishingProfileKind,
 } from '@uaetrail/shared-types';
 import { LocationStatus } from '../domain/enums.js';
@@ -17,7 +19,7 @@ import { findTenantById, findTenantsByIds } from './tenant-store.js';
 type MongoEntityFollow = {
   _id: string;
   followerId: string;
-  kind: EntityFollowKind;
+  kind: EntityFollowKindStored;
   targetId: string;
   createdAt: Date;
 };
@@ -40,10 +42,14 @@ const assertFollowTarget = async (kind: EntityFollowKind, targetId: string): Pro
     }
     return;
   }
-  const merchant = await findMerchantPublicById(targetId);
-  if (!merchant) {
-    throw new ApiError(404, 'shop_not_found', 'Shop not found.');
+  if (kind === 'shop') {
+    const shop = await findMerchantPublicById(targetId);
+    if (!shop) {
+      throw new ApiError(404, 'shop_not_found', 'Shop not found.');
+    }
+    return;
   }
+  throw new ApiError(400, 'invalid_follow', 'Invalid follow target kind.');
 };
 
 export const followEntity = async (
@@ -78,22 +84,27 @@ export const unfollowEntityById = async (followerId: string, followId: string): 
   await collection().deleteOne({ _id: followId, followerId });
 };
 
+const storedKindsForShopFollow = (): EntityFollowKindStored[] => ['shop', 'merchant'];
+
 export const findEntityFollow = async (input: {
   followerId: string;
   kind: EntityFollowKind;
   targetId: string;
 }): Promise<{ id: string } | null> => {
+  const kinds =
+    input.kind === 'shop' ? storedKindsForShopFollow() : [input.kind];
   const row = await collection().findOne({
     followerId: input.followerId,
-    kind: input.kind,
+    kind: { $in: kinds },
     targetId: input.targetId,
   });
   return row ? { id: row._id } : null;
 };
 
 export const listEntityFollowerIds = async (kind: EntityFollowKind, targetId: string): Promise<string[]> => {
+  const kinds = kind === 'shop' ? storedKindsForShopFollow() : [kind];
   const docs = await collection()
-    .find({ kind, targetId }, { projection: { followerId: 1 } })
+    .find({ kind: { $in: kinds }, targetId }, { projection: { followerId: 1 } })
     .limit(500)
     .toArray();
   return docs.map((doc) => doc.followerId);
@@ -109,7 +120,9 @@ export const listEntityFollowsWithDetails = async (
 
   const locationIds = docs.filter((d) => d.kind === 'location').map((d) => d.targetId);
   const tenantIds = docs.filter((d) => d.kind === 'tenant').map((d) => d.targetId);
-  const merchantIds = docs.filter((d) => d.kind === 'merchant').map((d) => d.targetId);
+  const shopIds = docs
+    .filter((d) => d.kind === 'shop' || d.kind === 'merchant')
+    .map((d) => d.targetId);
 
   const locationMap = new Map<string, { id: string; name: string; images: string[] }>();
   if (locationIds.length > 0) {
@@ -156,33 +169,37 @@ export const listEntityFollowsWithDetails = async (
     });
   }
 
-  const merchantMap = new Map<string, { id: string; shopName: string; logo: string | null }>();
-  if (merchantIds.length > 0) {
-    type MerchantRow = { _id: string; shopName: string; logo?: string | null };
-    const merchants = await getMongoClient()!
+  const shopMap = new Map<string, { id: string; shopName: string; logo: string | null }>();
+  if (shopIds.length > 0) {
+    type ShopProfileRow = { _id: string; shopName: string; logo?: string | null };
+    const shops = await getMongoClient()!
       .db()
-      .collection<MerchantRow>(COLLECTIONS.MERCHANT_PROFILES)
-      .find({ _id: { $in: merchantIds } })
+      .collection<ShopProfileRow>(COLLECTIONS.MERCHANT_PROFILES)
+      .find({ _id: { $in: shopIds } })
       .project({ shopName: 1, logo: 1 })
       .toArray();
-    for (const merchant of merchants) {
-      merchantMap.set(merchant._id, {
-        id: merchant._id,
-        shopName: merchant.shopName,
-        logo: merchant.logo ?? null,
+    for (const shop of shops) {
+      shopMap.set(shop._id, {
+        id: shop._id,
+        shopName: shop.shopName,
+        logo: shop.logo ?? null,
       });
     }
   }
 
-  return docs.map((doc) => ({
-    id: doc._id,
-    kind: doc.kind,
-    targetId: doc.targetId,
-    createdAt: doc.createdAt.toISOString(),
-    location: doc.kind === 'location' ? locationMap.get(doc.targetId) ?? null : null,
-    tenant: doc.kind === 'tenant' ? tenantMap.get(doc.targetId) ?? null : null,
-    merchant: doc.kind === 'merchant' ? merchantMap.get(doc.targetId) ?? null : null,
-  }));
+  return docs.map((doc) => {
+    const kind = normalizeEntityFollowKind(doc.kind);
+    const isShop = doc.kind === 'shop' || doc.kind === 'merchant';
+    return {
+      id: doc._id,
+      kind,
+      targetId: doc.targetId,
+      createdAt: doc.createdAt.toISOString(),
+      location: doc.kind === 'location' ? locationMap.get(doc.targetId) ?? null : null,
+      tenant: doc.kind === 'tenant' ? tenantMap.get(doc.targetId) ?? null : null,
+      shop: isShop ? shopMap.get(doc.targetId) ?? null : null,
+    };
+  });
 };
 
 export const deleteEntityFollowsByUser = async (userId: string): Promise<void> => {

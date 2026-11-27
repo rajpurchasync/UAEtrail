@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ACTIVITY_DETAIL_TABS } from '../activity/activityDetailTab';
 import { DESTINATION_DETAIL_TABS } from '../destinationDetail/destinationDetailTab';
-import { ORGANISATION_PUBLIC_TABS } from '../organisation/organisationPublicDetailTab';
+import { ORGANISATION_PUBLIC_TABS } from '../operator/public/organisationPublicDetailTab';
 import { PLACE_DETAIL_TABS, parsePlaceDetailTabParam } from '../place/placeDetailTab';
 import { SHOP_PUBLIC_TABS } from '../shop/shopPublicDetailTab';
 import { CONSUMER_DETAIL_TAB_WIRE_CANON } from './consumerDetailTabWireCanon';

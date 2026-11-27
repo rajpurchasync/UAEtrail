@@ -10,10 +10,10 @@ import {
   updateShopOrganisationProfile,
 } from '../../hooks/shopOrganisationClientApi';
 import { shopPublicPath } from '../../utils/shopPaths';
-import { GlassCard } from '../mobile/GlassCard';
-import { AppButton } from '../mobile/AppButton';
-import { ImageUpload } from '../ui';
-import { AppSelect } from '../ui/AppSelect';
+import { GlassCard } from '../../components/mobile/GlassCard';
+import { AppButton } from '../../components/mobile/AppButton';
+import { ImageUpload } from '../../components/ui';
+import { AppSelect } from '../../components/ui/AppSelect';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 const emptyProfile = {
@@ -55,8 +55,8 @@ export const ShopOrganisationPanel = () => {
     }
   };
 
-  const loadProfile = async (merchantId: string) => {
-    const profile = await fetchShopOrganisationProfile(merchantId);
+  const loadProfile = async (shopId: string) => {
+    const profile = await fetchShopOrganisationProfile(shopId);
     setProfileForm({
       shopName: profile.shopName,
       description: profile.description ?? '',
@@ -134,7 +134,7 @@ export const ShopOrganisationPanel = () => {
 
       {selectedStore && (
         <Link
-          to={shopPublicPath({ merchantId: selectedStore.id })}
+          to={shopPublicPath({ shopId: selectedStore.id })}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700"
         >
           View public shop page

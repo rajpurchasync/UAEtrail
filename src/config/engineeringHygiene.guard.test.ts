@@ -125,6 +125,84 @@ describe('engineeringHygiene guard (R1–R6 closure)', () => {
     expect(existsSync(join(ROOT, 'packages/shared-types/src/entity-path.ts'))).toBe(true);
   });
 
+  it('AUDIT-23: shop vocabulary — merchant product term retired on map/follow surfaces (C9)', () => {
+    expect(read('src/explore/exploreMapItemKind.ts')).not.toMatch(/isMerchantShopMapItem/);
+    expect(read('src/discovery/discoveryCardModel.ts')).toMatch(/shopId/);
+    expect(read('src/discovery/discoveryCardModel.ts')).not.toMatch(/merchantId/);
+    expect(read('src/api/domains/shop.ts')).not.toMatch(/getMerchantProfile/);
+    expect(read('packages/shared-types/src/entity-follow.ts')).toMatch(/kind: EntityFollowKind/);
+    expect(read('packages/shared-types/src/entity-follow.ts')).toMatch(/\bshop\?:/);
+    expect(read('apps/api/src/lib/discovery-catalog-builder.ts')).toMatch(/shopId:/);
+    expect(read('apps/api/src/lib/discovery-catalog-builder.ts')).not.toMatch(/merchantId:/);
+  });
+
+  it('AUDIT-22: retired wire/UI aliases stay removed (C8)', () => {
+    expect(read('src/detail/weather/weatherDisplayUtils.ts')).not.toMatch(/openMeteoMapUrl/);
+    expect(read('src/place/placeDetailTab.ts')).not.toMatch(/LocationTab/);
+    expect(read('packages/shared-types/src/member-inbox.ts')).not.toMatch(/MemberInboxGroupType/);
+    expect(read('packages/shared-types/src/member-discovery-roster.ts')).not.toMatch(
+      /MemberDiscoveryOnTripRowDTO/
+    );
+    expect(read('packages/shared-types/src/index.ts')).not.toMatch(/ORGANIZER_FALLBACK_DISPLAY_NAME/);
+    expect(read('src/content/upl-glossary.ts')).not.toMatch(/UPL_AVAILABILITY/);
+  });
+
+  it('AUDIT-21: retired FE regression aliases stay removed (C7)', () => {
+    expect(read('src/crew-discovery/crewBrowseState.ts')).not.toMatch(/CREW_PEOPLE_FACET_ORDER/);
+    expect(read('src/explore/exploreMapItemFixtures.ts')).not.toMatch(/seekingExploreMapItem/);
+    expect(read('src/explore/mapPeekBubbleLayout.ts')).not.toMatch(/mapPeekFitScale/);
+    expect(read('src/place/geographyVocabulary.ts')).not.toMatch(/MapCatalogPlaceWireSource/);
+    expect(read('src/types/place.ts')).not.toMatch(/PlaceAsTrail/);
+  });
+
+  it('AUDIT-20: retired entity-path profile helpers stay removed (C6)', () => {
+    expect(read('packages/shared-types/src/entity-path.ts')).not.toMatch(/memberDiscoverProfilePath/);
+    expect(read('packages/shared-types/src/entity-path.ts')).not.toMatch(/organisationProfilePath/);
+    expect(read('packages/shared-types/src/entity-path.ts')).not.toMatch(/resolveOrganisationProfilePath/);
+    expect(read('src/utils/organisationLinks.ts')).not.toMatch(/organisationProfilePath/);
+  });
+
+  it('AUDIT-19: retired shared-types wire aliases stay removed (C5)', () => {
+    const st = (rel: string) => read(rel);
+    expect(st('packages/shared-types/src/outdoor-map-entries.ts')).not.toMatch(/OutdoorMapEntryDTO/);
+    expect(st('packages/shared-types/src/explore-presentation.ts')).not.toMatch(/CATALOG_PLACE_MAP_SOURCE/);
+    expect(st('packages/shared-types/src/activity-participation-mode.ts')).not.toMatch(
+      /ACTIVITY_GUEST_JOIN_LABEL_RSVP/
+    );
+    expect(st('packages/shared-types/src/explore-plan-projection.ts')).not.toMatch(
+      /resolveexcludedSeekingActivityMapItemId/
+    );
+    expect(st('packages/shared-types/src/crew-pillars.ts')).not.toMatch(/crewHubStatTabToPillar/);
+  });
+
+  it('AUDIT-18: retired FE @deprecated alias exports stay removed (C4)', () => {
+    expect(read('src/explore/exploreDesktopPopup.ts')).not.toMatch(/exploreComposeMenuPopupBodyClass/);
+    expect(read('src/config/platform.ts')).not.toMatch(/hostModeHamburgerMenu/);
+    expect(read('src/components/profile/goalCopy.ts')).not.toMatch(/GOAL_ACTIVITY_OPTIONS/);
+    expect(read('src/crew-discovery/availabilityBrowseCardCopy.ts')).not.toMatch(
+      /crewBrowseAvailabilityDetailFromSlots/
+    );
+  });
+
+  it('AUDIT-17: browse session read/merge avoid discoverySession barrel (import cycle)', () => {
+    expect(read('src/discovery/discoveryBrowseListSessionRead.ts')).not.toMatch(/from ['"]\.\/discoverySession['"]/);
+    expect(read('src/discovery/discoveryBrowseListUrlMerge.ts')).not.toMatch(/from ['"]\.\/discoverySession['"]/);
+  });
+
+  it('AUDIT-16: folded list discovery ports stay deleted (C3)', () => {
+    expect(existsSync(join(ROOT, 'src/discovery/discoveryPortListFeedActions.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/discovery/discoveryPortListGeoHub.ts'))).toBe(false);
+    expect(read('src/discovery/discoveryPortListPeek.ts')).toMatch(/resolveListFeedFooterFromMapPeekWire/);
+    expect(read('src/discovery/discoveryPortListGeoBrowse.ts')).toMatch(/ListExplorer/);
+  });
+
+  it('AUDIT-15: explore root barrel does not re-export UI or discovery card models', () => {
+    const barrel = read('src/explore/index.ts');
+    expect(barrel).not.toMatch(/export \* from ['"]\.\/ui['"]/);
+    expect(barrel).not.toMatch(/discovery\/discoveryCardModel/);
+    expect(existsSync(join(ROOT, 'src/explore/ui/index.ts'))).toBe(false);
+  });
+
   it('AUDIT-14: audit backlog modules retired or consolidated', () => {
   for (const rel of [
       'src/explore/ui/exploreMapGeoBubbles.ts',

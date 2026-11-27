@@ -1,4 +1,6 @@
-/** W57+W66 — geo list pane wire + side-map split px (kept off BrowseFilters — discoverySession import cycle). */
+/** W57+W60+W66+W70 — geo list pane wire, explorer shell, side-map split px. */
+export { ListDiscoveryMapColumn } from '../list/explorer/ListDiscoveryMapColumn';
+export { ListExplorer } from '../list/explorer/ListExplorer';
 export { browseListBucketCategories, type BrowseListBucket } from '../list/browse/browseListBucket';
 export { countBrowseListFilters, type BrowseListLayout } from '../list/browse/browseListLayout';
 export { DEFAULT_BROWSE_LIST_SORT, type BrowseListSortMode } from '../list/browse/listBrowseSort';

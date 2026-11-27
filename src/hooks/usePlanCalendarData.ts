@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
-import { useConsoleHubData } from '../console/useHubData';
+import { useConsoleHubData } from '../operator/desk/useHubData';
 import { useMemberAvailability } from './useMemberAvailability';
 import { useMyActivityJoinRequests } from './useMyActivityJoinRequests';
 import { useMyJoinedActivities } from './useMyJoinedActivities';

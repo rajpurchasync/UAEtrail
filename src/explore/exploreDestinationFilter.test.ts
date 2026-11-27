@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { seekingExploreMapItem } from './exploreMapItemFixtures';
+import { excludedSeekingActivityMapItem } from './exploreMapItemFixtures';
 import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import {
   destinationIdForExploreDestinationSlug,
@@ -25,8 +25,8 @@ const hattaArea = (): DestinationPublicDTO => ({
 
 describe('exploreDestinationFilter', () => {
   it('filters map rows by destinationSlug', () => {
-    const inHatta = { ...seekingExploreMapItem(), destinationSlug: 'hatta', destinationId: 'a1' };
-    const other = { ...seekingExploreMapItem({ intentId: '2' }), destinationSlug: 'jebel-jais', destinationId: 'a2' };
+    const inHatta = { ...excludedSeekingActivityMapItem(), destinationSlug: 'hatta', destinationId: 'a1' };
+    const other = { ...excludedSeekingActivityMapItem({ intentId: '2' }), destinationSlug: 'jebel-jais', destinationId: 'a2' };
     const filtered = filterExploreMapItemsByDestinationSlug([inHatta, other], 'hatta');
     expect(filtered).toHaveLength(1);
     expect(exploreMapItemMatchesDestinationSlug(inHatta, 'hatta')).toBe(true);

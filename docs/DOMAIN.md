@@ -62,7 +62,7 @@ Business capabilities attach to **operator tenants** (shop/agency), each with **
 | **Where** | Trail, camp, **shop pin**, future partner/hotel pin | Tour **agency** (join trips without visiting a pin) |
 | **Who** | Activity, seeking, **`/member/:userId`**, **agency / shop operator profiles** (not person map pins) | Calling a gear **shop** a “partner” |
 
-**Publish as:** when a user is linked to a business (`tenant_memberships`), Host / publishing workspace should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+**Publish as:** when a user is linked to a business (`tenant_memberships`), Host / operator desk should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ### Member profile visibility
 
@@ -276,16 +276,16 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 
 **Host defaults:** Event → `rsvp`; Hiking, Camping, generic Activity → `approval`. Creator can toggle on all Host paths.
 
-## Host vs Organisation in copy
+## Host vs Operator vs organisation in copy
 
 | Context | Say | Avoid |
 |---------|-----|--------|
-| Umbrella (any publisher) | **Organizer** (consumer outing), **publishing profile**, **workspace** (`/host/*`), **publishing application** | Retired product term: **host** |
-| Individual guide | **Guide**, **guide profile**, **guide workspace** | — |
-| Licensed business | **Agency**, **agency profile**, **operator workspace** | — |
-| Gear seller | **Shop**, **shop profile**, **operator workspace** | — |
-| On-day trip leader | **Organizer** (“Organized by …”) | Wire: `hostUserId`, `profileRoleLabel: host` |
-| Code / filenames / API aliases | `Organisation*`, `tenant`, `/host/*`, `HostStatusDTO` | Wire-only until a deliberate rename |
+| Umbrella (any publisher) | **Operator** (desk identity), **operator desk** (`/operator/*`) | **Organisation** in UI |
+| Individual on this outing | **Host**, **Hosted by** | Organizer; organisation |
+| Individual guide | **Guide**, **guide profile**, **guide desk** | — |
+| Licensed business | **Agency**, **agency profile**, **agency desk** | — |
+| Gear seller | **Shop**, **shop profile**, **shop desk** | — |
+| Code / filenames / API aliases | `Organisation*`, `tenant`, `/publishing/*`, `x-organisation-id` | Product copy — organisation is wire only |
 
 Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `workspaceProfileLabel()`, `normalizeWorkspaceBrandKind()`.
 
@@ -300,7 +300,7 @@ Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `wo
 | `hostName` (signup) | `organizationName` | Wire field on `/auth/register` |
 | `hostDetails`, `shopId` (tenant profile JSON) | — | GET tenant profile sends `hostDetails` and `shopId` |
 | `GET /admin/places` (admin CRUD) | `GET /admin/locations` | SPA redirect only |
-| `shopId`, `/shop/organisation/*` (shop manage) | — | Mongo collection stays `merchant_profiles` |
+| `shopId`, `/shop/merchant/*` (shop manage) | `/shop/organisation/*` inbound | Mongo collection stays `merchant_profiles` |
 | `GET /shop/shops/:id` (public shop) | — | One public storefront route |
 
 ### Capabilities by host kind
@@ -324,14 +324,14 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 
 | Subtype | Role | Map pin? | Manage |
 |---------|------|----------|--------|
-| **Individual Pro** | Member with Pro membership; public intro at `/member/:userId` | No | `/publishing` console; buddy Host / publish via `canPublish` |
-| **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
-| **Shop** | Outdoor retail (pin + `/shop/:id`) | Physical pin typical | `/shop/:id` |
+| **Individual Pro** | Member with Pro membership; public intro at `/member/:userId` | No | `/operator` desk; buddy Host / publish via `canPublish` |
+| **Agency** | Business host; paid trips | No | `/operator/*` (agency modules) |
+| **Shop** | Outdoor retail (pin + `/shop/:id`) | Physical pin typical | `/operator/*` (shop modules) + `/shop/:id` |
 | **E-commerce** (Business Pro) | Online-first retail | Optional pin | TBD |
 | **Hospitality** (Business Pro) | Hotels / venues | Often pin + campaigns | TBD |
 | **Partner** (Partner Pro) | Campaign host | Pin + feeds (future) | TBD |
 
-Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/organisation/manage?kind=shop`), linked via `merchant_profiles.tenantId`.
+Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/operator/profile`, inbound `/organisation/manage?kind=shop`), linked via `merchant_profiles.tenantId`.
 
 ## Legacy → domain naming
 
@@ -339,25 +339,25 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 |-------------|-------------------|--------------|
 | Location | **Place** (entity) | HTTP **`/places`** (legacy `/locations` alias); collection `locations`; `LocationDTO` — storage name only |
 | Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity; map `source: venue` normalizes to `place` |
-| `/operator/{console}` | Retired console URL | Use `/publishing/{console}` only; not a storefront |
+| `/host/*`, `/publishing/*` SPA | Inbound redirects | Canonical SPA `/operator/*`; HTTP `/publishing/*`; `/operator/:slug` is not a storefront |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
-| Organizer | Host or agency | — |
-| Tenant | Host (copy) / Organisation (code) | `tenants`, `x-organisation-id` |
+| Organizer | Host (outing) or operator (desk) | — |
+| Tenant | Operator (copy) / organisation (wire) | `tenants`, `x-organisation-id` |
 
 ## Page renames (routes unchanged)
 
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `OrganisationProfile` | `/agency/:id`, `/partner/:id` | Public business brand profile |
-| `pages/publishing/Overview` (`Overview`) | `/publishing/overview` | **Publishing console** hub (folder name `operator/`; route `/publishing/*`) |
-| `pages/publishing/Activities` (`Activities`) | `/publishing/activities` | Tenant activity list + manage sheet |
-| `pages/publishing/JoinRequests` (`JoinRequests`) | `/publishing/requests` | Activity join queue |
-| `pages/publishing/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
+| `src/operator/desk/Overview` (`Overview`) | `/operator/overview` | **Operator desk** hub (HTTP `/publishing/*`) |
+| `src/operator/desk/Activities` (`Activities`) | `/operator/activities` | Tenant activity list + manage sheet |
+| `src/operator/desk/JoinRequests` (`JoinRequests`) | `/operator/requests` | Activity join queue |
+| `src/operator/desk/Manage` (`Manage`) | inbound `/organisation/manage` → `/operator/profile` | Redirect only — shop/agency panels on profile |
 | `ProfileProMembership` (`BecomeHost` leftover inbound export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Host / publish (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
-| `pages/admin/Organisations` (`Organisations`) | `/admin/hosts` | Admin copy: **Hosts** — folder is the namespace, not `AdminOrganisations.tsx` |
+| `pages/admin/Operators` (`Organisations`) | `/admin/hosts` | Admin copy: **Hosts** — folder is the namespace, not `AdminOrganisations.tsx` |
 
-**Code folder:** `src/components/organisation-console/` (implementation name). **UI:** organizer / guide / agency / shop per `workspaceVocabulary.ts`.
+**Code folder:** `src/operator/{desk,public,apply}/`. **UI:** Host / Guide / Agency / Shop desk per `workspaceVocabulary.ts`.
 
 ## Place catalog vs activity anchors
 

@@ -49,10 +49,6 @@ export {
   normalizeExploreMapSource,
 };
 
-/** @deprecated Use {@link PLACE_MAP_SOURCE}. */
-export const CATALOG_PLACE_MAP_SOURCE = PLACE_MAP_SOURCE;
-/** @deprecated Use {@link isGeographyMapSource} (place + facility) or {@link isPlaceMapSource}. */
-export const isCatalogPlaceMapSource = isGeographyMapSource;
 export type DiscoveryCardKind =
   | 'hiking'
   | 'camping'

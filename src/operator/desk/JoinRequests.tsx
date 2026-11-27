@@ -10,12 +10,12 @@ import {
   usePublishingJoinQueue,
 } from '../../hooks/publishingWorkspaceQueries';
 import { getActiveTenantId } from '../../api/tenant';
-import { ConsoleShell } from '../../console/ConsoleShell';
-import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
+import { ConsoleShell } from './ConsoleShell';
+import { ActivityJoinRequestCard } from './ActivityJoinRequestCard';
 import { TenantSwitcher } from '../../components/ui';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
-import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
+import { ActivityJoinRequestDeclineDialog } from './ActivityJoinRequestDeclineDialog';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 

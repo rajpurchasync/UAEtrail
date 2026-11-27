@@ -58,9 +58,6 @@ export const isFindCrewDiscoveryListPath = (pathname: string, search: string): b
   );
 };
 
-/** @deprecated Alias — same as {@link findCrewDiscoveryListPath}. */
-export const findCrewDiscoveryListShellPath = (): string => findCrewDiscoveryListPath();
-
 /** Find crew with Community lane selected — join discoverable clubs. */
 export const findCrewCommunityDiscoveryPath = (): string =>
   listDiscoveryPath({
@@ -68,12 +65,6 @@ export const findCrewCommunityDiscoveryPath = (): string =>
     crewPeopleSurface: 'find',
     crewBrowseLane: 'community',
   });
-
-/**
- * @deprecated Prefer {@link findCrewDiscoveryListPath} or {@link crewsHubHomePath}.
- * Kept for explore/desktop handoffs that mean discover browse.
- */
-export const listPeopleDiscoveryPath = (): string => findCrewDiscoveryListPath();
 
 /** Scoped list homes — mobile five-tab + drawer (import here, not `platform.ts`, to avoid cycles). */
 export const tripsListHomePath = (): string =>

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   layoutMapPeekBottomSheet,
   layoutMapPeekBubble,
-  mapPeekFitScale,
   resolveMapPeekFit,
 } from './mapPeekBubbleLayout';
 
@@ -94,22 +93,18 @@ describe('layoutMapPeekBottomSheet', () => {
   });
 });
 
-describe('mapPeekFitScale', () => {
+describe('resolveMapPeekFit', () => {
   it('stays at 1 when content already fits', () => {
-    expect(mapPeekFitScale(280, 500)).toBe(1);
+    expect(resolveMapPeekFit(280, 500).fit).toBe(1);
   });
 
   it('shrinks modestly when still above the readable fit floor', () => {
-    expect(mapPeekFitScale(440, 400)).toBeCloseTo(400 / 440);
+    expect(resolveMapPeekFit(440, 400).fit).toBeCloseTo(400 / 440);
   });
 
   it('uses scroll instead of unreadable zoom when content is much taller than the viewport', () => {
-    expect(mapPeekFitScale(2000, 200)).toBe(1);
     expect(resolveMapPeekFit(2000, 200)).toEqual({ fit: 1, scrollBody: true });
   });
-});
-
-describe('resolveMapPeekFit', () => {
   it('scrolls on mobile dock when content exceeds available height', () => {
     expect(resolveMapPeekFit(500, 320, { mobileDock: true })).toEqual({
       fit: 1,

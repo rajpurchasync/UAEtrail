@@ -55,12 +55,6 @@ export const resolveParticipationModeForJoinMode = (input: {
 /** Guest activity join CTA — auth required, not pricing (“outing is free”). */
 export const ACTIVITY_GUEST_JOIN_LABEL = 'Sign in to join';
 
-/** @deprecated Use {@link ACTIVITY_GUEST_JOIN_LABEL}. */
-export const ACTIVITY_GUEST_JOIN_LABEL_RSVP = ACTIVITY_GUEST_JOIN_LABEL;
-
-/** @deprecated Use {@link ACTIVITY_GUEST_JOIN_LABEL}. */
-export const ACTIVITY_GUEST_JOIN_LABEL_APPROVAL = ACTIVITY_GUEST_JOIN_LABEL;
-
 /** Primary join CTA on activity detail and explore cards. */
 export const activityJoinCtaLabel = (options: {
   participationMode?: ParticipationMode | null;

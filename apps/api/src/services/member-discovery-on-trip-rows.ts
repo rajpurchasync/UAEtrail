@@ -1,8 +1,17 @@
-import type { ExploreMapItemDTO, MemberDiscoveryOnTripRowDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   matchesExploreActivityDateFilter,
   type ExploreActivityDatePreset,
 } from '../lib/explore-activity-date-filter.js';
+
+/** Legacy map-row shape — roster wire uses `friendsGoing` / `hostsGoing` instead. */
+export type MemberDiscoveryOnTripRowWire = {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  activityId: string;
+  activityTitle: string;
+};
 
 /** Strangers on published activities (legacy helper — tests / map tooling). */
 export const buildMemberDiscoveryOnTripRowsFromMapItems = (
@@ -13,9 +22,9 @@ export const buildMemberDiscoveryOnTripRowsFromMapItems = (
     datePreset: ExploreActivityDatePreset;
     discoverableUserIds: Set<string>;
   }
-): MemberDiscoveryOnTripRowDTO[] => {
+): MemberDiscoveryOnTripRowWire[] => {
   const seen = new Set<string>();
-  const rows: MemberDiscoveryOnTripRowDTO[] = [];
+  const rows: MemberDiscoveryOnTripRowWire[] = [];
 
   for (const item of items) {
     if (item.source !== 'activity' || !item.activity) continue;

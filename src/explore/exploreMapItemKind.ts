@@ -6,15 +6,16 @@ import {
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
 
-export const isMerchantShopMapItem = (item: ExploreMapItemDTO): boolean =>
+/** Pro / operator gear shop on explore (`merchant_profiles` + SHOP tenant). */
+export const isShopStorefrontMapItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
 
-/** Community-submitted gear shop pin — map peek only (not merchant profile). */
+/** Community-submitted gear shop pin — map peek only (not a shop profile page). */
 export const isCommunityShopMapItem = (item: ExploreMapItemDTO): boolean =>
   item.kind === 'shop' && isPeekOnlyCatalogProfile(item.catalogProfileExposure);
 
 export const isShopListItem = (item: ExploreMapItemDTO): boolean =>
-  isMerchantShopMapItem(item) || isCommunityShopMapItem(item);
+  isShopStorefrontMapItem(item) || isCommunityShopMapItem(item);
 
 /** Permanent catalog: trails, camp spots, shops — not outings or event venues. */
 export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
@@ -26,6 +27,6 @@ export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
 /** Time-bound social layer: hosted outings and looking-for posts. */
 export const isFriendMapItem = (item: ExploreMapItemDTO): boolean => isTimeBoundExploreMapItem(item);
 
-/** Map pills + list venue “shop” topic — merchant pins and any `kind: shop` row. */
+/** Map pills + list venue “shop” topic — operator shop pins and any `kind: shop` row. */
 export const mapItemMatchesShopsPill = (item: ExploreMapItemDTO): boolean =>
-  isMerchantShopMapItem(item) || item.kind === 'shop';
+  isShopStorefrontMapItem(item) || item.kind === 'shop';

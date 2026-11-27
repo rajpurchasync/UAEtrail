@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { activityGuideConsentRequired, type PublishingProfileKind } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
-import { fetchOrganisationTeam } from '../../hooks/organisationConsoleApi';
+import { fetchOrganisationTeam } from '../../hooks/operatorDeskClientApi';
 import { searchMembersByQuery, type MemberSearchHit } from '../../hooks/memberPeopleClientApi';
 import { listActivityGuides } from '../../hooks/tenantActivityClientApi';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';

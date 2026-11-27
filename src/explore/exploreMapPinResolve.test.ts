@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { seekingExploreMapItem } from './exploreMapItemFixtures';
+import { excludedSeekingActivityMapItem } from './exploreMapItemFixtures';
 import {
   findExploreMapItemForPinId,
   resolveActivityIdForExplorePinId,
@@ -8,7 +8,7 @@ import {
 describe('exploreMapPinResolve', () => {
   it('does not treat leftover demand: pins as map rows', () => {
     const items = [
-      seekingExploreMapItem({
+      excludedSeekingActivityMapItem({
         id: 'activity:act-seek',
         activityId: 'act-seek',
       }),
@@ -18,7 +18,7 @@ describe('exploreMapPinResolve', () => {
   });
 
   it('keeps direct activity pin resolution', () => {
-    const items = [seekingExploreMapItem({ id: 'activity:act-2' })];
+    const items = [excludedSeekingActivityMapItem({ id: 'activity:act-2' })];
     expect(findExploreMapItemForPinId(items, 'activity:act-2')?.id).toBe('activity:act-2');
     expect(resolveActivityIdForExplorePinId(items, 'activity:act-2')).toBe('act-2');
   });

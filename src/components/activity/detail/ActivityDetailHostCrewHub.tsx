@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react';
 import { afterHostJoinDecisionClientRefresh } from '../../../hooks/activityJoinClientEffects';
 import type { ActivityRequestView } from '../../../api/types';
 import { decideActivityJoinRequest } from '../../../hooks/publishingJoinQueueClientApi';
-import { ActivityJoinRequestCard } from '../../../console/ActivityJoinRequestCard';
-import { ActivityJoinRequestDeclineDialog } from '../../../console/ActivityJoinRequestDeclineDialog';
+import { ActivityJoinRequestCard } from '../../../operator/desk/ActivityJoinRequestCard';
+import { ActivityJoinRequestDeclineDialog } from '../../../operator/desk/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from '../ActivityParticipantsPanel';
 
 type ActivityDetailHostCrewHubProps = {

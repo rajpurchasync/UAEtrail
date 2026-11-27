@@ -12,13 +12,13 @@ import {
   inferListCatFromExploreHandoff,
   scopeBrowseListStateForListCat,
 } from '../list/browse/browseListMapHandoff';
+import { LIST_CAT_PARAM } from './discoverySessionParams';
+import { parseListCatParam } from './discoverySessionParsers';
 import {
-  LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
-  parseListCatParam,
-} from './discoverySession';
+} from './discoveryPortListUrl';
 import {
   LIST_LAYOUT_PARAM,
   parseBrowseListLayout,
@@ -33,9 +33,9 @@ import {
   CREWS_AVAIL_GUIDE_PARAM,
   CREWS_OPEN_URL_PARAM,
   parseCrewsAvailabilityGuideFilter,
-  parseCrewsAvailableOpenLens,
+  parseCrewsAvailabilityShapeFilter,
   type CrewsAvailabilityGuideFilter,
-  type CrewsAvailableOpenLens,
+  type CrewsAvailabilityShapeFilter,
 } from '../list/crews/crewsOpenSegment';
 
 export type DiscoveryBrowseListSessionReadInput = {
@@ -68,7 +68,7 @@ export type DiscoveryBrowseListSessionSnapshot = {
   geoPath: string[];
   layout: BrowseListLayout;
   sort: BrowseListSortMode;
-  crewsOpenLens: CrewsAvailableOpenLens;
+  crewsOpenLens: CrewsAvailabilityShapeFilter;
   crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
 };
 
@@ -89,7 +89,7 @@ export const readDiscoveryBrowseListSession = (
     geoPath: parseBrowseListGeoPath(input.searchParams),
     layout: parseBrowseListLayout(input.searchParams.get(LIST_LAYOUT_PARAM)),
     sort: parseBrowseListSort(input.searchParams.get(LIST_SORT_PARAM)),
-    crewsOpenLens: parseCrewsAvailableOpenLens(input.searchParams.get(CREWS_OPEN_URL_PARAM)),
+    crewsOpenLens: parseCrewsAvailabilityShapeFilter(input.searchParams.get(CREWS_OPEN_URL_PARAM)),
     crewsAvailabilityGuideFilter: parseCrewsAvailabilityGuideFilter(
       input.searchParams.get(CREWS_AVAIL_GUIDE_PARAM)
     ),

@@ -34,10 +34,10 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
     if (req.auth.role === UserRole.PLATFORM_ADMIN) {
       const tenant = await findTenantById(organisationId);
       if (!tenant) {
-        throw new ApiError(404, 'tenant_not_found', 'Host organization not found.');
+        throw new ApiError(404, 'tenant_not_found', 'Operator not found.');
       }
       if (tenant.status !== 'ACTIVE') {
-        throw new ApiError(403, 'tenant_inactive', 'Host organization is not active.');
+        throw new ApiError(403, 'tenant_inactive', 'Operator is not active.');
       }
 
       req.tenantContext = {
@@ -61,10 +61,10 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
     if (!membership) {
       const tenant = await findTenantById(organisationId);
       if (!tenant || tenant.ownerId !== req.auth.userId) {
-        throw new ApiError(403, 'forbidden', 'No organisation membership found for this scope.');
+        throw new ApiError(403, 'forbidden', 'No operator membership found for this scope.');
       }
       if (tenant.status !== 'ACTIVE') {
-        throw new ApiError(403, 'tenant_inactive', 'Host organization is not active.');
+        throw new ApiError(403, 'tenant_inactive', 'Operator is not active.');
       }
       await ensureOwnerMembershipForTenant(req.auth.userId, organisationId);
       req.tenantContext = {
@@ -75,7 +75,7 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       return next();
     }
     if (membership.tenant.status !== 'ACTIVE') {
-      throw new ApiError(403, 'tenant_inactive', 'Host organization is not active.');
+      throw new ApiError(403, 'tenant_inactive', 'Operator is not active.');
     }
 
     req.tenantContext = {
@@ -94,13 +94,13 @@ export const requireMembershipRole =
   (roles: MembershipRole[]) =>
   (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.tenantContext) {
-      return next(new ApiError(400, 'tenant_context_missing', 'Organisation context missing.'));
+      return next(new ApiError(400, 'tenant_context_missing', 'Operator desk context missing.'));
     }
     if (req.tenantContext.actingAsPlatformAdmin) {
       return next();
     }
     if (!roles.includes(req.tenantContext.membershipRole)) {
-      return next(new ApiError(403, 'forbidden', 'Insufficient organisation permissions.'));
+      return next(new ApiError(403, 'forbidden', 'Insufficient operator permissions.'));
     }
     return next();
   };

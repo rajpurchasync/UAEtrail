@@ -10,11 +10,12 @@ const followCreateSchema = z
   .object({
     locationId: z.string().optional(),
     tenantId: z.string().optional(),
+    shopId: z.string().optional(),
     merchantId: z.string().optional(),
   })
   .refine(
-    (d) => [d.locationId, d.tenantId, d.merchantId].filter(Boolean).length === 1,
-    { message: 'Specify exactly one of locationId, tenantId, merchantId.' }
+    (d) => [d.locationId, d.tenantId, d.shopId, d.merchantId].filter(Boolean).length === 1,
+    { message: 'Specify exactly one of locationId, tenantId, shopId.' }
   );
 
 export const registerEntityFollowRoutes = (router: Router): void => {
@@ -61,6 +62,7 @@ export const registerEntityFollowRoutes = (router: Router): void => {
         followerId: req.auth!.userId,
         locationId: req.query.locationId as string | undefined,
         tenantId: req.query.tenantId as string | undefined,
+        shopId: req.query.shopId as string | undefined,
         merchantId: req.query.merchantId as string | undefined,
       });
       res.json({ data });

@@ -14,7 +14,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Plans** | `/plan` | **My Plans** — joined, goals, wishlist, hosted projection (`/me/*` data) |
 | **Crews** | `/crews`, `/groups` | **My Crews** — friends, teams, groups |
 | **Chat** | `/chat` | Threads |
-| **Profile** | `/profile`, `/settings` | Identity; **Dashboard** → **`/operator`** (host manage — migration in progress) |
+| **Profile** | `/profile`, `/settings` | Identity; **Operator desk** → **`/operator`** |
 
 **Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/crews`) · **Plans** · **Chat**. **Discover crews** ≠ **My Crews** (`/crews`, `/groups`). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
 
@@ -59,7 +59,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `planSheet=menu|goal|wishlist` (Add a Plan FAB; legacy `planAdd=` parses). Inbound `?lens=availability` → explore **`compose=intent:open`** (`planAvailabilityPath()`). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**. Signed-in **today briefing** for the next joined outing: **`/plan/today`** (`PLAN_TODAY_PATH`).
 - **Add a Plan** (FAB, all breakpoints): **Set a Goal** · **Want to go** on Plan; publish an outing / mark availability use **compose** (`?compose=`) like Explore — not the Plan sheet menu.
 - **Geo tree (country → state → area (city) → venue counts):** **`/geo`**, **`/geo/country/:code`**, **`/geo/n/:id`** (`GeoHubView`). **Curated outdoor hubs (Destination)** — **`/destination/:slug`** only; stale **`/area/:slug`** bookmarks are not rewritten — use **`/destination/:slug`**. List/map **decision cards** show a **location tail** (geo city · curated destination when set), not the full country → state breadcrumb. **`/venue/:id`** is the event-venue detail hub — not the same as geo L4 **venue** node labels in `geoRef`. Stale **`/trail`** · **`/camp`** · **`/event/:id`** → **`/place/:id`** or **`/venue/:id`** (nginx + `canonicalizeInboundProductPath`).
-- **Summary** on the hub counts hosting, joined, goals, and want-to-go venues from the same catalog queries as the lists (`usePlanHubSummary`). Host console data loads only when the member can host, and stays fresh for 60s so the summary and the hosting list share one fetch.
+- **Summary** on the hub counts hosting, joined, goals, and want-to-go venues from the same catalog queries as the lists (`usePlanHubSummary`). Operator desk data loads only when the member can host, and stays fresh for 60s so the summary and the hosting list share one fetch.
 - **Upcoming list and calendar** open the outing (`/activity/:id`) for going and pending rows. Hosting and looking-for-company rows open the same manage paths as before (`planHostedActivityManagePath` / intent manage). **Back** returns to the same Plan URL (filter, layout, scroll) with that row focused. **Unified calendar** (`layout=calendar`, `filter=all` default): **busy** (joined, pending, hosting activities) plus **availability blocks** (open participant/guide + fixed map slots) in `MemberScheduleCalendar` — same route from **My Plans** calendar toggle, **Profile → Calendar** (`MEMBER_SCHEDULE_CALENDAR_PATH`), and **Operator → My calendar**. **Edit availability** via the calendar link or `planAvailabilityPath()` (explore **`compose=intent:open`**).
 - **Hosting (operator console):** full community host schedule + tools on **`/operator/overview`** (`planHostedSchedulePath()`). **`/hosting`** inbound → operator. **My Plans** upcoming **`filter=hosting`** stays on **`/plan`** for the member feed; operator is the manage console.
 - **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
@@ -86,7 +86,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Canonical SPA `/operator/*`** — one console for community hosts and workspace tenants; inbound `/publishing/*`, `/hosting`, `/host/*`, `/organizer/*` redirect to `/operator/*`. Capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Tenant HTTP API remains **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
 - **Host mode home:** hosts land on **`/operator/overview`** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/explore`.
 - **Host mode chrome:** while role is `tenant_*` (not visitor), primary nav is **Hosting (`/operator/overview`) · My Plans (`/plan`) · Chat**. Hamburger leads with **Hosting** and still includes **Explore**.
-- **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/publishing/*`. Copy: `src/content/workspaceVocabulary.ts`.
+- **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/operator/desk/*`); route pages in `src/operator/desk/*`. Copy: `src/content/workspaceVocabulary.ts`.
 - **`/operator/overview`:** workspace tenants see `ConsoleHubSections`; **community** tenants see `HostingHubView` (schedule + host tools) inside the same shell — no mode switcher.
 - **Member profile (`/profile`):** consumer hub only; organizing shortcuts → operator overview, not a second `/hosting` surface.
 
@@ -105,7 +105,7 @@ Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` 
 |-------|-------------|-------------------------|-----|
 | `/admin/inbox` | `pages/admin/Inbox` | Inbox | Work-queue hub + real pending counts |
 | `/admin/inbox/submissions` | `pages/admin/Submissions` | Submissions | Map suggestion review wizard |
-| `/admin/hosts` | `pages/admin/Organisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
+| `/admin/hosts` | `pages/admin/Operators` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
 | `/admin/reports` | `pages/admin/Reports` | Reports | Content reports triage |
 | `/admin/alerts` | `pages/admin/Alerts` | Safety | Banners + amenity condition queue + host verification |
 | `/admin/places` | `pages/admin/Places` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |

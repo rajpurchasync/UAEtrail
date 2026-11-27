@@ -2,6 +2,7 @@ import {
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsRetiredSeekingActivity,
 } from './explore-activity-mode.js';
+import { resolveExploreMapItemShopId } from './explore-shop-wire.js';
 import { buildDiscoveryCardPresentation, isGeographyMapSource } from './explore-presentation.js';
 import type { DiscoveryCardKind, DiscoveryCardSource } from './explore-presentation.js';
 import type { DiscoveryCardPresentationDTO } from './explore-presentation.js';
@@ -14,6 +15,7 @@ export type DiscoveryMapItemWire = DiscoveryCardBuildInput & {
   presentation?: DiscoveryCardPresentationDTO;
   locationCard?: { id?: string; images?: string[] } | null;
   destinationSlug?: string | null;
+  shopId?: string;
   merchantId?: string;
   tenantId?: string | null;
   activity?: DiscoveryCardBuildInput['activity'] & {
@@ -32,7 +34,7 @@ export type DiscoveryMapItemWire = DiscoveryCardBuildInput & {
 export type DiscoveryCardEntityRef =
   | { kind: 'activity'; activityId: string }
   | { kind: 'place'; locationId: string }
-  | { kind: 'shop'; merchantId?: string | null; tenantId?: string | null }
+  | { kind: 'shop'; shopId?: string | null; tenantId?: string | null }
   | { kind: 'destination'; destinationSlug: string }
   | { kind: 'person'; userId: string };
 
@@ -66,7 +68,7 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
   if (item.source === 'shop' || item.source === 'agency') {
     return {
       kind: 'shop',
-      merchantId: item.merchantId ?? null,
+      shopId: resolveExploreMapItemShopId(item),
       tenantId: item.tenantId ?? item.activity?.tenantId ?? null,
     };
   }

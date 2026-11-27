@@ -35,7 +35,7 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/CreateAddFacilityFlow.tsx',
       'src/explore/ui/CreateHostingActivityFlowMapOverlay.tsx',
       'src/explore/ui/CreateAvailabilityFixedFlow.tsx',
-      'src/components/organisation-console/ProProfileApplicationFlow.tsx',
+      'src/operator/apply/ProProfileApplicationFlow.tsx',
     ]) {
       const src = readFileSync(join(ROOT, rel), 'utf8');
       expect(src).not.toMatch(/import\(\s*['"][^'"]*CreatePlacePicker['"]\s*\)/);
@@ -53,7 +53,7 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/addWizard/steps/index.tsx',
       'src/explore/ui/addWizard/facility/FacilityAddWizardSteps.tsx',
       'src/explore/ui/HostingDestinationField.tsx',
-      'src/components/organisation-console/ProProfileApplicationFlow.tsx',
+      'src/operator/apply/ProProfileApplicationFlow.tsx',
     ]) {
       expect(readFileSync(join(ROOT, rel), 'utf8')).toMatch(/ComposeMapEntryRow/);
     }

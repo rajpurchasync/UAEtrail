@@ -1,9 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
-import type { HostFlowIntent } from '../organisation-console/hostWizardFlow';
+import type { HostFlowIntent } from '../../operator/apply/hostWizardFlow';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
-import { organisationManagePath } from '../../config/routingCatalog';
+import { operatorDeskProfilePath } from '../../config/routingCatalog';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 
@@ -73,9 +73,9 @@ export const ProfileMapPresenceSection = ({ embedded = false }: ProfileMapPresen
               if (active) {
                 const managePath =
                   chip.key === 'shop'
-                    ? organisationManagePath('shop')
+                    ? operatorDeskProfilePath('shop')
                     : chip.key === 'agency'
-                      ? organisationManagePath('agency')
+                      ? operatorDeskProfilePath('agency')
                       : PRO_MEMBERSHIP_PATH;
                 const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
                   chip.key === 'guide'

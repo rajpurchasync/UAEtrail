@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   availabilityExploreMapItem,
   hostedExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
 } from '../../explore/exploreMapItemFixtures';
 import {
   filterListAvailabilityCatalogItems,
@@ -19,7 +19,7 @@ describe('listAvailabilityCatalog', () => {
 
   it('filterListAvailabilityCatalogItems excludes legacy seeking activities', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
-    const legacy = seekingExploreMapItem({ id: 'activity:seek-1' });
+    const legacy = excludedSeekingActivityMapItem({ id: 'activity:seek-1' });
     const fixed = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
     expect(filterListAvailabilityCatalogItems([hosted, legacy, fixed]).map((i) => i.id)).toEqual([
       fixed.id,

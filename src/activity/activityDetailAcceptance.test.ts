@@ -112,7 +112,7 @@ describe('activity detail program — wiring', () => {
     expect(wireFooter).toMatch(/resolveListFeedFooterFromMapPeekWire/);
     expect(wireFooter).toMatch(/executeActivityMapPeekAction/);
     expect(wireFooter).toMatch(/DiscoveryCardMapPeekEngagementFooter/);
-    const publishing = read('src/pages/publishing/Activities.tsx');
+    const publishing = read('src/operator/desk/Activities.tsx');
     expect(publishing).toMatch(/ActivityMapPeekWireFooter/);
     const hub = read('src/hosting/HostingHubView.tsx');
     expect(hub).toMatch(/mapPeekHandlersFor/);

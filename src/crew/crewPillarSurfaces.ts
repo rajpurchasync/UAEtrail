@@ -1,5 +1,5 @@
 import type { CrewPillarId } from '@uaetrail/shared-types';
-import { CREW_PILLAR_SPECS, crewHubStatTabToPillar, crewPeopleFacetToPillar } from '@uaetrail/shared-types';
+import { CREW_PILLAR_SPECS, crewPeopleFacetToPillar } from '@uaetrail/shared-types';
 import { GROUPS_PATH, MY_CREWS_PATH } from '../config/surfacePaths';
 import { exploreCrewsPath } from '../config/routingCatalog';
 
@@ -18,5 +18,5 @@ export const CREW_PILLAR_SURFACE_PATH: Partial<Record<CrewPillarId, string>> = {
 
 export const crewPillarSpec = (id: CrewPillarId) => CREW_PILLAR_SPECS[id];
 
-export { crewPeopleFacetToPillar, crewHubStatTabToPillar };
+export { crewPeopleFacetToPillar };
 export type { CrewPillarId };

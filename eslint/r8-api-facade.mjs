@@ -15,7 +15,7 @@ const UI_LAYER_GLOBS = [
   'src/utils/**/*.{ts,tsx}',
   'src/list/**/*.{ts,tsx}',
   'src/services/**/*.{ts,tsx}',
-  'src/console/**/*.{ts,tsx}',
+  'src/operator/desk/**/*.{ts,tsx}',
 ];
 
 export const r8UiLayerFiles = UI_LAYER_GLOBS;

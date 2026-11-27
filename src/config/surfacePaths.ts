@@ -41,7 +41,7 @@ export const isJourneyMapPath = (pathname: string): boolean =>
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
 
-/** Operator workspace SPA prefix (HOST-SURFACE-UNIFY · MIG-PLATFORM-COMPOSE-OPERATOR-2026). */
+/** Operator desk SPA prefix (HOST-SURFACE-UNIFY · MIG-PLATFORM-COMPOSE-OPERATOR-2026). */
 export const OPERATOR_CONSOLE_PREFIX = '/operator' as const;
 
 /** Operator console (community host + tenant workspaces) — canonical URLs. Sync `apps/api/src/lib/member-routes.ts`. */

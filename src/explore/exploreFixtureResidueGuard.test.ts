@@ -34,7 +34,7 @@ describe('exploreFixtureResidueGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('tests do not introduce new source: demand map rows (use seekingExploreMapItem)', { timeout: 30_000 }, () => {
+  it('tests do not introduce new source: demand map rows (use excludedSeekingActivityMapItem)', { timeout: 30_000 }, () => {
     const violations: string[] = [];
     const pattern = /source:\s*['"]demand['"]/;
     for (const file of listTestFiles()) {

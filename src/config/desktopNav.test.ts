@@ -13,7 +13,6 @@ import {
 } from './desktopNav';
 import {
   CONSUMER_HAMBURGER_MENU,
-  hostModeHamburgerMenu,
   MOBILE_LANDING_USER_MENU,
 } from './platform';
 import { EXPLORE_MAP_PATH } from './routingCatalog';
@@ -118,15 +117,4 @@ describe('desktop sidebar IA', () => {
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Places')).toBe(true);
   });
 
-  it('hostModeHamburgerMenu is alias to consumer drawer (no alternate host shell)', () => {
-    const consumerLabels = CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map(
-      (item) => item.label
-    );
-    const hostLabels = hostModeHamburgerMenu('/operator/overview')
-      .filter((item) => item.kind === 'link')
-      .map((item) => item.label);
-    expect(hostLabels).toEqual(consumerLabels);
-    expect(hostLabels).toContain('Trips');
-    expect(hostLabels).toContain('Plans');
-  });
 });

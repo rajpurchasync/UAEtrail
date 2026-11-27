@@ -18,15 +18,12 @@ import {
   CREWS_AVAIL_GUIDE_PARAM,
   CREWS_OPEN_URL_PARAM,
   serializeCrewsAvailabilityGuideFilter,
-  serializeCrewsAvailableOpenLens,
+  serializeCrewsAvailabilityShapeFilter,
   type CrewsAvailabilityGuideFilter,
-  type CrewsAvailableOpenLens,
+  type CrewsAvailabilityShapeFilter,
 } from '../list/crews/crewsOpenSegment';
-import {
-  BROWSE_DISCOVER_PARAM,
-  LIST_CAT_PARAM,
-  serializeBrowseListSearchParams,
-} from './discoverySession';
+import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from './discoverySessionParams';
+import { serializeBrowseListSearchParams } from './discoveryPortListUrl';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
@@ -46,7 +43,7 @@ export type DiscoveryBrowseListUrlMergePatch = Partial<BrowseListFilterState> & 
   listCat?: BrowseMainCategoryKey | null;
   layout?: BrowseListLayout;
   sort?: BrowseListSortMode;
-  crewsOpen?: CrewsAvailableOpenLens | null;
+  crewsOpen?: CrewsAvailabilityShapeFilter | null;
   crewsAvailGuide?: CrewsAvailabilityGuideFilter | null;
 };
 
@@ -93,7 +90,7 @@ export const mergeDiscoveryBrowseListUrlParams = (
   });
 
   if (patch.crewsOpen !== undefined) {
-    const serializedOpen = patch.crewsOpen ? serializeCrewsAvailableOpenLens(patch.crewsOpen) : null;
+    const serializedOpen = patch.crewsOpen ? serializeCrewsAvailabilityShapeFilter(patch.crewsOpen) : null;
     if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
     else params.delete(CREWS_OPEN_URL_PARAM);
   }

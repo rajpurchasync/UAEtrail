@@ -49,6 +49,3 @@ export const externalWeatherWeekUrl = (lat: number, lng: number): string =>
  */
 export const externalWeatherDayUrl = (lat: number, lng: number, isoDate: string): string =>
   `https://www.yr.no/en/forecast/graph/${weatherCoord(lat)},${weatherCoord(lng)}/${encodeURIComponent(isoDate)}`;
-
-/** @deprecated Use `externalWeatherWeekUrl` — Open-Meteo no longer hosts this map page. */
-export const openMeteoMapUrl = (lat: number, lng: number): string => externalWeatherWeekUrl(lat, lng);

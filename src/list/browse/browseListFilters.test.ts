@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   availabilityExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
   hostedExploreMapItem,
 } from '../../explore/exploreMapItemFixtures';
 import { filterExploreMapItemsForList, type BrowseListFilterState } from './browseListFilters';
@@ -139,7 +139,7 @@ describe('filterExploreMapItemsForList', () => {
   it('tripAvailabilityOnly keeps member_availability catalog rows only', () => {
     const items = [
       hostedExploreMapItem({ id: 'activity:host-1' }),
-      seekingExploreMapItem({ id: 'activity:seek-1' }),
+      excludedSeekingActivityMapItem({ id: 'activity:seek-1' }),
       availabilityExploreMapItem({ userId: 'u1', slotId: 's1' }),
     ];
     const state: BrowseListFilterState = {

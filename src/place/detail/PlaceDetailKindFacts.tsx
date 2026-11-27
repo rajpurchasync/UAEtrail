@@ -145,5 +145,3 @@ export const PlaceDetailKindFacts = ({
   );
 };
 
-/** @deprecated Use `PlaceDetailKindFacts` — kept for consumer detail templates. */
-export const PlaceConsumerKindFacts = PlaceDetailKindFacts;

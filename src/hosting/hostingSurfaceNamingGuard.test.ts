@@ -14,7 +14,7 @@ describe('hostingSurfaceNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/components/plan/PlanHostingUpcoming.tsx'))).toBe(
       false
     );
-    const overview = read('src/pages/publishing/Overview.tsx');
+    const overview = read('src/operator/desk/Overview.tsx');
     expect(overview).toContain('HostingHubView');
     expect(overview).toContain('PlanHostingManageProvider');
     expect(overview).not.toContain('HostingModeSwitcher');

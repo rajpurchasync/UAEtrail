@@ -79,6 +79,7 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
   if (role === 'platform_admin') return pathname.startsWith('/admin');
   if (role === 'merchant_admin') {
     return (
+      pathname.startsWith('/operator/profile') ||
       pathname.startsWith('/organisation/manage') ||
       pathname.startsWith('/shop/manage') ||
       pathname.startsWith('/shop/') ||

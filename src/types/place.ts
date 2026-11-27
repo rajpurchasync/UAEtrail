@@ -45,18 +45,3 @@ export interface Place {
   destinationName?: string | null;
   geoRef?: GeoRef | null;
 }
-
-/** @deprecated Use Place — hiking venue view slice. */
-export type PlaceAsTrail = Omit<Place, 'activityType' | 'campingType' | 'maxGroupSize' | 'accessibility'>;
-
-/** @deprecated Use Place — camping venue view slice. */
-export type PlaceAsCamp = Omit<
-  Place,
-  'activityType' | 'distance' | 'duration' | 'elevation' | 'childFriendly'
->;
-
-/** @deprecated Use Place — event venue view slice. */
-export type PlaceAsEvent = Omit<
-  Place,
-  'activityType' | 'campingType' | 'maxGroupSize' | 'accessibility' | 'childFriendly' | 'elevation'
->;

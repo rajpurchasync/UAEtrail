@@ -1,5 +1,5 @@
 import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
-import { ConsoleShell } from '../../console/ConsoleShell';
+import { ConsoleShell } from './ConsoleShell';
 import { usePublishingActivityHistory } from '../../hooks/publishingWorkspaceQueries';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { getActiveTenantId } from '../../api/tenant';

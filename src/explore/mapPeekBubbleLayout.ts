@@ -57,10 +57,6 @@ export const resolveMapPeekFit = (
   return { fit: 1, scrollBody: true };
 };
 
-/** @deprecated Prefer {@link resolveMapPeekFit} — zoom-only scale (tests / legacy). */
-export const mapPeekFitScale = (naturalHeight: number, availableHeight: number): number =>
-  resolveMapPeekFit(naturalHeight, availableHeight).fit;
-
 /** Bubble next to a map pin — sized to content, capped by remaining viewport (no inner scroll). */
 export const layoutMapPeekBubble = (input: {
   overlayWidth: number;

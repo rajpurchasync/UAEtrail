@@ -59,7 +59,7 @@ Put these on **`/explore`** or in-app flows — not on Home unless explicitly re
 - Become-a-host / agency / shop signup flows  
 - Buddies, social groups, DMs, Trail Points  
 - Full map filters, venues panel, shops panel  
-- Operator workspace, check-in, waitlist detail  
+- Operator desk, check-in, waitlist detail  
 - Profile hub IA  
 
 Home may **mention** host-approved joins and the map — that is the acquisition story. It must not **teach** the full two-sided marketplace.

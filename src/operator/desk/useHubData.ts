@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { isPublishedActivityStatus } from '@uaetrail/shared-types';
 import { useQueryClient } from '@tanstack/react-query';
-import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
-import { useMemberStatus } from '../hooks/useMemberStatus';
-import { useAuth } from '../context/AuthContext';
+import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
+import { useAuth } from '../../context/AuthContext';
 import {
   invalidatePublishingWorkspaceQueries,
   usePublishingJoinQueue,
   usePublishingTenantActivities,
-} from '../hooks/publishingWorkspaceQueries';
+} from '../../hooks/publishingWorkspaceQueries';
 
 type ConsoleHubOptions = {
   /** When false, only join queue loads (Host Hub lists use scoped `/publishing/activities` filters). */

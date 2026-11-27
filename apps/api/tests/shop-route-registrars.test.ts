@@ -30,6 +30,16 @@ describe('shop route registrars (COH-11)', () => {
     expect(registrar).not.toMatch(/merchantScopeSchema/);
   });
 
+  it('client emits /shop/merchant; /shop/organisation stays inbound alias', () => {
+    const client = read('../../src/api/domains/shop.ts');
+    expect(client).toMatch(/\/shop\/merchant\/stores/);
+    expect(client).toMatch(/\/shop\/merchant\/profile/);
+    expect(client).not.toMatch(/['`]\/shop\/organisation\//);
+    const prefixes = read('src/routes/shop/shop-route-schemas.ts');
+    expect(prefixes).toMatch(/'\/merchant'/);
+    expect(prefixes).toMatch(/'\/organisation'/);
+  });
+
   it('does not keep an empty socialGraphRouter shim', () => {
     expect(existsSync(join(process.cwd(), 'src/routes/social/index.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/routes/social.ts'))).toBe(false);

@@ -267,7 +267,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-manage: desktop hosting schedule uses operator overview (not consumer Plan summary)', () => {
-  const overview = read('src/pages/publishing/Overview.tsx');
+  const overview = read('src/operator/desk/Overview.tsx');
     expect(overview).toContain('HostingHubView');
     expect(overview).toContain('PlanHostingManageProvider');
     expect(overview).not.toContain('HostingModeSwitcher');
@@ -341,7 +341,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: org public profile owner CTAs avoid consumer /host/* routes', () => {
-    const orgProfile = read('src/components/organisation-console/OrganisationPublicProfile.tsx');
+    const orgProfile = read('src/operator/public/OrganisationPublicProfile.tsx');
     // Owner no longer gets a "Manage events" link here (the console Activities chip owns that list).
     expect(orgProfile).toContain('PRO_MEMBERSHIP_PATH');
     expect(orgProfile).not.toMatch(/HOST_(ACTIVITIES|TEAM|REQUESTS)_PATH/);

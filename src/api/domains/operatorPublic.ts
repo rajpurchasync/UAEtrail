@@ -2,7 +2,7 @@ import type { OrganisationHostDetailsDTO, TenantPublicDTO } from '@uaetrail/shar
 import { apiRequest } from '../client';
 import type { HostApplication } from '../types';
 
-/** Public organisation storefront + member pro application (see publishingWorkspace.ts for tenant console). */
+/** Public operator storefront + member pro application (desk HTTP is publishingWorkspace.ts). */
 export const organisationApi = {
   getOrganisationProfile: (slug: string) =>
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
@@ -24,3 +24,5 @@ export const organisationApi = {
       body: JSON.stringify(data),
     }),
 } as const;
+
+export const operatorPublicApi = organisationApi;

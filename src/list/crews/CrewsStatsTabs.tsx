@@ -59,6 +59,3 @@ export const CrewsStatsTabs = ({
     </div>
   );
 };
-
-/** @deprecated Use FindCrewStatCounts */
-export type CrewsStatCounts = FindCrewStatCounts;

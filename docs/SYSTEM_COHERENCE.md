@@ -58,7 +58,7 @@ flowchart TB
 
   subgraph publishing [Publishing organisations]
     TEN["tenants + memberships"]
-    HOST["/publishing workspace"]
+    HOST["/operator desk"]
     PRO["/profile/pro-membership"]
   end
 
@@ -120,20 +120,20 @@ Each context has **one write path** and **one public read model** where possible
 | **Participation** | Join, waitlist, RSVP on **hosted Activity**, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts` | **`activity_requests`** (canonical); `activity_participants`, `activity_invites`. Find crew pins do **not** use this spine |
 | **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/map?sources=availability` + `selectAvailabilityFromMapItems` (`src/activity-discovery`). | `src/crew-discovery/*` (`CrewsBrowsePanel`, tabs), `ListDiscoveryExperience` | `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
-| **Member publish capabilities** | Who may Host / publish & open publishing workspace (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
-| **Publishing console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/publishing/*`, `src/console/*`, `components/activity/` | `/publishing/*` + `x-organisation-id` | same + `activities` |
+| **Member publish capabilities** | Who may Host / publish & open operator desk (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
+| **Operator desk** | Tenant-scoped CRUD, check-in, activity join queue | `src/operator/desk/*`, `components/activity/` | SPA `/operator/*`; HTTP `/publishing/*` + `x-organisation-id` | same + `activities` |
 | **Communication** | DMs, inbox, group & outing chat (product label **Chat**) | `Messages.tsx`, `src/messaging`, `@/chat` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `MyCrews.tsx`, `Groups.tsx`, `/crews` | `registerFriendRoutes`, `friend-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `friend_*`, `user_follows`, `member_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Add→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Add→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
 | **Destinations** (bounded id `destinations`) | Admin-curated outdoor hub (Mongo **`destinations`**, stable ids → **`destinationId`**). **Not a map pin** — country / state / city labels come from **AdminGeo** (`geoRef`). Hub `/destination/:slug` + filter `?destination=`. Children via **`place.destinationId`** / **`facility.destinationId`**; facilities on trail via **`onSiteId`**. | `/destination/:slug`, compose **Destination then site**, admin **Destinations** console | `destinations-store`, `explore-map-destination-lens.ts` (hub rollups), `hostingPublishDestination.ts` | **`destinations`**; **`locations.destinationId`**; **`facilities.destinationId`** + **`onSiteId`**; hosted geography = **`activity.locationId` → `place.destinationId`** |
-| **Shop profiles** | Operator shop public page + merchant manage (no product catalog) | `ShopPublic`, `/organisation/manage?kind=shop` | `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
+| **Shop profiles** | Operator shop public page + merchant manage (no product catalog) | `ShopPublic`, `/operator/profile` (inbound `/organisation/manage?kind=shop`) | `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_wishlist`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/admin/*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
 
 **Rule:** If a change touches “who can do X,” find the row above first. Do not add a second resolver in a route file or a random hook.
 
-**Viewer access (read vs act):** **Capabilities** = may organize/publish / open publishing workspace (`member_publish_capabilities`). **Detail exposure** = may see full entity payload (`activity-viewer-access`, `profile-viewer-access`). **Guest sheets** = sign-in copy only — not authorization. Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
+**Viewer access (read vs act):** **Capabilities** = may organize/publish / open operator desk (`member_publish_capabilities`). **Detail exposure** = may see full entity payload (`activity-viewer-access`, `profile-viewer-access`). **Guest sheets** = sign-in copy only — not authorization. Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
 
 ### 3.1 Context alignment matrix (API · FE · storage)
 
@@ -148,7 +148,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | member_discovery | `member_profile_views` (+ read-only compose from map) | `/me/member-discovery/*` (roster, network, browse, quota, search); profile `?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/crew-discovery` — Find crew list (`listCat=people`), map `CrewsBrowsePanel`, `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | member_publish_capabilities | `tenants`, `tenant_memberships` | **`GET /me/status`** (`profileComplete` + nested `publish`) | `memberApi` | **`useMemberStatus`** |
-| publishing_workspace | + `activities` | `/publishing/*` + `x-organisation-id` | `organisationApi`, `activitiesApi` | `src/pages/publishing/*`, `src/console/*`, `components/activity/*`, `activity/*` |
+| publishing_workspace | + `activities` | SPA `/operator/*`; HTTP `/publishing/*` + `x-organisation-id` | `organisationApi`, `activitiesApi` | `src/operator/desk/*`, `components/activity/*`, `activity/*` |
 | communication | `chat_messages`, group wall | `/chat/*`, group wall | `messagingApi` (`chatApi` + wall via `groupsApi`) | `Messages.tsx`, `src/messaging` |
 | social_graph | `buddy_*` (Mongo), `user_follows`, `social_groups*` | `/me/friends`, `/me/friend-requests`, `/me/groups`, `/me/following`, … | `friendsApi`, `groupsApi` | `MyCrews`, `Groups` — relationship admin; **not** the explore people browse panel |
 | places | `locations` (places), `submissions` | `GET /places/catalog`, `/places/:id`, `POST /me/places`, `POST /me/submissions` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi`, `geoHierarchyApi` | `PlaceDetail*`, `/profile/submissions` suggest form |
@@ -186,16 +186,16 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 | Browse + create | `/explore?compose=…` | `/publishing/activities/new` as consumer default |
 | Personal hub | `/profile`, **`/plan`** | Legacy `/trips` redirects; not `/activities` browse |
 | Entity | `/activity/:id`, place URLs | “Trip” entity (does not exist) |
-| Publishing workspace | `/publishing/*` (SPA + HTTP) | Buddy **Host** (map FAB) + **Plan hosted** manage (same APIs, consumer surface) |
+| Operator desk | SPA `/operator/*`; HTTP `/publishing/*` | Buddy **Host** (map FAB) + **Plan hosted** manage (same APIs, consumer surface) |
 | Pro / business | `/profile/pro-membership` | `/become-host` as product entry (redirect only) |
 | Messaging | `/chat` (+ `?group=` / `?to=`; legacy `/messages` redirects) | A second inbox route or host-only messages shell |
 | List layout (browse) | `/list?…` (handoff) · mobile **List** pill on `/explore` | A second product home, `/map`, or **List bottom-nav tab** |
-| **Publishing workspace** | `/publishing/*` (legacy `/host/*` → `/publishing/*`) | Consumer **Host** on `/explore` (same APIs, different shell) |
+| **Operator desk** | SPA `/operator/*` (legacy `/host/*` · `/publishing/*` SPA → `/operator/*`) | Consumer **Host** on `/explore` (same APIs, different shell) |
 | **Platform admin** | `/admin/*` | Consumer peek/detail, Explore chrome, or `ConsumerShell` |
 | **Public person** | `/member/:userId` | `/profile` (self hub). Individual Pro is the same page |
 | **Tenant storefront** | `/agency/:slug`, `/shop/:id`, `/partner/:slug` | Business only. Activity **host row** uses `resolveActivityPublisherProfilePath` |
 
-**Auth shells:** `ProtectedRoute` uses **`UserRole`** for coarse access (admin, publishing workspace shell). **Product gates** (Host / publish, paid host, profile chips) use **`MemberStatusDTO`** from **`GET /me/status`** (`useMemberStatus`). See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — mixing these layers is a top source of incoherence.
+**Auth shells:** `ProtectedRoute` uses **`UserRole`** for coarse access (admin, operator desk shell). **Product gates** (Host / publish, paid host, profile chips) use **`MemberStatusDTO`** from **`GET /me/status`** (`useMemberStatus`). See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — mixing these layers is a top source of incoherence.
 
 ### 4.1 Browse routing strategy (scalable default)
 
@@ -235,7 +235,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 | **Public read** | `userRouter` (before `requireAuth`) | Optional auth for `viewerAccess` | `GET /places/:id`, `GET /facilities/:id`, `GET */catalog` | `*-viewer-access` assemblers |
 | **Member write** | `userRouter` (after `requireAuth`) | Signed-in member | `POST /me/places`, `POST /me/facilities` | Auth only — **not** `publish.canPublish` |
 | **Platform ops** | `adminRouter` | `UserRole.PLATFORM_ADMIN` | `GET/PATCH/DELETE /admin/places`, `/admin/facilities` | Role on mount — **not** `/me/status` |
-| **Publishing workspace** | `publishingRouter` | Tenant membership + publish gates | `POST /publishing/activities`, operator place submit | `GET /me/status` → `publish` |
+| **Operator desk** | `publishingRouter` | Tenant membership + publish gates | `POST /publishing/activities`, operator place submit | `GET /me/status` → `publish` |
 
 **Registrar naming (API):** `registerPublic*`, `registerMe*`, `registerAdmin*` — Express **route mount** modules ([§8.4.9](#849-implementation-alignment-map-anti-drift)), not “who may sign up.” **`registerPublic*`** = **read-only** `GET` catalog/detail (guests + members); **no** public `POST` for place/facility submit — that is **`registerMe*`** only (`POST /me/places`, `POST /me/facilities`). **Guards:** `catalog-http-surface-guard.test.ts`, `cpc-terminology-guard.test.ts`.
 
@@ -250,15 +250,15 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 | `src/pages/*` | Route shells — lazy in `App.tsx` |
 | `src/explore/*` | **Discovery shell** — map stage, compose, browse chrome, join overlays |
 | `src/discovery/*` | **Discovery read models** — card VM from `GET /explore/map` (pins, list, posters) |
-| `src/pages/publishing/*`, `src/console/*` | **`/publishing/*` console** — shell, hub stats (`ConsoleHubSections`), join queue |
-| `src/components/organisation-console/*` | Pro onboarding, public tenant profile editors (wire: organisation) |
+| `src/operator/desk/*` | **Operator desk** (`/operator/*`) — shell, hub stats (`ConsoleHubSections`), join queue |
+| `src/operator/apply/*` · `src/operator/public/*` | Pro onboarding + public operator storefront (wire: organisation) |
 | `src/api/domains/*` | HTTP clients per context — composed in `services.ts` as `api` |
 | `src/config/*`, `src/content/*` | Routes helpers and canonical copy |
 | `src/member/*` | Host-status display helpers and guards |
 
 **API client:** Prefer `api.getMemberStatus()`, `exploreApi.*`, `organisationApi.*`. Domain modules only — `legacyApi.ts` removed; see `apiLegacyGuard.test.ts`.
 
-**Publish payload:** Single builder `activityPublishPayload.ts` for explore Host and publishing workspace forms (shared across surfaces).
+**Publish payload:** Single builder `activityPublishPayload.ts` for explore Host and operator desk forms (shared across surfaces).
 
 ### 6.1 Discovery UI stack (methodology)
 
@@ -380,7 +380,7 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 | **Communication** | `/chat`, `/messages`, `/groups` | Tab chrome / inbox | No peek; people **names** link to `/member` or storefront |
 | **Entity detail (L3)** | `/activity`, place URLs, `/area`, `/shop`, org slugs | `MobileDetailShell` / `EntityPublicDetailShell` | L3 — parity with L2 via `resolvePeekDetailAccess` |
 | **Member & find crew browse** | `/member/:id`, `/list?listCat=people`, explore `list=1&listCat=people` or `view=people` | `ConsumerShell` (profile) · `ListCrewsExplorer` · `CrewsBrowsePanel` (map rail) | **People rows** = `memberBrowseRowModel` / crew-discovery VM; fixed intents = availability L1 |
-| **Publishing workspace** | `/publishing/*` | `ConsoleShell` / `DashboardLayout` (tenant) | Preview may embed consumer L3 — **manage** is separate |
+| **Operator desk** | SPA `/operator/*`; HTTP `/publishing/*` | `ConsoleShell` / `DashboardLayout` (tenant) | Preview may embed consumer L3 — **manage** is separate |
 | **Platform admin** | `/admin/*` | `DashboardLayout` + `ADMIN_LINKS` | **Never** reuse `MapPeekShell` or consumer detail footers |
 
 #### 6.2.2 Profile & publisher identity matrix
@@ -463,7 +463,7 @@ Host preview (`previewMode`) and `ActivityManageSheet` (`isEmbedded: true`) use 
 #### 6.2.6 Admin & operator (out of consumer methodology)
 
 - **Admin (`/admin/*`):** CRUD tables, moderation queues, metrics — `adminApi` + `DashboardLayout`. Does **not** adopt discovery card VM or entity tab footers; may link **out** to consumer URLs for inspection only.
-- **Publishing workspace (`/publishing/*`):** Tenant-scoped publishing — `ConsoleShell`, join request queue, activity forms. **Host** on the map remains consumer shell; shared **publish payload** (`activityPublishPayload.ts`) is the cross-surface write contract.
+- **Operator desk (`/operator/*`):** Tenant-scoped publishing — `ConsoleShell`, join request queue, activity forms. HTTP stays `/publishing/*`. **Host** on the map remains consumer shell; shared **publish payload** (`activityPublishPayload.ts`) is the cross-surface write contract.
 
 **Program:** **S13** (§8) — implementation waves; activity kind page split is **S13d**, not a standalone architecture.
 
@@ -596,7 +596,7 @@ AdminGeo tree (geoRef on coords): country → state → area (city) → optional
 | D2 | Member gear pin = **facility `outdoor_shop`**, not `EntityKind.shop` |
 | D3 | `onSiteId` when amenity belongs to a trail; optional for destination-only amenities |
 | D4 | Trail detail amenities: query **`onSiteId`**, not destination siblings only |
-| D5 | Operator = **workspace**; all tenant kinds → `/publishing/*` |
+| D5 | Operator = **desk identity** (any publishing kind); SPA `/operator/*`; HTTP `/publishing/*`; organisation = wire |
 | D6 | Pending catalog UX: **submissions list**, no public draft URL for unlisted rows |
 | D7 | Cutover: optional `CATALOG_V2` read flag → single deploy → redirects **CPC-6** |
 | F1–F6 | FAB **Create Trip · Add a venue · Find a Crew**; compose wire `activity` \| `place` \| `intent` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
@@ -828,7 +828,7 @@ One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guar
 |----------|------|
 | Why we build this | `NORTHSTAR.md` |
 | What entities exist | `DOMAIN.md` |
-| Who can publish / publishing workspace | `MEMBER_MODEL.md` |
+| Who can publish / operator desk | `MEMBER_MODEL.md` |
 | FAB and join behavior | `CREATE_FLOW.md` |
 | Who sees full detail vs peek | `DOMAIN_CANONICALS.md` §15 |
 | HTTP paths | `API_ROUTING.md` |

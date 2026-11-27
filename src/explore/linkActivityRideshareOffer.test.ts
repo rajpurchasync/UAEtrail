@@ -4,7 +4,7 @@ import {
   canLinkRideshareToActivity,
   resolveAvailabilityParentActivityId,
 } from './linkActivityRideshareOffer';
-import { seekingExploreMapItem } from './exploreMapItemFixtures';
+import { excludedSeekingActivityMapItem } from './exploreMapItemFixtures';
 
 const baseActivity = (overrides: Partial<ActivityDTO> = {}): ActivityDTO =>
   ({
@@ -41,7 +41,7 @@ describe('canLinkRideshareToActivity', () => {
 
 describe('resolveAvailabilityParentActivityId', () => {
   it('reads parent id from nested activity or activity: wire id', () => {
-    const item = seekingExploreMapItem({
+    const item = excludedSeekingActivityMapItem({
       intentId: 'int-1',
       activityId: 'act-seek-1',
       activity: { id: 'act-seek-1', title: 'Crew', activityType: 'hiking' },

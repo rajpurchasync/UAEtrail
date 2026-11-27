@@ -32,11 +32,11 @@ export const PRODUCT_PLAN_SURFACE_TITLE = 'My Plans';
 export const PRODUCT_PLAN_MEMBER_NAV_HINT =
   'Outings you join, saved places, and goals — your side of getting outside together.';
 
-/** Operator dashboard — `/operator/overview` (not My Plans goals/wishlist). */
+/** Operator desk — `/operator/overview` (not My Plans goals/wishlist). */
 export const PRODUCT_HOSTING_SCHEDULE_NAV_LABEL = 'Dashboard';
 
 export const PRODUCT_HOSTING_SCHEDULE_NAV_HINT =
-  'Outings you organize — join requests, roster, and operator tools.';
+  'Outings you operate — join requests, roster, and operator tools.';
 
 /** Upcoming list context (Plan page). */
 export const PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT =

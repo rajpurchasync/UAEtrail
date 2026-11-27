@@ -13,7 +13,7 @@ import { AppButton } from '../mobile/AppButton';
 type EntityFollowControlsProps = {
   tenantId?: string;
   locationId?: string;
-  merchantId?: string;
+  shopId?: string;
   disabled?: boolean;
   className?: string;
   onStatusMessage?: (message: string | null) => void;
@@ -22,7 +22,7 @@ type EntityFollowControlsProps = {
 export const EntityFollowControls = ({
   tenantId,
   locationId,
-  merchantId,
+  shopId,
   disabled = false,
   className,
   onStatusMessage,
@@ -31,9 +31,9 @@ export const EntityFollowControls = ({
   const target = useMemo((): EntityFollowTarget | null => {
     if (locationId) return { locationId };
     if (tenantId) return { tenantId };
-    if (merchantId) return { merchantId };
+    if (shopId) return { shopId };
     return null;
-  }, [locationId, tenantId, merchantId]);
+  }, [locationId, tenantId, shopId]);
 
   const [state, setState] = useState<EntityFollowCheckDTO | null>(null);
   const [busy, setBusy] = useState(false);

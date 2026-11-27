@@ -23,6 +23,7 @@ import {
   memberProfilePath,
   placeDetailPathForId,
   resolveActivityPublisherProfilePath,
+  resolveExploreMapItemShopId,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
@@ -86,7 +87,7 @@ export interface DiscoveryCardModel {
   activityId?: string | null;
   outingCategory?: OutingCategory | null;
   composeIntent?: ExploreMapComposeIntent | null;
-  merchantId?: string | null;
+  shopId?: string | null;
   tenantId?: string | null;
   profileUserId?: string | null;
   featuredPerson?: ExploreMapPersonDTO | null;
@@ -259,7 +260,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     activityId: item.activity?.id ?? null,
     outingCategory: item.outingCategory ?? null,
     composeIntent: canonicalizeMapComposeIntent(item.composeIntent) ?? null,
-    merchantId: item.merchantId ?? null,
+    shopId: resolveExploreMapItemShopId(item),
     tenantId: item.tenantId ?? item.activity?.tenantId ?? null,
     profileUserId: featuredPerson?.userId ?? item.activity?.hostUserId ?? null,
     featuredPerson,
@@ -438,7 +439,7 @@ export const discoveryCardShowPeekBodyDirections = (card: DiscoveryCardModel): b
 export type ExploreEntityFollowPayload = {
   locationId?: string;
   tenantId?: string;
-  merchantId?: string;
+  shopId?: string;
 };
 
 /** Resolve place / host team / shop follow target for this explore card. */
@@ -453,7 +454,7 @@ export const resolveExploreEntityFollowTarget = (
     return null;
   }
   if (card.source === 'shop' || card.source === 'agency') {
-    if (card.merchantId) return { merchantId: card.merchantId };
+    if (card.shopId) return { shopId: card.shopId };
     if (card.tenantId) return { tenantId: card.tenantId };
   }
   return null;

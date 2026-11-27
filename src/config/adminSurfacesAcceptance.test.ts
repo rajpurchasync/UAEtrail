@@ -18,7 +18,7 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
 }> = [
   { path: '/admin/inbox', page: 'admin/Inbox.tsx', element: 'AdminInbox', inSidebar: true },
   { path: '/admin/inbox/submissions', page: 'admin/Submissions.tsx', element: 'AdminSubmissions', inSidebar: true },
-  { path: '/admin/hosts', page: 'admin/Organisations.tsx', element: 'AdminOrganisations', inSidebar: true },
+  { path: '/admin/hosts', page: 'admin/Operators.tsx', element: 'AdminOrganisations', inSidebar: true },
   { path: '/admin/reports', page: 'admin/Reports.tsx', element: 'AdminReports', inSidebar: true },
   { path: '/admin/alerts', page: 'admin/Alerts.tsx', element: 'AdminAlerts', inSidebar: true },
   { path: '/admin/places', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },

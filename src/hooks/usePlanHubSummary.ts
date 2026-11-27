@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useConsoleHubData } from '../console/useHubData';
+import { useConsoleHubData } from '../operator/desk/useHubData';
 import { useMyActivityJoinRequests } from './useMyActivityJoinRequests';
 import { useMyJoinedActivities } from './useMyJoinedActivities';
 import { useMemberAvailability } from './useMemberAvailability';

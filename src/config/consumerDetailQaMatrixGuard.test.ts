@@ -54,7 +54,7 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
   {
     surface: 'Agency/partner',
     routePattern: /path="\/agency\/:id"|path="\/partner\/:id"/,
-    pageOrView: 'src/pages/OrganisationProfile.tsx',
+    pageOrView: 'src/operator/public/OrganisationProfile.tsx',
     automatedGuard: 'publicEntityShellAcceptance.test.ts',
   },
   {

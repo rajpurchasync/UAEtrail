@@ -4,10 +4,10 @@ import {
   HostJoinDeclineReason,
   formatHostJoinDeclineNote,
 } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../api/types';
-import { AppButton } from '../components/mobile/AppButton';
-import { AppSelect } from '../components/ui/AppSelect';
-import { Dialog } from '../components/ui/Dialog';
+import type { ActivityRequestView } from '../../api/types';
+import { AppButton } from '../../components/mobile/AppButton';
+import { AppSelect } from '../../components/ui/AppSelect';
+import { Dialog } from '../../components/ui/Dialog';
 
 export interface ActivityJoinRequestDeclineDialogProps {
   open: boolean;

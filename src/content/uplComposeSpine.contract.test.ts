@@ -21,7 +21,7 @@ describe('UPL compose + operator spine (R6 / PCO-03 contract)', () => {
   it('exposes crews + operator member chrome strings', () => {
     expect(UPL_DISCOVER_CREWS).toBe('Discover crews');
     expect(UPL_MY_CREWS).toBe('My crew');
-    expect(UPL_OPERATOR_DASHBOARD).toBe('Dashboard');
+    expect(UPL_OPERATOR_DASHBOARD).toBe('Operator desk');
     expect(UPL_INTENT_OPEN_ACTION).toBe("Share when I'm free");
   });
 });

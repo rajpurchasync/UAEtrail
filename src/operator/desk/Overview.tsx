@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ConsoleHubSections, ConsoleShell, useConsoleHubData } from '../../console';
+import { ConsoleHubSections, ConsoleShell, useConsoleHubData } from '.';
 import { TenantSwitcher } from '../../components/ui';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
@@ -13,6 +13,11 @@ import { HostingHubView } from '../../hosting/HostingHubView';
 import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortExploreHosting';
 import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
+import { useActiveOperatorDeskKind } from './useActiveOperatorDeskKind';
+import {
+  publishingProfileKindToDeskBrand,
+  workspaceConsoleLabel,
+} from '../../content/workspaceVocabulary';
 
 export const Overview = () => {
   const { user } = useAuth();
@@ -34,6 +39,9 @@ export const Overview = () => {
   const handleCreate = useCallback(() => {
     navigateToExploreHost(navigate);
   }, [navigate]);
+
+  const deskKind = useActiveOperatorDeskKind();
+  const overviewTitle = `${workspaceConsoleLabel(publishingProfileKindToDeskBrand(deskKind))} · Overview`;
 
   const loading = host.loading;
 
@@ -66,7 +74,7 @@ export const Overview = () => {
   return (
     <>
       <ConsoleShell
-        title="Overview"
+        title={overviewTitle}
         headerExtra={
           <TenantSwitcher onChange={(value) => host.setTenantId(value)} />
         }

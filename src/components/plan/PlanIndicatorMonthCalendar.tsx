@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { todayIso } from '../../explore';
+import { todayIso } from '../../discovery/discoveryPortExploreOptionalFilters';
 import type { PlanCalendarDayMarkers } from '../../plan/planCalendarMarkers';
 import { emptyPlanCalendarDayMarkers } from '../../plan/planCalendarMarkers';
 

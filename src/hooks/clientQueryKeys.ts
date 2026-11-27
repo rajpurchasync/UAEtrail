@@ -26,13 +26,13 @@ export const entityFollowsQueryKey = ['me', 'entity-follows'] as const;
 
 export const entityFollowStateQueryKey = (
   userId: string,
-  target: { locationId?: string; tenantId?: string; merchantId?: string }
+  target: { locationId?: string; tenantId?: string; shopId?: string }
 ): QueryKey => [
   'entity-follow-state',
   userId,
   target.locationId ?? '',
   target.tenantId ?? '',
-  target.merchantId ?? ''
+  target.shopId ?? ''
 ];
 
 /** Guest marketing landing upcoming activities (`GET /activities`). */

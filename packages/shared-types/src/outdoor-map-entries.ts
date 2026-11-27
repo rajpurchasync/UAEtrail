@@ -17,12 +17,3 @@ export interface JourneyMapEntryDTO {
   pinId: string | null;
   activityId: string | null;
 }
-
-/** @deprecated Use {@link JourneyMapFilterCategory} */
-export type OutdoorMapFilterCategory = JourneyMapFilterCategory;
-
-/** @deprecated Use {@link JourneyMapEntryCategory} */
-export type OutdoorMapEntryCategory = JourneyMapEntryCategory;
-
-/** @deprecated Use {@link JourneyMapEntryDTO} */
-export type OutdoorMapEntryDTO = JourneyMapEntryDTO;

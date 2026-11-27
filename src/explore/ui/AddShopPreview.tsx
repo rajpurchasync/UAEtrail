@@ -1,6 +1,6 @@
 import { MapPin, Truck } from 'lucide-react';
 import type { AddDraft } from './addFlow';
-import { formatHostPhonePreview } from '../../components/organisation-console/proProfileApplicationForm';
+import { formatHostPhonePreview } from '../../operator/apply/proProfileApplicationForm';
 
 type AddShopPreviewProps = {
   draft: AddDraft;

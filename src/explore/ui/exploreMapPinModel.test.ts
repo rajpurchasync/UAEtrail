@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { hostedExploreMapItem, seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
+import { hostedExploreMapItem, excludedSeekingActivityMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import {
   expandMapPins,
@@ -56,7 +56,7 @@ describe('exploreMapPinModel', () => {
 
   it('Places layer excludes activities and demand', () => {
     const activity = baseItem({ id: 'a1', source: 'activity', kind: 'hiking' });
-    const demand = seekingExploreMapItem({ intentId: 'd1' });
+    const demand = excludedSeekingActivityMapItem({ intentId: 'd1' });
     const venue = venueExploreMapItem({ id: 'venue:v1' });
     const eventVenue = baseItem({ id: 'ev1', source: 'venue', kind: 'event' });
     expect(isPlacesMapItem(activity)).toBe(false);
@@ -95,7 +95,7 @@ describe('exploreMapPinModel', () => {
 
   it('expandMapPins resolves hosted activityMode; retired seeking is not a pin mode', () => {
     const hosted = expandMapPins([hostedExploreMapItem()])[0];
-    const seeking = expandMapPins([seekingExploreMapItem()])[0];
+    const seeking = expandMapPins([excludedSeekingActivityMapItem()])[0];
     expect(hosted.activityMode).toBe('hosted');
     expect(seeking.activityMode).toBeUndefined();
   });

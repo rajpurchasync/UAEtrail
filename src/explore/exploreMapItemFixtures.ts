@@ -41,9 +41,6 @@ export const excludedSeekingActivityMapItem = (
   });
 };
 
-/** @deprecated Use {@link excludedSeekingActivityMapItem} */
-export const seekingExploreMapItem = excludedSeekingActivityMapItem;
-
 /** Fixed crew availability pin (`member_availability` on explore catalog). */
 export const availabilityExploreMapItem = (
   partial: Partial<ExploreMapItemDTO> & { userId?: string; slotId?: string } = {}

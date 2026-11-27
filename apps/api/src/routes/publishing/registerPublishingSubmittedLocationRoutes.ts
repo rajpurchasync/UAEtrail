@@ -8,7 +8,7 @@ import { validate } from '../../middleware/validate.js';
 import { submitPublishingLocation } from '../../services/publishing-submitted-location-commands.js';
 import { listPublishingSubmittedLocations } from '../../services/publishing-submitted-location-read.js';
 
-/** Tenant host: list and submit venue/place drafts (organisation console). */
+/** Tenant host: list and submit venue/place drafts (operator desk). */
 export const registerPublishingSubmittedLocationRoutes = (publishingRouter: Router): void => {
   mountRetiredPlaceLocationPaths(publishingRouter);
 

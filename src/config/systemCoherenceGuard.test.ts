@@ -169,9 +169,9 @@ describe('systemCoherenceGuard', () => {
 
   it('S10b publishing console catalog pages use TanStack Query (MIG-CLIENT-QUERY)', () => {
     const catalogPages: [string, string][] = [
-      ['src/pages/publishing/Places.tsx', 'useOrganisationSubmittedPlaces'],
-      ['src/pages/publishing/Team.tsx', 'useOrganisationTeam'],
-      ['src/pages/publishing/PublicProfileEdit.tsx', 'useMyTenantMemberships'],
+      ['src/operator/desk/Places.tsx', 'useOrganisationSubmittedPlaces'],
+      ['src/operator/desk/Team.tsx', 'useOrganisationTeam'],
+      ['src/operator/desk/PublicProfileEdit.tsx', 'useMyTenantMemberships'],
     ];
     const violations: string[] = [];
     for (const [rel, hook] of catalogPages) {
@@ -190,9 +190,9 @@ describe('systemCoherenceGuard', () => {
     const queries = readFileSync(join(ROOT, 'src/hooks/publishingWorkspaceQueries.ts'), 'utf8');
     expect(queries).toMatch(/useQuery/);
     const hostQueryPages: [string, string][] = [
-      ['src/pages/publishing/Activities.tsx', 'usePublishingTenantActivities'],
-      ['src/pages/publishing/JoinRequests.tsx', 'usePublishingJoinQueue'],
-      ['src/pages/publishing/History.tsx', 'usePublishingActivityHistory'],
+      ['src/operator/desk/Activities.tsx', 'usePublishingTenantActivities'],
+      ['src/operator/desk/JoinRequests.tsx', 'usePublishingJoinQueue'],
+      ['src/operator/desk/History.tsx', 'usePublishingActivityHistory'],
     ];
     const violations: string[] = [];
     for (const [rel, hook] of hostQueryPages) {
@@ -233,8 +233,8 @@ describe('systemCoherenceGuard', () => {
   it('workspace vocabulary module is canonical for organizer/operator copy', () => {
     expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
     const vocab = readFileSync(join(ROOT, 'src/content/workspaceVocabulary.ts'), 'utf8');
-    expect(vocab).toMatch(/Operator dashboard/);
-    expect(vocab).toMatch(/Operator workspace/);
+    expect(vocab).toMatch(/Hosting desk/);
+    expect(vocab).toMatch(/Operator desk/);
     expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/content/workspaceProductLanguageGuard.test.ts'))).toBe(true);
   });

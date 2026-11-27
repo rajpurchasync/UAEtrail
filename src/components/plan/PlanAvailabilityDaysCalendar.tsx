@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { todayIso } from '../../explore';
+import { todayIso } from '../../discovery/discoveryPortExploreOptionalFilters';
 
 const toIso = (year: number, month: number, day: number): string =>
   `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

@@ -1,47 +1,56 @@
 import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getActiveTenantId } from '../api/tenant';
-import { useOrganisationConsoleRating } from '../hooks/usePublishingConsoleQueries';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { ConsumerHeaderActions } from '../components/layout/ConsumerHeaderActions';
-import { FilterChips } from '../components/mobile/FilterChips';
-import { OPERATOR_CONSOLE_LINKS } from '../constants';
-import { OPERATOR_PROFILE_PATH } from '../config/routingCatalog';
-import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { getActiveTenantId } from '../../api/tenant';
+import { useOrganisationConsoleRating } from '../../hooks/usePublishingConsoleQueries';
+import { ConsumerShell } from '../../components/mobile/ConsumerShell';
+import { ConsumerHeaderActions } from '../../components/layout/ConsumerHeaderActions';
+import { FilterChips } from '../../components/mobile/FilterChips';
+import { OPERATOR_PROFILE_PATH } from '../../config/routingCatalog';
+import { useProfileHubBackChrome } from '../../hooks/useProfileHubBackChrome';
 import { ConsoleRatingChip } from './ConsoleRatingChip';
+import { operatorDeskNavLinksForKind } from './modules';
+import { useActiveOperatorDeskKind } from './useActiveOperatorDeskKind';
+import {
+  publishingProfileKindToDeskBrand,
+  workspaceConsoleLabel,
+} from '../../content/workspaceVocabulary';
 
 interface ConsoleShellProps {
-  title: string;
+  title?: string;
   children: ReactNode;
   cta?: ReactNode;
   headerExtra?: ReactNode;
 }
 
-/** Layout for `/publishing/*` publishing workspace (tenant scope header). */
+/** Operator desk shell — SPA `/operator/*` (HTTP tenant API stays `/publishing/*`). */
 export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShellProps) => {
   const backChrome = useProfileHubBackChrome();
   const location = useLocation();
   const navigate = useNavigate();
+  const deskKind = useActiveOperatorDeskKind();
+  const deskBrand = publishingProfileKindToDeskBrand(deskKind);
+  const shellTitle = title ?? workspaceConsoleLabel(deskBrand);
 
   const tenantId = getActiveTenantId();
   const { data: rating } = useOrganisationConsoleRating(tenantId);
   const avgRating = rating?.avgRating ?? null;
   const reviewCount = rating?.reviewCount ?? 0;
 
-  const navOptions = OPERATOR_CONSOLE_LINKS.map((link) => ({
+  const navLinks = operatorDeskNavLinksForKind(deskKind);
+  const navOptions = navLinks.map((link) => ({
     key: link.to,
     label: link.label,
   }));
 
   const activePath =
-    OPERATOR_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
-    OPERATOR_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
+    navLinks.find((link) => location.pathname === link.to)?.to ??
+    navLinks.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
 
   return (
     <ConsumerShell
       layout="stack"
-      title={title}
+      title={shellTitle}
       showJourney={false}
       back={backChrome}
       action={

@@ -22,11 +22,11 @@ const walkTs = (dirRel: string, acc: string[] = []): string[] => {
 };
 
 const HOST_JOIN_SURFACES = [
-  'src/pages/publishing/JoinRequests.tsx',
-  'src/pages/publishing/Activities.tsx',
+  'src/operator/desk/JoinRequests.tsx',
+  'src/operator/desk/Activities.tsx',
   'src/components/activity/ActivityManageSheet.tsx',
   'src/components/activity/detail/ActivityDetailHostCrewHub.tsx',
-  'src/console/useHubData.ts',
+  'src/operator/desk/useHubData.ts',
   'src/hooks/useActivityHostJoinRequests.ts',
 ] as const;
 
@@ -84,7 +84,7 @@ describe('participationJoinSpineGuard', () => {
     for (const rel of [
       ...walkTs('src/pages'),
       ...walkTs('src/components'),
-      ...walkTs('src/console'),
+      ...walkTs('src/operator/desk'),
       ...walkTs('src/hooks'),
     ]) {
       if (HOST_QUEUE_MUTATION_ALLOW.has(rel)) continue;

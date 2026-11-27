@@ -125,10 +125,10 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/exploreItemMatchesBrowseGeoPath/);
     expect(read('src/explore/exploreListSort.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/explore/ui/useExploreBrowseList.ts')).toMatch(/deriveVenueRegionSortOrder/);
-    expect(read('src/components/organisation-console/ProProfileApplicationFlow.tsx')).toMatch(
+    expect(read('src/operator/apply/ProProfileApplicationFlow.tsx')).toMatch(
       /mergeVenueStateFilterOptionsWithDestinations/
     );
-    expect(read('src/components/organisation-console/ProProfileApplicationFlow.tsx')).not.toMatch(
+    expect(read('src/operator/apply/ProProfileApplicationFlow.tsx')).not.toMatch(
       /getRegionsForCountry\(DEFAULT_COUNTRY\)/
     );
   });

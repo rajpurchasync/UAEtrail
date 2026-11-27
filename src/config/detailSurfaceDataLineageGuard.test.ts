@@ -13,7 +13,7 @@ const DETAIL_SURFACE_LINEAGE: Array<{ page: string; facadePattern: RegExp }> = [
   { page: 'src/pages/PlaceDetailPage.tsx', facadePattern: /usePlaceDetailCore/ },
   { page: 'src/pages/DestinationDetailPage.tsx', facadePattern: /destinationHubClientApi/ },
   { page: 'src/pages/ShopPublic.tsx', facadePattern: /shopPublicClientApi/ },
-  { page: 'src/pages/OrganisationProfile.tsx', facadePattern: /organisationConsoleApi/ },
+  { page: 'src/operator/public/OrganisationProfile.tsx', facadePattern: /operatorDeskClientApi/ },
   { page: 'src/pages/MemberProfile.tsx', facadePattern: /memberPublicProfileApi/ },
 ];
 

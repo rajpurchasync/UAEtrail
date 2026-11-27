@@ -64,11 +64,11 @@ Use **one row** per concern. Do not copy these tables into `experiment/*` or new
 | **Product objects & confused words** | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1–1.3 | Entity kinds, Host vs Organisation vs shop |
 | **Host tier · join · buddy naming** | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary | Publish gates, join queue vocabulary |
 | **HTTP routes** | [`API_ROUTING.md`](./API_ROUTING.md) + [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4–5 | `/me/status`, `/publishing/*`, `/me/seeking-posts` |
-| **SPA paths & redirects** | [`NAVIGATION.md`](./NAVIGATION.md) + `src/config/routingCatalog.ts` | `/explore`, `/publishing/*`, legacy `/host/*` |
+| **SPA paths & redirects** | [`NAVIGATION.md`](./NAVIGATION.md) + `src/config/routingCatalog.ts` | `/explore`, `/operator/*`, legacy `/host/*` · `/publishing/*` SPA |
 | **Bounded context placement** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 + §3.0 | Where code and clients live |
 | **Ops gates & closed migrations** | `scripts/governance/platform-governance.json` + guards | Not markdown schedules — §8.4.9 / §8.7 / §8.9 in `SYSTEM_COHERENCE` only |
 
-**Retired product paths (docs + code):** `/operator/*` and `/host/*` as **consumer or API** trees → **`/publishing/*`**; `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`; shop **product catalog** (`/product/:id`, `/shop/products`, `/shop/checkout`, `/admin/shop`) → explore shops browse or `/admin/hosts`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
+**Retired product paths (docs + code):** `/host/*` SPA → **`/operator/*`** (HTTP stays **`/publishing/*`**); `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`; shop **product catalog** (`/product/:id`, `/shop/products`, `/shop/checkout`, `/admin/shop`) → explore shops browse or `/admin/hosts`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
 
 ---
 

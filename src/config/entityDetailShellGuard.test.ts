@@ -15,7 +15,7 @@ const ENTITY_DETAIL_PAGES: Array<{ path: string; mustMatch: RegExp }> = [
   { path: 'src/pages/ShopPublic.tsx', mustMatch: /ShopPublicPage/ },
   { path: 'src/components/destination/DestinationDetailView.tsx', mustMatch: /DetailPageShell/ },
   { path: 'src/components/shop/ShopPublicPage.tsx', mustMatch: /DetailPageShell/ },
-  { path: 'src/pages/OrganisationProfile.tsx', mustMatch: /EntityPublicDetailShell/ },
+  { path: 'src/operator/public/OrganisationProfile.tsx', mustMatch: /EntityPublicDetailShell/ },
 ];
 
 /** Page modules must not be full-screen roots without an approved shell (S9 Phase 7.2b). */

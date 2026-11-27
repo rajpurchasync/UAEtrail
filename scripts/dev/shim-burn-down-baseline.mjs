@@ -597,7 +597,7 @@ const baseline = {
       ? ['W4r: explore imports browse geo/FAB copy via discoverySession facades']
       : []),
     ...(exploreImportsBrowseListHooks.length > 0
-      ? ['W4s: explore imports list browse hooks via discoveryPortListGeoHub']
+      ? ['W4s: explore imports list browse hooks via discoveryPortListGeoBrowse']
       : []),
     ...(exploreImportsBrowseListFilters.length > 0
       ? ['W4t: explore imports browse list filter types via discoveryPortListBrowseFilters']

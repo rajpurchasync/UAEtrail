@@ -3,7 +3,7 @@ import type { ShopPublicDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import type { ShopPublicView } from '../components/shop/ShopPublicPage';
-import { fetchOrganisationProfileBySlug } from './organisationConsoleApi';
+import { fetchOrganisationProfileBySlug } from './operatorDeskClientApi';
 import { fetchPublicPlaceDetail } from './placeDetailClientApi';
 import { communityShopPlaceToView } from '../utils/communityShopPlace';
 
@@ -35,29 +35,29 @@ export type ShopPublicPageResult = {
   communityPeekOnly: boolean;
 };
 
-/** Resolves merchant id, tenant slug, or community place id to a public shop page model. */
+/** Resolves shop profile id, tenant slug, or community place id to a public shop page model. */
 export const fetchShopPublicPage = async (id: string): Promise<ShopPublicPageResult> => {
   try {
-    const merchant = await fetchShopPublic(id);
+    const profile = await fetchShopPublic(id);
     return {
       communityPeekOnly: false,
       shop: {
-        id: merchant.id,
-        reviewTargetId: merchant.tenantId ?? null,
-        shopName: merchant.shopName,
-        description: merchant.description ?? null,
-        logo: merchant.logo ?? null,
-        websiteUrl: merchant.websiteUrl ?? null,
-        region: merchant.region ?? null,
-        latitude: merchant.latitude ?? null,
-        longitude: merchant.longitude ?? null,
-        contactEmail: merchant.contactEmail ?? null,
-        contactPhone: merchant.contactPhone ?? null,
-        contactPersonName: merchant.contactPersonName ?? null,
-        contactPersonAvatar: merchant.contactPersonAvatar ?? null,
-        contactPersonUserId: merchant.contactPersonUserId ?? null,
-        allowInboundChat: merchant.allowInboundChat === true,
-        presence: resolvePresence(merchant.latitude, merchant.longitude),
+        id: profile.id,
+        reviewTargetId: profile.tenantId ?? null,
+        shopName: profile.shopName,
+        description: profile.description ?? null,
+        logo: profile.logo ?? null,
+        websiteUrl: profile.websiteUrl ?? null,
+        region: profile.region ?? null,
+        latitude: profile.latitude ?? null,
+        longitude: profile.longitude ?? null,
+        contactEmail: profile.contactEmail ?? null,
+        contactPhone: profile.contactPhone ?? null,
+        contactPersonName: profile.contactPersonName ?? null,
+        contactPersonAvatar: profile.contactPersonAvatar ?? null,
+        contactPersonUserId: profile.contactPersonUserId ?? null,
+        allowInboundChat: profile.allowInboundChat === true,
+        presence: resolvePresence(profile.latitude, profile.longitude),
       },
     };
   } catch {

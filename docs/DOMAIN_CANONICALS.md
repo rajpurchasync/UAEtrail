@@ -45,8 +45,9 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Add** | Wire token (v3) | `add:place:*` \| `add:facility:*` on `?compose=` (FAB **Add on map**) | Confusing with casual “add a friend” copy |
 | **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
 | **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | User-facing FAB buttons — reserved word for **message compose** later |
-| **Host** | Product role | Anyone who **publishes** (buddy → pro guide → agency → shop owner → partner) | The Mongo `tenants` row name in UI |
-| **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, partner, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
+| **Host** | Product role | Individual leading **this outing** (joiner-facing) | The Mongo `tenants` row; the operator desk |
+| **Operator** | Product identity | Any publishing identity (community host, guide, shop, agency, partner) + shared **desk** at `/operator/*` | The person on this outing (that's **Host**); Mongo `tenants` (that's **organisation** wire) |
+| **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, partner, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Consumer copy — say **host**, **guide**, **agency**, **shop**, **partner**, **operator**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Retired label | — | Product noun is **host** (activity) or **tenant** (storage) |
 | **Partner** | Product kind | Hotel / campaign / brand **host storefront** — not a shop, not a tour agency | Outdoor gear **shop**; do not call shops “partners” in UI |
 | **Agency** | Product kind | **Tour operator** — join trips remotely; storefront is **not** “visit this pin to join” | Gear **shop**; map **Place** venue |
@@ -110,7 +111,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `shop` | Shop **storefront** profile | `PublishingProfileKind: shop` |
 | `organisation` | Business **storefront** slug (`/agency`, `/partner`) | `PublishingProfileKind`: `agency` \| `partner` |
 
-**Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **Host** (individual on an outing) / **guide** / **agency** / **shop** / **partner** — not “organisation.” **Operator** = agency/shop **workspace** UI. **Organize/publish** = capabilities on **`GET /me/status`** (`profileComplete`, `publish.*`) — not `/me/*` personas. Retired in **architecture/API**: `host` paths and new `Host*` hooks; see `MEMBER_MODEL.md` § Naming vocabulary.
+**Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **Host** (individual on an outing) / **guide** / **agency** / **shop** / **partner** — not “organisation.” **Operator** = publishing identity + **desk** (`/operator/*`) for every kind. **Organize/publish** = capabilities on **`GET /me/status`** (`profileComplete`, `publish.*`) — not `/me/*` personas. Retired in **architecture/API**: `host` paths and new `Host*` hooks; see `MEMBER_MODEL.md` § Naming vocabulary.
 
 ---
 
@@ -129,8 +130,8 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `activities` | **Activity** | **Host** \| **Find crew** (fixed map post) | Not catalog |
 | `member_availability` | **Availability** | **Find crew** → flexible | No map pin; **Find crew → Available** lists members with future slots (`GET /explore/people/availability`); day+type **notify** + FAB hosted preview only |
 | `areas` | **Area** | — | Hub |
-| `tenants` + merchant | **Shop storefront** (`EntityKind.shop`) | — | **Operator workspace** `/publishing/*` — not FAB |
-| — | **Operator workspace** | — | Person + tenant header; guide/agency/shop |
+| `tenants` + merchant | **Shop storefront** (`EntityKind.shop`) | — | **Operator desk** SPA `/operator/*` (HTTP `/publishing/*`) — not FAB |
+| — | **Operator desk** | — | Person + tenant header; every publishing kind |
 
 **Register** = provenance + moderation/publication — field `registeredByUserId` (alias `submittedById` during migration). **No** `Contribute` API resource.
 
@@ -228,7 +229,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 
 | Layer | Use for | Examples |
 |-------|---------|----------|
-| **Product / UI** | Copy, nav labels | Place, Activity, **Host** (FAB + individual on this outing), **Operator workspace** (agency/shop), Friends, Pro Membership — not **Compose** for FAB |
+| **Product / UI** | Copy, nav labels | Place, Activity, **Host** (FAB + individual on this outing), **Operator desk** (any publishing kind, `/operator/*`), Friends, Pro Membership — not **Compose** for FAB |
 | **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/publishing/*` — see **§13** |
 | **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-organisation-id` |
 
@@ -263,7 +264,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Legacy community feed | `/community` | `COMMUNITY_PATH` → `/explore` redirect only (feed removed) |
 | Legacy membership marketing | `/membership` | `MEMBERSHIP_MARKETING_PATH` → explore redirect |
 | Pro / business | `/profile/pro-membership` | `PRO_MEMBERSHIP_PATH`, `proMembershipPath()` |
-| Publishing console | `/publishing/*` | `OPERATOR_*_PATH` in `src/config/surfacePaths.ts` |
+| Operator desk | SPA `/operator/*` · HTTP `/publishing/*` | `OPERATOR_*_PATH` in `src/config/surfacePaths.ts` |
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
@@ -279,7 +280,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceDetailKindFacts` (trail / camp / event) |
 | Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/destinationDetail/destinationDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` (inbound `?tab=products` → `about`) |
-| Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
+| Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/operator/public/organisationPublicDetailTab.ts` |
 
 **Aliases (one release when renaming place tabs):** `location` → `transport`; document in Phase 3 PR.
 
@@ -293,7 +294,7 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 |---------|-------|------------------------------|------------|-----------|----------------------|--------|
 | **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
 | **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /member/:userId/profile` | `memberPublicProfileApi` | ≠ tenant storefront |
-| **Organisation (pro)** | `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id`; individual Pro → `/member/:userId` |
+| **Organisation (pro)** | `/agency`, `/partner` | `tenants` storefront | Host onboarding / `operatorDeskClientApi` | `GET /tenants/:slug` (public profile bundle) | `operatorDeskClientApi` | Shop tenants → `/shop/:id`; individual Pro → `/member/:userId` |
 | **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB **Add → Shops** (`add.place.shop` is community **place** submit); see [§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront tenant; no product catalog HTTP |
 | **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; host **new spot** (photo + pin; city from coords) stays DRAFT until admin activate (`registryListed` + `activity_venue_live`); submit **`destinationId`** | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`onSiteId`** | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
 | **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | **`destinationId`** + optional **`onSiteId`** |
@@ -367,7 +368,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 
 **When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
 
-**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` (consumer), `GET /me/journey-map` + `POST/PATCH/DELETE /me/map-pins`; (3) **Publishing workspace** — tenant tools under `/publishing/*`. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` (consumer), `GET /me/journey-map` + `POST/PATCH/DELETE /me/map-pins`; (3) **Operator desk** — tenant tools SPA `/operator/*` (HTTP `/publishing/*`). See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
 
 IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 
@@ -379,7 +380,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 |-------|--------|--------|----------|
 | Public read | `/activities`, `/explore/map` (`sources=availability` for Looking for), `/places` | — | Browse; crew map slice = `availability-fixed-map-items.ts` |
 | Member | `/me/*` | Bearer | `availability`, `status`, profile |
-| Publishing workspace (tenant scope) | `/publishing/*` | Bearer + `x-organisation-id` | `activities`, **`/publishing/requests`** (activity join queue) |
+| Operator desk (tenant HTTP) | `/publishing/*` | Bearer + `x-organisation-id` | `activities`, **`/publishing/requests`** (activity join queue); SPA `/operator/*` |
 | Person public | `/users/:id` | optional | Public profile |
 
 **Kebab-case plurals** on URLs: `availability` (crew registry), not `intents` or `demand`.
@@ -403,9 +404,9 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 | Prefer | Deprecated alias | Notes |
 |--------|------------------|-------|
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
-| `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
+| `getOrganisationProfile`, `ShopOrganisation*`, `src/operator/apply/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiClientSurfaceGuard`, `organisationNamingGuard` |
-| `OPERATOR_CONSOLE_LINKS`, `src/pages/publishing/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/publishing/*` |
+| `OPERATOR_CONSOLE_LINKS`, `src/operator/desk/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Operator desk SPA `/operator/*`; HTTP `/publishing/*` |
 | `getMemberStatus` | `getMemberHostStatus`, `getMyOrganisationStatus` | Tier + nested `publish` |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
@@ -533,7 +534,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Destination** (curated **name**, not a pin) | `GET /destinations`, `GET /destinations/:slug` | `destinations-store`, `hostingPublishDestination.ts`, `/destination/:slug`, explore `?destination=` | `source: area` map pin; `placeHubLabel` confused with destination name; assigning destination from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `actorUserId`, “buddy entity” |
-| **Publishing console** | `/publishing/*`, tenant | `src/pages/publishing/*`, `src/console/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
+| **Operator desk** | SPA `/operator/*`; HTTP `/publishing/*` | `src/operator/desk/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Destination** is a name (`?destination=` / `/destination/:slug`), not a map.
 
@@ -668,11 +669,11 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 | Layer | Question | Name in code (target) |
 |-------|----------|------------------------|
 | Entity | What is this outing? | **Activity** — DTOs, `src/activity/*`, `components/activity/*` |
-| Member-wide gates | May this user publish / open the publishing workspace? | **`useMemberStatus`** · **`GET /me/status`** (`publish` nested) — not `/me/publish-*` or “operator status” in UI |
+| Member-wide gates | May this user publish / open the operator desk? | **`useMemberStatus`** · **`GET /me/status`** (`publish` nested) — not `/me/publish-*` or “operator status” in UI |
 | Tenant-scoped HTTP | List/publish/manage for **this tenant** | **`GET /publishing/activities`** (mount prefix only until SN-4); client **`listActivities(tenantId)`**, **`getActivityJoinRequests(tenantId)`** — not `*OperatorActivity*` / `*HostActivity*` on every symbol |
 | This activity, this viewer | May they see Buddies / approve joiners? | **`viewerAccess`**, entitlements on activity detail wire |
 
-**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/pages/publishing/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **SN-3**.
+**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/operator/desk/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **SN-3**.
 
 ### 13.1 Anti-patterns (do not repeat)
 
@@ -690,7 +691,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 | Prefix / name | OK because |
 |---------------|------------|
 | **`/publishing/*` HTTP mount** (canonical) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 SN-4 drops `/host` mount). |
-| **`src/pages/publishing/*`** | Console **surface** route folder; pages inside still operate on **activities**. Object names (`Overview.tsx`), not `OperatorOverview.tsx`. |
+| **`src/operator/desk/*`** | Console **surface** route folder; pages inside still operate on **activities**. Object names (`Overview.tsx`), not `OperatorOverview.tsx`. |
 | **`src/pages/admin/*`** | Ops **surface** route folder (`/admin`). Object names (`Organisations.tsx`, `Members.tsx`); do **not** prefix every file `Admin*`. |
 | **Legacy shims** | `useOperatorStatus`, `usePublishingAccess`, `/me/host-status`, `/me/operator-status`, flat-only `HostStatusDTO` — **deprecated**; no new call sites. |
 | Remaining `Explore*` map chrome under `src/explore/ui` | Shell files until a dedicated pass. **Do not add** new `Explore*` files — folder is the namespace. Entity lists/follows/people live in `crew-discovery` / `discovery`. |
@@ -760,7 +761,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 
 ## 15. Viewer access & detail exposure (authorization model)
 
-**Purpose:** One **standardized access-control system** for “who may see full entity detail vs map peek vs sign-in prompt.” Separate from **member capabilities** (`canPublish`, publishing workspace) and from **join CTAs** (`participationMode`, `joinRequestUi`).
+**Purpose:** One **standardized access-control system** for “who may see full entity detail vs map peek vs sign-in prompt.” Separate from **member capabilities** (`canPublish`, operator desk) and from **join CTAs** (`participationMode`, `joinRequestUi`).
 
 **Related:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (discovery + participation fields) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (capabilities ≠ viewer access) · [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 **C16** · [`API_ROUTING.md`](./API_ROUTING.md) (activity detail route)
 
@@ -774,7 +775,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 |-------|----------|------------------|---------------|
 | **0. Identity** | Is there a signed-in member? | `req.auth` / `viewerUserId` | Host tier, Pro, roster |
 | **1. Platform role** | Admin / merchant / tenant job on JWT? | `UserRole`, `PLATFORM_ADMIN` bypass | Consumer Host / publish gates |
-| **2. Member capability** | May this account **act** (Host / publish, publishing workspace, paid publish)? | `MemberStatusDTO` / `publish`, **`member-status.ts` only** | Reading someone else's activity |
+| **2. Member capability** | May this account **act** (Host / publish, operator desk, paid publish)? | `MemberStatusDTO` / `publish`, **`member-status.ts` only** | Reading someone else's activity |
 | **3. Entity discovery** | Is this row on the explore map vs link-only? | `ActivityJoinMode` | RSVP vs approval |
 | **4. Participation** | How do you join the roster? | `ParticipationMode`, demand requests | Detail payload depth |
 | **5. Social viewer access** | Relationship to **this** entity (host, participant, …)? | `*-viewer-access.ts` resolvers | `canPublish`, Pro SKU |

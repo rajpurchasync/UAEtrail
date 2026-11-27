@@ -4,7 +4,7 @@ import {
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
-import { isMerchantShopMapItem, mapItemMatchesShopsPill } from './exploreMapItemKind';
+import { isShopStorefrontMapItem, mapItemMatchesShopsPill } from './exploreMapItemKind';
 import {
   EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION,
   EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL,
@@ -95,7 +95,7 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
   },
 };
 
-const isShopPin = (item: ExploreMapItemDTO): boolean => isMerchantShopMapItem(item);
+const isShopPin = (item: ExploreMapItemDTO): boolean => isShopStorefrontMapItem(item);
 
 export { mapItemMatchesShopsPill } from './exploreMapItemKind';
 

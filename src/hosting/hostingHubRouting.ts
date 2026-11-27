@@ -27,7 +27,9 @@ const isWorkspaceProfile = (profile: OwnedHostProfileDTO): boolean =>
 const brandFromProfile = (profile: OwnedHostProfileDTO | undefined): WorkspaceBrandKind | null => {
   if (!profile) return null;
   const kind = resolveHostingPublishingProfileKind(profile);
-  return normalizeWorkspaceBrandKind(kind === 'pro_guide' ? 'guide' : kind);
+  if (kind === 'pro_guide') return 'guide';
+  if (kind === 'community') return 'host';
+  return normalizeWorkspaceBrandKind(kind);
 };
 
 export const resolveHostingModeAvailability = (

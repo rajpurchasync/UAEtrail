@@ -39,7 +39,7 @@ export const ActivityDetail = lazy(() => import('../pages/ActivityDetail').then(
 export const ActivityCrewPage = lazy(() =>
   import('../pages/ActivityCrewPage').then((m) => ({ default: m.ActivityCrewPage }))
 );
-export const OrganisationProfile = lazy(() => import('../pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
+export const OrganisationProfile = lazy(() => import('../operator/public/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
 export const MemberProfile = lazy(() => import('../pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 export const SignUp = lazy(() => import('../pages/SignUp').then((m) => ({ default: m.SignUp })));
 export const SignIn = lazy(() => import('../pages/SignIn').then((m) => ({ default: m.SignIn })));
@@ -57,7 +57,7 @@ export const DestinationDetailPage = lazy(() =>
   import('../pages/DestinationDetailPage').then((m) => ({ default: m.DestinationDetailPage }))
 );
 export const AdminOrganisations = lazy(() =>
-  import('../pages/admin/Organisations').then((m) => ({ default: m.Organisations }))
+  import('../pages/admin/Operators').then((m) => ({ default: m.Organisations }))
 );
 export const AdminActivities = lazy(() => import('../pages/admin/Activities').then((m) => ({ default: m.Activities })));
 export const AdminMembers = lazy(() => import('../pages/admin/Members').then((m) => ({ default: m.Members })));
@@ -80,23 +80,23 @@ export const GeoCountryPage = lazy(() =>
 export const GeoNodePage = lazy(() => import('../pages/GeoNodePage').then((m) => ({ default: m.GeoNodePage })));
 export const PlanTodayPage = lazy(() => import('../plan/PlanTodayPage').then((m) => ({ default: m.PlanTodayPage })));
 export const PublishingOverview = lazy(() =>
-  import('../pages/publishing/Overview').then((m) => ({ default: m.Overview }))
+  import('../operator/desk/Overview').then((m) => ({ default: m.Overview }))
 );
 export const PublishingActivities = lazy(() =>
-  import('../pages/publishing/Activities').then((m) => ({ default: m.Activities }))
+  import('../operator/desk/Activities').then((m) => ({ default: m.Activities }))
 );
 export const PublishingJoinRequests = lazy(() =>
-  import('../pages/publishing/JoinRequests').then((m) => ({ default: m.JoinRequests }))
+  import('../operator/desk/JoinRequests').then((m) => ({ default: m.JoinRequests }))
 );
-export const PublishingTeam = lazy(() => import('../pages/publishing/Team').then((m) => ({ default: m.Team })));
+export const PublishingTeam = lazy(() => import('../operator/desk/Team').then((m) => ({ default: m.Team })));
 export const PublishingPublicProfileEdit = lazy(() =>
-  import('../pages/publishing/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
+  import('../operator/desk/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
 );
-export const PublishingPlaces = lazy(() => import('../pages/publishing/Places').then((m) => ({ default: m.Places })));
-export const PublishingHistory = lazy(() => import('../pages/publishing/History').then((m) => ({ default: m.History })));
+export const PublishingPlaces = lazy(() => import('../operator/desk/Places').then((m) => ({ default: m.Places })));
+export const PublishingHistory = lazy(() => import('../operator/desk/History').then((m) => ({ default: m.History })));
 export const UserRequests = lazy(() => import('../pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 export const MessagesGate = lazy(() => import('../pages/Messages').then((m) => ({ default: m.MessagesGate })));
-export const PublishingManage = lazy(() => import('../pages/publishing/Manage').then((m) => ({ default: m.Manage })));
+export const PublishingManage = lazy(() => import('../operator/desk/Manage').then((m) => ({ default: m.Manage })));
 export const ProfileHistoryPage = lazy(() =>
   import('../pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
 );

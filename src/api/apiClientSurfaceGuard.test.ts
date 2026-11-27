@@ -8,8 +8,8 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getTenantProfile\b/, hint: 'Use api.getOrganisationProfile' },
   { pattern: /\bapi\.getUserPublicProfile\b/, hint: 'Use api.getPersonPublicProfile' },
-  { pattern: /\bapi\.getHostSubmittedPlaces\b/, hint: 'Use publishingWorkspaceApi / organisationConsoleApi' },
-  { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use publishingWorkspaceApi / organisationConsoleApi' },
+  { pattern: /\bapi\.getHostSubmittedPlaces\b/,     hint: 'Use publishingWorkspaceApi / operatorDeskClientApi' },
+  { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use publishingWorkspaceApi / operatorDeskClientApi' },
   {
     pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)OrganisationActivity\b/,
     hint: 'Use tenantActivityClientApi (routes under /publishing/activities)',
@@ -30,7 +30,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getMemberOperatorStatus\s*\(/, hint: 'Use api.getMemberStatus' },
   { pattern: /\bapi\.getMemberHostStatus\s*\(/, hint: 'Use api.getMemberStatus' },
   { pattern: /\buseOrganisationHubData\b/, hint: 'Use useConsoleHubData' },
-  { pattern: /\bOrganisationHubSections\b/, hint: 'Use ConsoleHubSections from src/console' },
+  { pattern: /\bOrganisationHubSections\b/, hint: 'Use ConsoleHubSections from src/operator/desk' },
   {
     pattern: /\bapi\.listActivities\s*\(/,
     hint: 'Use tenantActivityClientApi.listActivities (not raw api in UI)',
@@ -72,7 +72,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
 const SKIP_PREFIXES = ['src/api/', 'src/api\\'];
 
 const SURFACE_SYMBOL_ALLOW = new Set([
-  'src/console/ConsoleHubSections.tsx',
+  'src/operator/desk/ConsoleHubSections.tsx',
   'src/member/organisationNamingGuard.test.ts',
   'src/hooks/tenantActivityClientApi.ts',
 ]);

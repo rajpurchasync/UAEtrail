@@ -12,11 +12,11 @@ import {
   OPERATOR_PROFILE_PATH,
   OPERATOR_REQUESTS_PATH,
   OPERATOR_TEAM_PATH,
-} from '../config/routingCatalog';
-import { OPERATOR_PLACES_PATH } from '../config/platform';
-import { AccountLinkList } from '../components/account/AccountLinkList';
-import { AccountSectionHeader } from '../components/account/AccountSectionHeader';
-import { AccountStat, AccountStatGrid } from '../components/account/AccountStatGrid';
+} from '../../config/routingCatalog';
+import { OPERATOR_PLACES_PATH } from '../../config/platform';
+import { AccountLinkList } from '../../components/account/AccountLinkList';
+import { AccountSectionHeader } from '../../components/account/AccountSectionHeader';
+import { AccountStat, AccountStatGrid } from '../../components/account/AccountStatGrid';
 
 export interface ConsoleHubSectionsProps {
   activitiesCount: number;

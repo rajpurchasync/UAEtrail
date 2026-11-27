@@ -7,7 +7,7 @@ import {
   planUpcomingActivityFocusId,
 } from '../plan/planUpcomingReturnCapture';
 import { viewReturnPathKey } from '../utils/viewReturnMemory';
-import { todayIso } from '../explore';
+import { todayIso } from '../discovery/discoveryPortExploreOptionalFilters';
 import { usePlanCalendarData } from '../hooks/usePlanCalendarData';
 import { planAvailabilityPath } from '../plan/planRouting';
 import type { PlanCalendarDayDetail } from '../plan/planCalendarMarkers';

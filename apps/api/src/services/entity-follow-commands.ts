@@ -5,6 +5,8 @@ import { followEntity, unfollowEntityById } from '../lib/entity-follow-store.js'
 export type EntityFollowCreateInput = {
   locationId?: string;
   tenantId?: string;
+  shopId?: string;
+  /** Inbound compat — same as {@link shopId}. */
   merchantId?: string;
 };
 
@@ -13,7 +15,8 @@ const resolveCreateTarget = (
 ): { kind: EntityFollowKind; targetId: string } => {
   if (body.locationId) return { kind: 'location', targetId: body.locationId };
   if (body.tenantId) return { kind: 'tenant', targetId: body.tenantId };
-  if (body.merchantId) return { kind: 'merchant', targetId: body.merchantId };
+  const shopId = body.shopId?.trim() || body.merchantId?.trim();
+  if (shopId) return { kind: 'shop', targetId: shopId };
   throw new ApiError(400, 'invalid_follow', 'Specify exactly one follow target.');
 };
 

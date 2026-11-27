@@ -8,11 +8,12 @@ import {
 import { workspaceConsoleLabel } from './workspaceVocabulary';
 
 describe('workspaceVocabulary', () => {
-  it('maps agency and shop to operator workspace titles', () => {
-    expect(workspaceConsoleLabel('agency')).toBe('Operator workspace');
-    expect(workspaceConsoleLabel('shop')).toBe('Operator workspace');
-    expect(workspaceConsoleLabel('guide')).toBe('Guide workspace');
-    expect(workspaceConsoleLabel(null)).toBe('Operator dashboard');
+  it('maps operator kinds to desk titles', () => {
+    expect(workspaceConsoleLabel('host')).toBe('Hosting desk');
+    expect(workspaceConsoleLabel('agency')).toBe('Agency desk');
+    expect(workspaceConsoleLabel('shop')).toBe('Shop desk');
+    expect(workspaceConsoleLabel('guide')).toBe('Guide desk');
+    expect(workspaceConsoleLabel(null)).toBe('Operator desk');
   });
 
   it('approval requirement accepts Host canonical and Organizer legacy line', () => {

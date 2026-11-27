@@ -110,6 +110,7 @@ export {
 export {
   ORGANISATION_MANAGE_PATH,
   organisationManagePath,
+  operatorDeskProfilePath,
   parseOrganisationKind,
   type OrganisationKind,
 } from '../member/organisationPaths';
@@ -147,7 +148,6 @@ export {
   activityCrewPath,
   activityDetailInvitePath,
   exploreActivityInvitePath,
-  organisationProfilePath,
   hostBrandProfilePath,
   agencyProfilePath,
   partnerProfilePath,
@@ -155,7 +155,6 @@ export {
   memberProfilePath,
   shopPublicPath,
   resolveEntityPath,
-  resolveOrganisationProfilePath,
   parseEntityRefFromPathname,
   EXPLORE_SHOPS_PATH,
   EXPLORE_SHOPS_LIST_PATH,
@@ -199,7 +198,6 @@ export {
   crewsHubHomePath,
   findCrewDiscoveryListPath,
   listDiscoveryPath,
-  listPeopleDiscoveryPath,
   exploreMapPathFromListSearch,
   listDiscoveryPathFromExploreSearch,
 } from '../discovery/discoverySession';

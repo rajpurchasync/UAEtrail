@@ -14,7 +14,7 @@ const EXPLORE_SEARCH_PAGE_COLUMN = `${LIST_CHROME.maxWidth} mx-auto w-full min-w
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';
 import { FindCrewSearchChrome } from './FindCrewSearchChrome';
 import { FindCrewResultsSection } from './FindCrewResultsSection';
-import type { CrewsAvailableOpenLens } from '@/discovery/discoveryPortListFindCrew';
+import type { CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListFindCrew';
 
 type ListCrewsExplorerProps = {
   isSignedIn: boolean;
@@ -41,7 +41,7 @@ type ListCrewsExplorerProps = {
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   availabilityCatalogItems: ExploreMapItemDTO[];
-  crewsOpenLens: CrewsAvailableOpenLens;
+  crewsOpenLens: CrewsAvailabilityShapeFilter;
   clock: ExploreClockStyle;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;

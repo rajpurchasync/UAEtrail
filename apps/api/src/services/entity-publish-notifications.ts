@@ -43,7 +43,7 @@ export const notifyEntityFollowersOnActivityPublished = async (input: {
       const merchant = await findMerchantProfileByTenantId(input.tenantId);
       if (merchant) {
         targets.push({
-          kind: 'merchant',
+          kind: 'shop',
           targetId: merchant.id,
           label: merchant.shopName?.trim() || 'this shop',
         });

@@ -11,7 +11,7 @@ const ALLOW_HOST_CONSOLE_PATHS = new Set([
   'src/config/surfacePaths.test.ts',
   'src/config/routingCatalog.ts',
   'src/constants/index.ts',
-  'src/console/ConsoleHubSections.tsx',
+  'src/operator/desk/ConsoleHubSections.tsx',
   'src/components/layout/MobileMenu.tsx',
   'src/pages/SecurityPrivacy.tsx',
   'src/pages/Messages.tsx',
@@ -28,14 +28,14 @@ const ALLOW_HOST_CONSOLE_PATHS = new Set([
   'src/config/desktopNav.ts',
   'src/config/platform.ts',
   'src/routing/planBrowseRoute.tsx',
-  'src/pages/publishing/Overview.tsx',
+  'src/operator/desk/Overview.tsx',
 ]);
 
 /** Legacy host workspace (`/host/*` pages) — not consumer Plan/Profile surfaces. */
 const SKIP_HOST_CONSOLE_PREFIXES = [
-  'src/pages/publishing/',
+  'src/operator/desk/',
   'src/components/activity/',
-  'src/console/',
+  'src/operator/desk/',
   'src/hosting/',
 ];
 
@@ -43,9 +43,9 @@ const ALLOW_BECOME_HOST_PATH = new Set([
   'src/config/memberRoutes.ts',
   'src/config/platform.ts',
   'src/utils/proMembershipSurfaceGuard.test.ts',
-  'src/components/organisation-console/hostWizardFlow.ts',
-  'src/components/organisation-console/hostWizardFlow.test.ts',
-  'src/components/organisation-console/ProProfileApplicationFlow.tsx',
+  'src/operator/apply/hostWizardFlow.ts',
+  'src/operator/apply/hostWizardFlow.test.ts',
+  'src/operator/apply/ProProfileApplicationFlow.tsx',
   'src/pages/ProfileProMembership.tsx',
   'src/App.tsx',
 ]);

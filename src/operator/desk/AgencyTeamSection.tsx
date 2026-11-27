@@ -4,10 +4,10 @@ import {
   fetchOrganisationTeam,
   removeOrganisationTeamMember,
   type TeamMember,
-} from '../../hooks/organisationConsoleApi';
-import { GlassCard } from '../mobile/GlassCard';
-import { AppButton } from '../mobile/AppButton';
-import { AppSelect } from '../ui/AppSelect';
+} from '../../hooks/operatorDeskClientApi';
+import { GlassCard } from '../../components/mobile/GlassCard';
+import { AppButton } from '../../components/mobile/AppButton';
+import { AppSelect } from '../../components/ui/AppSelect';
 
 const HOST_TEAM_ROLE_OPTIONS = [
   { value: 'tenant_guide' as const, label: 'Guide' },

@@ -146,8 +146,3 @@ export const crewPeopleFacetToPillar = (facet: CrewPeopleFacetWire): CrewPillarI
       return 'intent_signal';
   }
 };
-
-/** @deprecated Prefer {@link crewPeopleFacetToPillar}. */
-export const crewHubStatTabToPillar = (
-  tab: 'friends' | 'available' | 'everyone'
-): CrewPillarId => crewPeopleFacetToPillar(tab);

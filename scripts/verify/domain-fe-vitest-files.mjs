@@ -34,7 +34,7 @@ export const DOMAIN_FE_VITEST_FILES = [
   "src/config/consumerDetailAntiDriftGuard.test.ts",
   "src/components/entity-public/publicEntityShellAcceptance.test.ts",
   "src/shop/shopPublicDetailTab.test.ts",
-  "src/organisation/organisationPublicDetailTab.test.ts",
+  "src/operator/public/organisationPublicDetailTab.test.ts",
   "src/config/detailSurfaceDataLineageGuard.test.ts",
   "src/config/detailSurfaceWiringAcceptance.test.ts",
   "src/hooks/usePublicActivityDetail.test.ts",

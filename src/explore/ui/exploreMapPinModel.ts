@@ -42,7 +42,7 @@ export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueLi
 export {
   isFriendMapItem,
   isCommunityShopMapItem,
-  isMerchantShopMapItem,
+  isShopStorefrontMapItem,
   isPlacesMapItem,
   isShopListItem,
 } from '../exploreMapItemKind';

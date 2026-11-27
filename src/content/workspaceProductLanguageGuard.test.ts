@@ -3,8 +3,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /**
- * UPL Host = person leading this outing. Organizer / Operator / Publishing workspace
- * are workspace titles — not outing CTAs. Do not use Host for console/Pro application.
+ * UPL Host = person leading this outing. Operator = desk identity (any kind). Operator desk SPA `/operator/*`.
+ * Kind labels (Hosting / Guide / Agency / Shop desk) are workspace titles — not outing CTAs.
  * Wire identifiers, `/host/*` routes, and API field names are allowed — see allowlists below.
  */
 const SCAN_ROOTS = [
@@ -25,8 +25,8 @@ const SCAN_ROOTS = [
 const SKIP_DIR_NAMES = new Set(['host', 'node_modules']);
 
 const SKIP_FILE_PREFIXES = [
-  'src/pages/publishing/',
-  'src/console/',
+  'src/operator/desk/',
+  'src/operator/desk/',
   'src/api/',
   'apps/',
 ];
@@ -38,7 +38,7 @@ const ALLOWLIST_FILES = new Set([
   'src/content/docCoherence.test.ts',
   'src/member/hostMemberGuard.test.ts',
   'src/config/systemCoherenceGuard.test.ts',
-  'src/components/organisation-console/proProfileApplicationForm.ts',
+  'src/operator/apply/proProfileApplicationForm.ts',
   'src/components/seo/schemas.activity.test.ts',
 ]);
 
@@ -115,7 +115,7 @@ const LINE_ALLOW_SUBSTRINGS = [
 ];
 
 const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
-  { pattern: /\bHost console\b/, hint: 'Use Workspace or organizer/operator workspace' },
+  { pattern: /\bHost console\b/, hint: 'Use Operator desk' },
   { pattern: /\bHost an activity\b/i, hint: 'Use Host an outing' },
   { pattern: /\bOrganize outing/, hint: 'Use Host an outing / Host outings (UPL Host = lead this outing)' },
   { pattern: /\bHosts & shops\b/, hint: 'Use Hosts & operators' },
@@ -127,9 +127,9 @@ const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bNo hosts found\b/i, hint: 'Use No publishing accounts found' },
   { pattern: /\bHost name\b/, hint: 'Use Display name or brand name' },
   { pattern: /\borganize your own\b/i, hint: 'Use host your own' },
-  { pattern: /\bHost publishing console\b/i, hint: 'Use Publishing workspace' },
+  { pattern: /\bHost publishing console\b/i, hint: 'Use Operator desk' },
   { pattern: /\bHost = user\b/, hint: 'Use Publishing actor = user (wire doc)' },
-  { pattern: /\bHost console \(`\/host/, hint: 'Use Publishing workspace (`/host' },
+  { pattern: /\bHost console \(`\/host/, hint: 'Use Operator desk (`/operator' },
   { pattern: /\bMessage organizer\b/i, hint: 'Use Message host (UPL)' },
   { pattern: /\bMy organizer profile\b/i, hint: 'Use My host profile (UPL)' },
   { pattern: /\bmessage the organizer\b/i, hint: 'Use message the host (UPL)' },

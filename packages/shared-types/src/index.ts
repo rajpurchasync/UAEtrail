@@ -466,7 +466,14 @@ export {
 import type { NotificationMeta } from './notification-meta.js';
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
-export type { EntityFollowCheckDTO, EntityFollowDTO, EntityFollowKind } from './entity-follow.js';
+export type {
+  EntityFollowCheckDTO,
+  EntityFollowDTO,
+  EntityFollowKind,
+  EntityFollowKindStored,
+} from './entity-follow.js';
+export { normalizeEntityFollowKind } from './entity-follow.js';
+export { resolveExploreMapItemShopId } from './explore-shop-wire.js';
 export type { WishlistCheckDTO, WishlistItemDTO } from './wishlist.js';
 export type { MemberProfileStatsDTO } from './member-profile-stats.js';
 export type { MemberBrowseCardDTO, MemberProfileViewStatsDTO } from './member-pro-engagement.js';
@@ -479,7 +486,6 @@ export {
 } from './member-discovery-quota.js';
 export type {
   MemberDiscoveryAvailabilityRowDTO,
-  MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
 export type { CrewDiscoverFeedDTO, CrewDiscoverFeedMetaDTO } from './crew-discover-feed.js';
@@ -994,6 +1000,9 @@ export interface ExploreMapItemDTO {
   image?: string | null;
   activity?: ActivityDTO;
   rideshareEnabled?: boolean;
+  /** Shop profile id when `source` is `shop` (`merchant_profiles._id`). */
+  shopId?: string | null;
+  /** @deprecated Use {@link shopId} — same id; retired product term. */
   merchantId?: string;
   priceAed?: number | null;
   /** Carpool destination pin (Phase P2). */
@@ -1024,7 +1033,7 @@ export interface ExploreMapItemDTO {
   locationCard?: ExploreLocationCardDTO | null;
   /** Canonical catalog kind when wire `kind` alone is ambiguous (`event` amenities). */
   placeKind?: import('./place-kind.js').PlaceKind | null;
-  /** Contributed catalog shop — `peek` (map only) vs merchant `full` profile. */
+  /** Contributed catalog shop — `peek` (map only) vs operator shop `full` profile. */
   catalogProfileExposure?: import('./catalog-profile-exposure.js').CatalogProfileExposure | null;
   /** Aggregate review stats for venues (location) and shops/agencies (tenant). */
   averageRating?: number | null;
@@ -1341,7 +1350,6 @@ export {
 export {
   ROLE_PLACEHOLDER_DISPLAY_NAME,
   HOST_FALLBACK_DISPLAY_NAME,
-  ORGANIZER_FALLBACK_DISPLAY_NAME,
   hostPersonFirstName,
   isRolePlaceholderDisplayName,
   resolveActivityHostAvatar,
@@ -1415,10 +1423,8 @@ export {
   resolveExploreItemSource,
   resolveMapPinItemSource,
   resolveMapPinEmoji,
-  CATALOG_PLACE_MAP_SOURCE,
   FACILITY_MAP_SOURCE,
   PLACE_MAP_SOURCE,
-  isCatalogPlaceMapSource,
   isFacilityMapSource,
   isGeographyMapSource,
   isPlaceMapSource,
@@ -1450,7 +1456,6 @@ export {
   exploreAvailabilityMapItemPath,
   exploreSeekingMapItemPath,
   resolveCrewExploreMapItemId,
-  resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,
   canonicalizeMapComposeIntent,
   exploreMapSourceToComposeIntent,
@@ -1458,7 +1463,6 @@ export {
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
   resolveHostCreateKindFromAvailabilityMapItem,
-  resolveHostCreateKindFromSeekingMapItem,
   OUTING_TOPICS,
   mapItemMatchesOutingTopic,
   parseOutingTopic,
@@ -1692,8 +1696,6 @@ export {
 
 export {
   ACTIVITY_GUEST_JOIN_LABEL,
-  ACTIVITY_GUEST_JOIN_LABEL_APPROVAL,
-  ACTIVITY_GUEST_JOIN_LABEL_RSVP,
   APPROVAL_PARTICIPATION_REQUIREMENT,
   RSVP_PARTICIPATION_REQUIREMENT,
   activityJoinCtaLabel,
@@ -1896,9 +1898,6 @@ export type {
   JourneyMapEntryCategory,
   JourneyMapEntryDTO,
   JourneyMapFilterCategory,
-  OutdoorMapEntryCategory,
-  OutdoorMapEntryDTO,
-  OutdoorMapFilterCategory,
 } from './outdoor-map-entries.js';
 
 export {
@@ -1996,12 +1995,10 @@ export {
   VENUE_PLACE_PATH_PREFIX,
   agencyProfilePath,
   hostBrandProfilePath,
-  memberDiscoverProfilePath,
   memberProfilePath,
   type MemberProfileBrowseLens,
   type MemberProfilePathOptions,
   normalizePlaceActivityType,
-  organisationProfilePath,
   partnerProfilePath,
   parseEntityRefFromPathname,
   placeDetailPath,
@@ -2013,7 +2010,6 @@ export {
   PLACE_CANONICAL_PATH_PREFIX,
   facilityDetailPath,
   resolveEntityPath,
-  resolveOrganisationProfilePath,
   activityCrewPath,
   shopPublicPath,
   type EntityKind,
@@ -2246,7 +2242,6 @@ export type { CrewPillarBoundedContext, CrewPillarId, CrewPillarSpec, CrewPeople
 export {
   CREW_PILLAR_IDS,
   CREW_PILLAR_SPECS,
-  crewHubStatTabToPillar,
   crewPeopleFacetToPillar,
   isCrewPillarId,
 } from './crew-pillars.js';
@@ -2306,7 +2301,7 @@ export {
   type CuratedDestinationBBox,
 } from './curated-destination-catalog.js';
 
-export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
+export type { MemberInboxGroupDTO } from './member-inbox.js';
 
 export interface MemberInboxDTO {
   direct: ChatConversationDTO[];

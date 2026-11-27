@@ -23,9 +23,20 @@ export { browseCardTitle } from '../list/browse/browseCardMeta';
 export { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../list/browse/browsePosterCover';
 export type { ViewerFix } from '../list/browse/placeDistance';
 export {
+  resolveListFeedFooterFromMapPeekWire,
   resolveListFeedFooterModel,
   type ListFeedFooterButton,
+  type ListFeedFooterModel,
 } from '../list/browse/listFeedFooterActions';
+/** W63 (C3 fold from discoveryPortListFeedActions) — wire/map peek engagement chrome. */
+export {
+  ListFeedWireFooterButtons,
+  type ListFeedWireFooterVariant,
+} from '../list/browse/ListFeedWireFooterButtons';
+export {
+  ListFeedMapPeekFooterButtons,
+  type ListFeedMapPeekFooterVariant,
+} from '../list/browse/ListFeedMapPeekFooterButtons';
 export { resolveTripBrowseCardCopy } from '../list/browse/tripBrowseCardCopy';
 export { resolveActivityLinkedPlaceLogisticsLabels } from '../list/browse/venueBrowseFacts';
 export { resolveDiscoveryBrowseListTypeLabel } from './browse/resolveDiscoveryBrowseListImageChrome';

@@ -12,7 +12,7 @@ import {
 import { planHostingFilterPath } from '../plan/planRouting';
 import { UserRole, canonicalizeInboundProductPath } from '@uaetrail/shared-types';
 
-import { organisationManagePath } from '../config/routingCatalog';
+import { OPERATOR_PROFILE_PATH, operatorDeskProfilePath } from '../config/routingCatalog';
 import { isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
@@ -46,9 +46,12 @@ export const participantHostBookmarkRedirect = (pathname: string): string => {
   if (rest.startsWith('/requests')) return MY_REQUESTS_PATH;
   if (rest.startsWith('/activities')) return planHostingFilterPath();
   if (rest.startsWith('/places') || rest.startsWith('/locations')) {
-    return organisationManagePath();
+    return OPERATOR_PROFILE_PATH;
   }
-  if (rest.startsWith('/team') || rest.startsWith('/profile')) {
+  if (rest.startsWith('/profile') || rest.startsWith('/manage')) {
+    return operatorDeskProfilePath();
+  }
+  if (rest.startsWith('/team')) {
     return PRO_MEMBERSHIP_PATH;
   }
   if (rest === '/overview' || rest.startsWith('/overview')) {

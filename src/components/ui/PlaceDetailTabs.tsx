@@ -27,7 +27,7 @@ import {
 import { DirectionsControl } from './DirectionsControl';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
 
-export type { LocationTab, PlaceDetailTabId } from '../../place/placeDetailTab';
+export type { PlaceDetailTabId } from '../../place/placeDetailTab';
 
 export interface PlaceDetailData {
   name: string;

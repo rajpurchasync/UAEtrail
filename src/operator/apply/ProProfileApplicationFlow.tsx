@@ -7,17 +7,17 @@ import { setActiveTenantId } from '../../api/tenant';
 import {
   fetchMyOrganisationApplication,
   submitOrganisationApplication,
-} from '../../hooks/organisationConsoleApi';
+} from '../../hooks/operatorDeskClientApi';
 import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { COUNTRIES } from '../../constants';
 import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithDestinations } from '../../config/regions';
 import { useExplorePublishedDestinationsQuery } from '@/discovery/discoveryPortExploreBrowseWire';
 import { MAP_CONFIG } from '../../config/platform';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
-import { PhoneInput } from '../ui/PhoneInput';
-import { AppSelect } from '../ui/AppSelect';
-import { ImageUpload } from '../ui/ImageUpload';
-import { AppButton } from '../mobile/AppButton';
+import { PhoneInput } from '../../components/ui/PhoneInput';
+import { AppSelect } from '../../components/ui/AppSelect';
+import { ImageUpload } from '../../components/ui/ImageUpload';
+import { AppButton } from '../../components/mobile/AppButton';
 import type { LocationPrecision } from '@/discovery/discoveryPortExploreCreateFlow';
 import {
   buildProProfileApplicationFormPrefill,

@@ -15,7 +15,7 @@ export type EntityRef =
       /** Agency · partner — required for canonical URLs when known. */
       brandProfileKind?: PublishingProfileKind;
     }
-  | { kind: 'shop'; id?: string | null; merchantId?: string | null; slug?: string | null }
+  | { kind: 'shop'; id?: string | null; shopId?: string | null; slug?: string | null; merchantId?: string | null }
   | { kind: 'person'; userId: string };
 
 export const AGENCY_PROFILE_PATH_PREFIX = '/agency' as const;
@@ -151,12 +151,19 @@ export const activityDetailInvitePath = (activityId: string): string =>
 export const exploreActivityInvitePath = (activityId: string): string =>
   `/explore?pin=activity:${activityId}&invite=1&list=1`;
 
-/** Canonical public URL for a gear shop (merchant id or tenant slug). */
+/** Canonical public URL for a gear shop (shop profile id or tenant slug). */
 export const shopPublicPath = (
-  input: { merchantId?: string | null; slug?: string | null; id?: string | null },
+  input: {
+    shopId?: string | null;
+    /** @deprecated Use {@link shopId}. */
+    merchantId?: string | null;
+    slug?: string | null;
+    id?: string | null;
+  },
   fallback: string = EXPLORE_SHOPS_PATH
 ): string => {
-  const key = input.merchantId?.trim() || input.slug?.trim() || input.id?.trim();
+  const key =
+    input.shopId?.trim() || input.merchantId?.trim() || input.slug?.trim() || input.id?.trim();
   if (!key) return fallback;
   return `/shop/${encodeURIComponent(key)}`;
 };
@@ -183,16 +190,6 @@ export const agencyProfilePath = (tenantSlug?: string | null): string | null =>
 
 export const partnerProfilePath = (tenantSlug?: string | null): string | null =>
   hostBrandProfilePath(tenantSlug, 'partner');
-
-/**
- * @deprecated Use {@link hostBrandProfilePath} with {@link PublishingProfileKind}.
- * Individual kinds return null — use {@link memberProfilePath}.
- */
-export const organisationProfilePath = (
-  tenantSlug?: string | null,
-  kind: PublishingProfileKind = 'pro_guide'
-): string | null => hostBrandProfilePath(tenantSlug, kind);
-
 
 /**
  * Where the viewer tapped through from — same {@link memberProfilePath} page layout;
@@ -244,28 +241,6 @@ export const memberProfilePath = (
   return qs ? `${base}?${qs}` : base;
 };
 
-/** @deprecated Prefer `memberProfilePath(userId, { discover: true, lens: 'discover' })`. */
-export const memberDiscoverProfilePath = (userId: string): string =>
-  memberProfilePath(userId, { discover: true, lens: 'discover' })!;
-
-/**
- * @deprecated Prefer {@link resolveActivityPublisherProfilePath} for activities.
- * Individuals resolve to `/member/:userId`; businesses use storefront helpers.
- */
-export const resolveOrganisationProfilePath = (opts: {
-  tenantSlug?: string | null;
-  hostUserId?: string | null;
-  brandProfileKind?: PublishingProfileKind;
-}): string | null => {
-  if (opts.brandProfileKind === 'community' || opts.brandProfileKind === 'pro_guide') {
-    return memberProfilePath(opts.hostUserId);
-  }
-  if (opts.brandProfileKind) {
-    return hostBrandProfilePath(opts.tenantSlug, opts.brandProfileKind);
-  }
-  return memberProfilePath(opts.hostUserId) ?? hostBrandProfilePath(opts.tenantSlug, 'agency');
-};
-
 export type ResolveEntityPathOptions = {
   shopFallback?: string;
   /** Used when organisation slug or person id is missing. */
@@ -287,7 +262,7 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
     }
     case 'shop':
       return shopPublicPath(
-        { merchantId: ref.merchantId, slug: ref.slug, id: ref.id },
+        { shopId: ref.shopId ?? ref.merchantId, slug: ref.slug, id: ref.id },
         options?.shopFallback ?? EXPLORE_SHOPS_PATH
       );
     case 'person': {
@@ -363,7 +338,7 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
   const shopMatch = path.match(SHOP_PATH_RE);
   if (shopMatch) {
     const id = decodeURIComponent(shopMatch[1]);
-    return { kind: 'shop', id, merchantId: id, slug: id };
+    return { kind: 'shop', id, shopId: id, slug: id };
   }
 
   const memberMatch = path.match(MEMBER_PATH_RE);

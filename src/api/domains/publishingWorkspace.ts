@@ -12,7 +12,7 @@ import type { ActivityRequestView, TeamMember } from '../types';
 
 /**
  * Tenant publishing workspace HTTP (`/publishing/*` + `x-organisation-id`).
- * UI should use `tenantActivityClientApi` / `organisationConsoleApi` — not raw `api.*` (`apiClientSurfaceGuard`).
+ * UI should use `tenantActivityClientApi` / `operatorDeskClientApi` — not raw `api.*` (`apiClientSurfaceGuard`).
  */
 export const publishingWorkspaceApi = {
   getPublishingActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {

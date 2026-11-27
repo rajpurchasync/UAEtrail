@@ -21,27 +21,27 @@ import {
   fetchOrganisationProfileBySlug,
   fetchOrganisationReviews,
   updateOrganisationDetails,
-} from '../../hooks/organisationConsoleApi';
+} from '../../hooks/operatorDeskClientApi';
 import { updateMeProfile } from '../../hooks/memberProfileApi';
-import { ReviewSection } from '../ui/ReviewSection';
-import { SecureAvatar } from '../ui/SecureAvatar';
-import { ShareButton } from '../ui/ShareButton';
-import { PageMeta } from '../seo/PageMeta';
-import { JsonLd } from '../seo/JsonLd';
-import { organizationSchema } from '../seo/schemas';
-import { MessageMemberButton } from '../chat/MessageMemberButton';
-import { EntityFollowControls } from '../profile/EntityFollowControls';
+import { ReviewSection } from '../../components/ui/ReviewSection';
+import { SecureAvatar } from '../../components/ui/SecureAvatar';
+import { ShareButton } from '../../components/ui/ShareButton';
+import { PageMeta } from '../../components/seo/PageMeta';
+import { JsonLd } from '../../components/seo/JsonLd';
+import { organizationSchema } from '../../components/seo/schemas';
+import { MessageMemberButton } from '../../components/chat/MessageMemberButton';
+import { EntityFollowControls } from '../../components/profile/EntityFollowControls';
 import {
   memberProfileLink,
   PRO_MEMBERSHIP_PATH,
   SIGNIN_PATH,
 } from '../../config/routingCatalog';
-import { GlassCard } from '../mobile/GlassCard';
-import { AppButton } from '../mobile/AppButton';
-import { AppSelect } from '../ui/AppSelect';
-import { ProfileActivityListRow } from '../profile/ProfileActivityListRow';
-import { PublicProfileSectionHeading } from '../profile/PublicProfileSectionHeading';
-import { AccountSectionHeader } from '../account/AccountSectionHeader';
+import { GlassCard } from '../../components/mobile/GlassCard';
+import { AppButton } from '../../components/mobile/AppButton';
+import { AppSelect } from '../../components/ui/AppSelect';
+import { ProfileActivityListRow } from '../../components/profile/ProfileActivityListRow';
+import { PublicProfileSectionHeading } from '../../components/profile/PublicProfileSectionHeading';
+import { AccountSectionHeader } from '../../components/account/AccountSectionHeader';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
 import {
@@ -52,12 +52,12 @@ import {
 } from '../../content/workspaceVocabulary';
 import { detailBackPath } from '../../config/routingCatalog';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
-import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
+import { ConsumerEntityTabBar } from '../../components/mobile/ConsumerEntityTabBar';
 import {
   ORGANISATION_PUBLIC_TAB_LABELS,
   ORGANISATION_PUBLIC_TABS,
   type OrganisationPublicDetailTabId,
-} from '../../organisation/organisationPublicDetailTab';
+} from './organisationPublicDetailTab';
 
 const ORG_TAB_ICONS = {
   about: Info,

@@ -4,10 +4,10 @@ import {
   removeOrganisationTeamMember,
   toggleOrganisationTeamMemberStatus,
   updateOrganisationTeamMemberRole,
-} from '../../hooks/organisationConsoleApi';
+} from '../../hooks/operatorDeskClientApi';
 import { useOrganisationTeam } from '../../hooks/usePublishingConsoleQueries';
 import { getActiveTenantId } from '../../api/tenant';
-import { ConsoleShell } from '../../console/ConsoleShell';
+import { ConsoleShell } from './ConsoleShell';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { TenantSwitcher } from '../../components/ui';
 

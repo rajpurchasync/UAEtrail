@@ -59,7 +59,8 @@ describe('auth routing by role', () => {
     expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
     expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');
     expect(participantHostBookmarkRedirect('/publishing/team')).toBe('/profile/pro-membership');
-    expect(participantHostBookmarkRedirect('/publishing/places')).toBe('/organisation/manage');
+    expect(participantHostBookmarkRedirect('/publishing/places')).toBe('/operator/profile');
+    expect(participantHostBookmarkRedirect('/publishing/profile')).toBe('/operator/profile');
   });
 
   it('maps stale /host console bookmarks via shared-types canonicalize', () => {

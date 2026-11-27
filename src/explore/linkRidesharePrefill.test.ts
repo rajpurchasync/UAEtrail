@@ -5,7 +5,7 @@ import {
   canShowAvailabilityLinkRideshareOffer,
 } from './linkActivityRideshareOffer';
 import { buildRideshareDraftFromAvailabilityMapItem } from './linkRidesharePrefill';
-import { availabilityExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
+import { availabilityExploreMapItem, excludedSeekingActivityMapItem } from './exploreMapItemFixtures';
 
 const availabilityItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   availabilityExploreMapItem({
@@ -15,7 +15,7 @@ const availabilityItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMa
   });
 
 const legacySeekingItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
-  seekingExploreMapItem({
+  excludedSeekingActivityMapItem({
     intentId: 'int-1',
     kind: 'hiking',
     title: 'Jebel hike crew',

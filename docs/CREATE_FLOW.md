@@ -16,7 +16,7 @@
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host (compose `activity:*`)** → hosted **Activity** only. **Find crew (compose `intent:*`)** → **`member_availability`** (fixed map pin or open calendar — **not** an Activity row). **Add on map (`place:*`)** → **Where** (Place or Facility). **Joining a trip** is **How** on a hosted **`activityId`** (RSVP / request) — separate from posting availability. **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch.
 
-**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Publishing workspace** (agency / shop / guide console) is **`/publishing/*`** (HTTP **`/publishing/*`**) — not on the FAB.
+**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator desk** (any publishing kind) is SPA **`/operator/*`** (HTTP **`/publishing/*`**) — not on the FAB.
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
@@ -266,9 +266,9 @@ Still applies to **hosted** parents: publish child rideshare with `linkedActivit
 
 ## Host from an existing outing
 
-From **Plan hosted** or publishing workspace: **Edit on map** opens explore with the matching Host wizard prefilled from the prior row (`hostingFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
+From **Plan hosted** or operator desk: **Edit on map** opens explore with the matching Host wizard prefilled from the prior row (`hostingFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
 
-**Duplicate** in the publishing workspace still creates a **server draft** for the leftover activity form — same source outing, different UX.
+**Duplicate** in the operator desk still creates a **server draft** for the leftover activity form — same source outing, different UX.
 
 Deep link: `exploreHostFromActivityPath(activityId, kind)` in `src/explore/routing.ts`.
 

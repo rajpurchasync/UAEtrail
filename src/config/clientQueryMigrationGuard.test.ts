@@ -159,7 +159,7 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     { page: 'src/pages/admin/Submissions.tsx', hook: 'useAdminSubmissionsQueue', queryKey: 'adminSubmissionsQueueQueryKey' },
     { page: 'src/pages/admin/Destinations.tsx', hook: 'useAdminDestinationsCatalog', queryKey: 'adminDestinationsCatalogQueryKey' },
     { page: 'src/pages/admin/Members.tsx', hook: 'useAdminMembersList', queryKey: 'adminMembersQueryKey' },
-    { page: 'src/pages/admin/Organisations.tsx', hook: 'useAdminOrganisationsCatalog', queryKey: 'adminOrganisationsCatalogQueryKey' },
+    { page: 'src/pages/admin/Operators.tsx', hook: 'useAdminOrganisationsCatalog', queryKey: 'adminOrganisationsCatalogQueryKey' },
     { page: 'src/pages/admin/Activities.tsx', hook: 'useAdminModerationActivitiesCatalog', queryKey: 'adminModerationActivitiesCatalogQueryKey' },
     { page: 'src/pages/admin/Places.tsx', hook: 'useAdminPlacesCatalogAll', queryKey: 'adminPlacesCatalogAllQueryKey' },
   ];
@@ -174,9 +174,9 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
   }
 
   const publishingConsolePageAssertions: Array<{ page: string; hook: string; queryKey: string }> = [
-    { page: 'src/pages/publishing/Places.tsx', hook: 'useOrganisationSubmittedPlaces', queryKey: 'organisationSubmittedPlacesQueryKey' },
-    { page: 'src/pages/publishing/Team.tsx', hook: 'useOrganisationTeam', queryKey: 'organisationTeamQueryKey' },
-    { page: 'src/pages/publishing/PublicProfileEdit.tsx', hook: 'useMyTenantMemberships', queryKey: 'myTenantMembershipsQueryKey' },
+    { page: 'src/operator/desk/Places.tsx', hook: 'useOrganisationSubmittedPlaces', queryKey: 'organisationSubmittedPlacesQueryKey' },
+    { page: 'src/operator/desk/Team.tsx', hook: 'useOrganisationTeam', queryKey: 'organisationTeamQueryKey' },
+    { page: 'src/operator/desk/PublicProfileEdit.tsx', hook: 'useMyTenantMemberships', queryKey: 'myTenantMembershipsQueryKey' },
   ];
 
   for (const { page, hook, queryKey } of publishingConsolePageAssertions) {
@@ -196,7 +196,7 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
   });
 
   it('ConsoleShell loads rating via useOrganisationConsoleRating', () => {
-    const content = read('src/console/ConsoleShell.tsx');
+    const content = read('src/operator/desk/ConsoleShell.tsx');
     expect(content).toMatch(/useOrganisationConsoleRating/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
     expect(read('src/hooks/usePublishingConsoleQueries.ts')).toMatch(/organisationConsoleRatingQueryKey/);

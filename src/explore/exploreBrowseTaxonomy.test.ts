@@ -3,7 +3,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   availabilityExploreMapItem,
   hostedExploreMapItem,
-  seekingExploreMapItem,
+  excludedSeekingActivityMapItem,
   venueExploreMapItem,
 } from './exploreMapItemFixtures';
 import {
@@ -28,7 +28,7 @@ describe('exploreBrowseTaxonomy', () => {
   it('classifies trips vs spots', () => {
     const trail = venueExploreMapItem({ id: 'venue:v1' });
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
-    const legacySeeking = seekingExploreMapItem({ intentId: 'x' });
+    const legacySeeking = excludedSeekingActivityMapItem({ intentId: 'x' });
     const fixedCrew = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
     expect(mapItemMatchesFilterPill(trail, 'spots')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'trips')).toBe(true);
@@ -48,7 +48,7 @@ describe('exploreBrowseTaxonomy', () => {
 
   it('maps search scopes to item sources', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
-    const seeking = seekingExploreMapItem({ intentId: 'd1' });
+    const seeking = excludedSeekingActivityMapItem({ intentId: 'd1' });
     const agencyTrip = hostedExploreMapItem({
       id: 'activity:a2',
       activity: { publishingProfileKind: 'agency', tenantSlug: 'uae-adventure' } as ExploreMapItemDTO['activity'],

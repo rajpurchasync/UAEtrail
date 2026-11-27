@@ -3,9 +3,6 @@ export const PLACE_DETAIL_TAB_QUERY = 'tab';
 export const PLACE_DETAIL_TABS = ['overview', 'facts', 'transport', 'guide'] as const;
 export type PlaceDetailTabId = (typeof PLACE_DETAIL_TABS)[number];
 
-/** @deprecated Use PlaceDetailTabId — legacy name in PlaceDetailTabs exports */
-export type LocationTab = PlaceDetailTabId;
-
 const INBOUND_TAB_ALIASES: Record<string, PlaceDetailTabId> = {
   location: 'transport',
 };

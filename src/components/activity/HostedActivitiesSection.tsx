@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { useConsoleHubData } from '../../console/useHubData';
+import { useConsoleHubData } from '../../operator/desk/useHubData';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import {

@@ -13,7 +13,7 @@ import {
 import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 import { DETAIL_LOADING_SHOP } from '../content/detailLoadingCopy';
 
-/** Public gear shop — resolves merchant id or tenant slug to one page. */
+/** Public gear shop — resolves shop profile id or tenant slug to one page. */
 export const ShopPublic = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

@@ -29,7 +29,7 @@ export { entityFollowApi } from './entityFollow';
 export { reviewsApi } from './reviews';
 export { safetyApi } from './safety';
 export { memberApi } from './member';
-export { organisationApi } from './organisation';
+export { organisationApi, operatorPublicApi } from './operatorPublic';
 export { publishingWorkspaceApi } from './publishingWorkspace';
 export { shopApi } from './shop';
 export { adminApi } from './admin';

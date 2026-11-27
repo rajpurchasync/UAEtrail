@@ -74,10 +74,10 @@ describe('componentsClientApi (R8.1)', () => {
 
   it('remaining surfaces use hooks layer (R8.1 exit)', () => {
     const cases: Array<{ file: string; hook: RegExp }> = [
-      { file: 'src/components/organisation-console/AgencyTeamSection.tsx', hook: /organisationConsoleApi/ },
-      { file: 'src/components/organisation-console/ProProfileApplicationFlow.tsx', hook: /organisationConsoleApi|memberProfileApi/ },
-      { file: 'src/components/organisation-console/OrganisationPublicProfile.tsx', hook: /organisationConsoleApi/ },
-      { file: 'src/components/organisation/ShopOrganisationPanel.tsx', hook: /shopOrganisationClientApi/ },
+      { file: 'src/operator/desk/AgencyTeamSection.tsx', hook: /operatorDeskClientApi/ },
+      { file: 'src/operator/apply/ProProfileApplicationFlow.tsx', hook: /operatorDeskClientApi|memberProfileApi/ },
+      { file: 'src/operator/public/OrganisationPublicProfile.tsx', hook: /operatorDeskClientApi/ },
+      { file: 'src/operator/desk/ShopOrganisationPanel.tsx', hook: /shopOrganisationClientApi/ },
       { file: 'src/components/chat/GroupWallChatSettingsSheet.tsx', hook: /socialGroupSettingsApi/ },
       { file: 'src/components/layout/MobileMenu.tsx', hook: /accountSessionApi/ },
       { file: 'src/components/auth/ProtectedRoute.tsx', hook: /memberProfileApi/ },

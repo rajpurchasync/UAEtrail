@@ -1,9 +1,6 @@
 /** Available tab — flexible calendar vs fixed time/place (map listing is internal). */
 export type CrewsAvailabilityShapeFilter = 'all' | 'flexible' | 'fixed';
 
-/** @deprecated Use {@link CrewsAvailabilityShapeFilter} */
-export type CrewsAvailableOpenLens = CrewsAvailabilityShapeFilter;
-
 export const CREWS_OPEN_URL_PARAM = 'open';
 
 export const CREWS_AVAILABILITY_SHAPE_ORDER: CrewsAvailabilityShapeFilter[] = [
@@ -20,15 +17,9 @@ export const parseCrewsAvailabilityShapeFilter = (
   return 'all';
 };
 
-/** @deprecated Use {@link parseCrewsAvailabilityShapeFilter} */
-export const parseCrewsAvailableOpenLens = parseCrewsAvailabilityShapeFilter;
-
 export const serializeCrewsAvailabilityShapeFilter = (
   filter: CrewsAvailabilityShapeFilter
 ): string | null => (filter === 'all' ? null : filter);
-
-/** @deprecated Use {@link serializeCrewsAvailabilityShapeFilter} */
-export const serializeCrewsAvailableOpenLens = serializeCrewsAvailabilityShapeFilter;
 
 /** Legacy deep link — opens availability compose via `ListDiscoveryExperience`. */
 export const CREWS_AVAILABILITY_SHEET_PARAM = 'availability';

@@ -643,7 +643,7 @@ export const AppRoutes = () => (
     <Route
       path={ORGANISATION_MANAGE_PATH}
       element={
-        <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
+        <ProtectedRoute publishingWorkspace>
           <PublishingManage />
         </ProtectedRoute>
       }

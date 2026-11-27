@@ -8,7 +8,7 @@ import type {
 import { mapLocationToPlace } from '../api/mappers/place';
 import type { PublicMemberProfileDTO } from '../api/types';
 import type { Place } from '../types/place';
-import { fetchOrganisationProfileBySlug } from './organisationConsoleApi';
+import { fetchOrganisationProfileBySlug } from './operatorDeskClientApi';
 import { fetchPublicPlaceDetailPayload } from './placeDetailClientApi';
 import { fetchPersonPublicProfile } from './memberPublicProfileApi';
 import { fetchPublicActivityDetail } from './publicActivityClientApi';
@@ -59,9 +59,10 @@ export const fetchEntity = async (ref: EntityRef): Promise<EntityFetchResult> =>
       return { kind: 'organisation', tenant };
     }
     case 'shop': {
-      const shopId = ref.merchantId?.trim() || ref.slug?.trim() || ref.id?.trim();
+      const shopId =
+        ref.shopId?.trim() || ref.merchantId?.trim() || ref.slug?.trim() || ref.id?.trim();
       if (!shopId) {
-        throw new Error('Shop entity ref requires merchantId, slug, or id.');
+        throw new Error('Shop entity ref requires shopId, slug, or id.');
       }
       const shop = await fetchShopPublic(shopId);
       return { kind: 'shop', shop };

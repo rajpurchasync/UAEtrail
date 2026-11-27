@@ -2,7 +2,6 @@
 export type {
   CrewsAvailabilityGuideFilter,
   CrewsAvailabilityShapeFilter,
-  CrewsAvailableOpenLens,
 } from '../list/crews/crewsOpenSegment';
 export { BrowseListSectionHeader } from '../list/browse/BrowseListSectionHeader';
 export { CrewsGuidesRail } from '../list/crews/CrewsGuidesRail';

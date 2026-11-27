@@ -66,8 +66,6 @@ export type GroupChatActivityPayload = {
   createdAt: string;
 };
 
-/** @deprecated Use {@link GroupChatActivityPayload} */
-export type GroupWallActivityPayload = GroupChatActivityPayload;
 
 type GroupChatThreadProps = {
   groupId: string;

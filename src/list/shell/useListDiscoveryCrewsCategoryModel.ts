@@ -24,7 +24,7 @@ import {
 import { useCrewDiscoveryAvailabilityCatalog } from '@/crew-discovery/hooks/useCrewDiscoveryAvailabilityCatalog';
 import { useCrewDiscoveryRoster } from '@/crew-discovery/hooks/useCrewDiscoveryRoster';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
-import type { CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
+import type { CrewsAvailabilityShapeFilter } from '../crews/crewsOpenSegment';
 import { browseListEntityLinkState } from '../browse/browseListNavState';
 
 export type ListDiscoveryCrewsCategoryModelInput = {
@@ -106,7 +106,7 @@ export type ListDiscoveryCrewsCategoryAugmentInput = {
   navigate: NavigateFunction;
   locationPathname: string;
   locationSearch: string;
-  crewsOpenLens: CrewsAvailableOpenLens;
+  crewsOpenLens: CrewsAvailabilityShapeFilter;
 };
 
 export const useListDiscoveryCrewsCategoryAugment = ({

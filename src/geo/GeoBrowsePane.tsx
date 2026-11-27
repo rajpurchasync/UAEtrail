@@ -13,7 +13,7 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from '../discovery/discoveryPortListBrowseFilters';
-import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPortListGeoHub';
+import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPortListGeoBrowse';
 import {
   ListSideMapResizeHandle,
   useListSideMapWidth,

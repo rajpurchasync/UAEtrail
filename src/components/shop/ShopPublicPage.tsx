@@ -23,7 +23,7 @@ import { ReviewSection } from '../ui/ReviewSection';
 import { DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
 import { detailBackPath } from '../../config/routingCatalog';
 import { shopPublicPath } from '../../utils/shopPaths';
-import { fetchOrganisationReviews } from '../../hooks/organisationConsoleApi';
+import { fetchOrganisationReviews } from '../../hooks/operatorDeskClientApi';
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';
 import { useAuth } from '../../context/AuthContext';
@@ -80,7 +80,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
   const [searchParams] = useSearchParams();
   const inboundTab = parseShopPublicDetailTabParam(searchParams.get(SHOP_PUBLIC_TAB_QUERY));
 
-  const publicPath = shopPublicPath({ merchantId: shop.id });
+  const publicPath = shopPublicPath({ shopId: shop.id });
   const mapBack = detailBackPath('shop');
   const website = shop.websiteUrl?.trim() || null;
   const reviewTargetId = shop.reviewTargetId?.trim() || null;

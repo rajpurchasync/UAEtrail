@@ -5,7 +5,7 @@ import {
   fetchOrganisationReviews,
   fetchOrganisationSubmittedPlaces,
   fetchOrganisationTeam,
-} from './organisationConsoleApi';
+} from './operatorDeskClientApi';
 import { fetchMyTenantMemberships } from './tenantMembershipApi';
 import {
   myTenantMembershipsQueryKey,

@@ -14,7 +14,7 @@ import {
 } from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '@/discovery/discoveryPortExploreHosting';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
-import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
+import { ActivityJoinRequestDeclineDialog } from '../../operator/desk/ActivityJoinRequestDeclineDialog';
 import { ActivityRollcallView } from './ActivityRollcallView';
 import { HostActivityManageCancelDialogs } from './HostActivityManageCancelDialogs';
 import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';

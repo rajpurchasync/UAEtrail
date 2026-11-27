@@ -7,11 +7,10 @@ import {
   mapItemMatchesOutingTopic,
   parseOutingTopic,
   exploreSeekingMapItemPath,
-  resolveSeekingExploreMapItemId,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
+  resolveCrewExploreMapItemId,
   resolveHostCreateKindFromAvailabilityMapItem,
-  resolveHostCreateKindFromSeekingMapItem,
 } from '@uaetrail/shared-types';
 
 describe('explore plan projection mappers', () => {
@@ -48,18 +47,12 @@ describe('explore plan projection mappers', () => {
         kind: 'event',
       })
     ).toBe('event');
-    expect(
-      resolveHostCreateKindFromSeekingMapItem({
-        outingCategory: 'activities',
-        kind: 'event',
-      })
-    ).toBe('activity');
   });
 
   it('does not mint leftover demand: pins from a bare intent id', () => {
-    expect(resolveSeekingExploreMapItemId({ intentId: 'abc' })).toBeNull();
+    expect(resolveCrewExploreMapItemId({ intentId: 'abc' })).toBeNull();
     expect(exploreSeekingMapItemPath({ intentId: 'abc' })).toBe('/explore?list=1');
-    expect(resolveSeekingExploreMapItemId({ intentId: 'demand:abc' })).toBeNull();
+    expect(resolveCrewExploreMapItemId({ intentId: 'demand:abc' })).toBeNull();
     expect(exploreSeekingMapItemPath({ intentId: 'demand:abc' })).toBe('/explore?list=1');
   });
 
