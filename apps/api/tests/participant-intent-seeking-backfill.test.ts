@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
+import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/retired-seeking-storage-purge.js';
 import { getMemberAvailability } from '../src/lib/member-availability-store.js';
 import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
@@ -9,7 +9,7 @@ import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { buildTestParticipantIntentInput, ensurecuratedDestinationsSeeded, testDestinations } from './helpers/test-seed.js';
 import { getMongoClient } from '../src/lib/mongo.js';
-import { COLLECTIONS } from '../src/lib/collections.js';
+import { BWL_RETIRED_SEEKING_COLLECTIONS } from '@uaetrail/shared-types';
 import { participantIntentKindToOutingCategory } from '@uaetrail/shared-types';
 
 beforeAll(async () => {
@@ -43,7 +43,7 @@ describe('backfillSeekingActivitiesForActiveIntents', () => {
     const now = new Date();
     await getMongoClient()!
       .db()
-      .collection(COLLECTIONS.PARTICIPANT_INTENTS)
+      .collection(BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS)
       .insertOne({
         _id: intentId,
         userId: user._id,
@@ -71,7 +71,7 @@ describe('backfillSeekingActivitiesForActiveIntents', () => {
 
     const intentDoc = await getMongoClient()!
       .db()
-      .collection(COLLECTIONS.PARTICIPANT_INTENTS)
+      .collection(BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intentId });
     expect(intentDoc?.status).toBe('fulfilled');
 

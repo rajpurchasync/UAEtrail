@@ -3,8 +3,8 @@ export interface MemberProfileStatsDTO {
   followerCount: number;
   joinedCount: number;
   hostedCount: number;
-  /** Non-cancelled participant intents (Find / map seeking stub rows). */
+  /** Legacy intent counter (availability migration); product map uses `member_availability` only. */
   activeParticipantIntentCount: number;
-  /** True after first published activity or active participant intent on the map. */
+  /** True after first published hosted activity or community host signal on profile. */
   isCommunityHost: boolean;
 }

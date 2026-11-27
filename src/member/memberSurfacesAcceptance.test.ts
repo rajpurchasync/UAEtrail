@@ -176,7 +176,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(
       existsSync(join(process.cwd(), 'apps/api/src/services/wishlist-archived-seeking-ops.ts'))
     ).toBe(false);
-    expect(read('apps/api/src/lib/participant-intents-store.ts')).not.toMatch(
+    expect(read('apps/api/src/lib/retired-seeking-storage-purge.ts')).not.toMatch(
       /publishType: 'seeking'/
     );
     expect(read('apps/api/src/services/member-publish-notifications.ts')).not.toMatch(

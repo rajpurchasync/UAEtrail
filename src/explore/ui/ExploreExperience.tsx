@@ -5,10 +5,10 @@ import { ExploreExperienceBrowsePanels } from '../shell/ExploreExperienceBrowseP
 import { ExploreExperienceOverlays } from '../shell/ExploreExperienceOverlays';
 import { ExploreMapShell } from '../shell/ExploreMapShell';
 import { useBindExploreListMapHover, useBindExploreMapClosePeek } from '../ExploreMapChromeContext';
-import { useExploreExperienceModel } from '../shell/useExploreExperienceModel';
+import { useDiscoveryMapExperienceModel } from '../../discovery/useDiscoveryExperienceModel';
 
 export const ExploreExperience = () => {
-  const model = useExploreExperienceModel();
+  const model = useDiscoveryMapExperienceModel();
   useBindExploreMapClosePeek(model.handleCloseMapSelection);
   useBindExploreListMapHover(model.setHighlightedExploreItemId);
 
@@ -34,6 +34,7 @@ export const ExploreExperience = () => {
           browse={model.browse}
           crewsBrowsePanelProps={model.crewsBrowsePanelProps}
           prefetchedCatalogItems={model.mapItems}
+          listBrowseSession={model.browse.listBrowseSession}
           mapStage={
             <ExploreMapShell
               user={model.user}

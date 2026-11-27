@@ -5,7 +5,7 @@
  *   npm --workspace @uaetrail/api run seeking-storage-status
  *   npm --workspace @uaetrail/api run seeking-storage-status -- --strict
  */
-import { loadSeekingStorageStatus, seekingStorageStrictGateFails } from '../src/lib/seeking-storage-ops.js';
+import { loadSeekingStorageStatus, seekingStorageStrictGateFails } from '../src/lib/retired-seeking-storage-purge.js';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const strict = process.argv.includes('--strict');

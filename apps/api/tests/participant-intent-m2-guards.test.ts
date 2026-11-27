@@ -19,8 +19,8 @@ describe('participant intent M2 guards', () => {
     expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
 
-  it('participant-intents-store is ops backfill only', () => {
-    const store = read('src/lib/participant-intents-store.ts');
+  it('retired-seeking-storage-purge is ops backfill only', () => {
+    const store = read('src/lib/retired-seeking-storage-purge.ts');
     expect(store).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(store).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
     expect(store).not.toMatch(/createParticipantIntent/);

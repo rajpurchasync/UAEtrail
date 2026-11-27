@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseExploreBrowseStateFromSearchParams } from './exploreBrowseUrlHydrate';
 import { buildExploreBrowseSearchParams } from './exploreBrowseUrlSync';
+import { EXPLORE_MAP_PATH } from '../config/platform';
 
 describe('exploreBrowseUrlHydrate', () => {
   it('defaults map date filter to this week when ?date= is absent', () => {
@@ -249,5 +250,14 @@ describe('exploreBrowseUrlHydrate', () => {
       patch: {},
     });
     expect(next.get('followedKind')).toBeNull();
+  });
+
+  it('list=1 on /explore merges list browse session read into hydrate', () => {
+    const params = new URLSearchParams('list=1&listCat=venues&q=camp&regions=dubai');
+    const state = parseExploreBrowseStateFromSearchParams(params, true, { pathname: EXPLORE_MAP_PATH });
+    expect(state.listOpen).toBe(true);
+    expect(state.query).toBe('camp');
+    expect(state.venueRegions).toContain('dubai');
+    expect(state.panel).toBe('venues');
   });
 });

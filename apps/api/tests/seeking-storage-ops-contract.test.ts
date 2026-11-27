@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { connectMongo } from '../src/lib/mongo.js';
-import { loadSeekingStorageStatus, seekingStorageStrictGateFails } from '../src/lib/seeking-storage-ops.js';
+import { loadSeekingStorageStatus, seekingStorageStrictGateFails } from '../src/lib/retired-seeking-storage-purge.js';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
@@ -11,7 +11,7 @@ describe('seeking storage ops', () => {
     const script = read('scripts/seeking-storage-status.ts');
     expect(script).toContain('loadSeekingStorageStatus');
     expect(script).toContain('--strict');
-    const ops = read('src/lib/seeking-storage-ops.ts');
+    const ops = read('src/lib/retired-seeking-storage-purge.ts');
     expect(ops).toContain('readyToDisableStubWrite');
     expect(ops).toMatch(/participantIntentStubWriteEnabled\s*=\s*false/);
     expect(ops).not.toMatch(/m2d/i);

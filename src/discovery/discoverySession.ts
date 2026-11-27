@@ -20,7 +20,38 @@ export {
   resolveEffectiveBrowseVenueRegions,
   serializeBrowseGeoPath,
 } from './discoverySessionGeoUrl';
-export { scopeBrowseListStateForListCat } from './discoverySessionMapHandoff';
+export { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './discoverySessionMapHandoff';
+export {
+  DISCOVERY_EXPLORE_OVERLAY_PRESERVE_PARAM_KEYS,
+  DISCOVERY_LIST_BROWSE_FILTER_PARAM_KEYS,
+  restoreExploreOverlayParams,
+  snapshotExploreOverlayParams,
+  stripDiscoveryListBrowseFilterParams,
+} from './discoveryBrowseSessionParams';
+export {
+  readDiscoveryBrowseListSession,
+  resolveDiscoveryBrowseListCat,
+} from './discoveryBrowseListSessionRead';
+export type { DiscoveryBrowseListSessionSnapshot } from './discoveryBrowseListSessionRead';
+export {
+  mergeDiscoveryBrowseListUrlParams,
+  type DiscoveryBrowseListUrlMergeContext,
+  type DiscoveryBrowseListUrlMergePatch,
+} from './discoveryBrowseListUrlMerge';
+export {
+  exploreMapListOverlayActive,
+  mergeExploreHydrateWithListBrowseSession,
+  readDiscoveryBrowseListSessionForExploreOverlay,
+} from './discoveryBrowseListSessionExploreParity';
+export type { DiscoveryExperienceSurface, DiscoveryListUrlStateOptions } from './discoveryExperienceSurface';
+export {
+  discoveryListUrlStateOptionsForSurface,
+  listDiscoveryEmbeddedOnExplore,
+  listDiscoveryExploreSearch,
+  listDiscoverySearchChrome,
+} from './discoveryExperienceSurface';
+export { useDiscoveryBrowseGeoScope } from './useDiscoveryBrowseGeoScope';
+export { useDiscoveryExperienceShell } from './useDiscoveryExperienceShell';
 export {
   crewsHubHomePath,
   exploreMapPathFromListSearch,

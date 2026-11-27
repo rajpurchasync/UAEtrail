@@ -11,10 +11,6 @@ export const BWL_COLLECTIONS = {
   ACTIVITY_REQUESTS: 'activity_requests',
   ACTIVITY_PARTICIPANTS: 'activity_participants',
   ACTIVITY_INVITES: 'activity_invites',
-  /** @deprecated Remove after MIG-COH-01 — seeking lives on activities.activity_mode */
-  PARTICIPANT_INTENTS: 'participant_intents',
-  /** @deprecated Remove after MIG-COH-01 */
-  PARTICIPANT_INTENT_REQUESTS: 'participant_intent_requests',
   LOCATIONS: 'locations',
   /** Target name (MIG-COH-02 optional) */
   PLACES: 'places',
@@ -199,3 +195,5 @@ export const BWL_USER_ROLES = [
   'TENANT_GUIDE',
   'PARTICIPANT',
 ] as const;
+
+export { BWL_RETIRED_SEEKING_COLLECTIONS } from './retired-seeking-wire.js';

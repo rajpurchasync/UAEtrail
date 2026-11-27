@@ -55,7 +55,7 @@ describe('boundedContextAlignment (API + manifest)', () => {
   it('collections.ts is the only COLLECTIONS definition in API lib', () => {
     const collections = readFileSync(join(ROOT, 'apps/api/src/lib/collections.ts'), 'utf8');
     expect(collections).toMatch(/ACTIVITIES/);
-    expect(collections).toMatch(/PARTICIPANT_INTENTS/);
+    expect(collections).not.toMatch(/PARTICIPANT_INTENT/);
     expect(collections).toMatch(/USER_BADGES/);
     expect(collections).toMatch(/DESTINATIONS: 'destinations'/);
     expect(collections).not.toMatch(/AREAS: 'areas'/);

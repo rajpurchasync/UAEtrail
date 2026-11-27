@@ -44,7 +44,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listPlaceDistance.tsx'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/useViewerLocation.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/browseAppliedFilterLabels.ts'))).toBe(false);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/listBrowseSort'/);
+    expect(read('src/discovery/discoveryBrowseListSessionRead.ts')).toMatch(/listBrowseSort/);
   });
 
   it('BROWSE-NAME-01g: map handoff + bucket listCat mapping live under browse', () => {
@@ -67,8 +67,8 @@ describe('listBrowseNamingGuard', () => {
     expect(sort).toMatch(/export const parseBrowseListSort/);
     expect(sort).toMatch(/export const sortBrowseListCards/);
     expect(sort).not.toMatch(/parseListExplorerSort/);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListLayout/);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListSort/);
+    expect(read('src/discovery/discoveryBrowseListSessionRead.ts')).toMatch(/parseBrowseListLayout/);
+    expect(read('src/discovery/discoveryBrowseListSessionRead.ts')).toMatch(/parseBrowseListSort/);
     expect(read('src/list/browse/listChromeTheme.ts')).toMatch(/browseListSortTriggerClass/);
     expect(read('src/list/browse/listChromeTheme.ts')).not.toMatch(/listExplorerSortTriggerClass/);
   });
@@ -78,7 +78,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/listFilterFabSnap.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerLayout.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerFabSnap.ts'))).toBe(false);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browseListLayout'/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/readDiscoveryBrowseListSession/);
     expect(read('src/list/explorer/ListExplorerFilterFab.tsx')).toMatch(/browse\/listFilterFabSnap/);
     expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/discoveryPortListGeoBrowse/);
     expect(read('src/discovery/discoveryPortListGeoBrowse.ts')).toMatch(/browse\/browseListLayout/);
@@ -96,7 +96,7 @@ describe('listBrowseNamingGuard', () => {
 
   it('BROWSE-NAME-01x: list discovery orchestration lives in shell model hook', () => {
     expect(existsSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'))).toBe(true);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useListDiscoveryExperienceModel/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useDiscoveryListExperienceModel/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/useBrowseListFeed/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/CrewsBrowsePanel/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/ListExplorer/);
@@ -157,7 +157,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listBrowseFilterModal.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/peopleListBrowseUrl.ts'))).toBe(false);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/peopleListBrowseUrl'/);
+    expect(read('src/discovery/discoveryBrowseSessionParams.ts')).toMatch(/PEOPLE_LIST_TAB_URL_PARAM/);
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/@\/crew-discovery\/crewBrowseTab/);
   });
 

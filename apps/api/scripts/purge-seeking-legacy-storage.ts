@@ -5,9 +5,11 @@
  *   npm --workspace @uaetrail/api run purge-seeking-legacy-storage
  */
 import { getMongoClient } from '../src/lib/mongo.js';
-import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
-import { cancelActiveParticipantIntentsMissingCoords } from '../src/lib/seeking-storage-ops.js';
-import { purgeRetiredSeekingStorage } from '../src/lib/retired-seeking-storage-purge.js';
+import {
+  backfillSeekingActivitiesForActiveIntents,
+  cancelActiveParticipantIntentsMissingCoords,
+  purgeRetiredSeekingStorage,
+} from '../src/lib/retired-seeking-storage-purge.js';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const dryRun = process.argv.includes('--dry-run');

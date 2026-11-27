@@ -1,4 +1,3 @@
-import { BWL_COLLECTIONS } from '@uaetrail/shared-types';
 
 /** MongoDB collection names — single source of truth. */
 export const COLLECTIONS = {
@@ -52,9 +51,6 @@ export const COLLECTIONS = {
   ACTIVITY_PARTICIPANTS: 'activity_participants',
   /** Exact meeting pin, emergency contact — `_id` = activity id (plan §13.4). */
   ACTIVITY_PRIVATE: 'activity_private',
-  /** Retired Find-crew store — ops backfill/purge only; dropped when empty (W1b migration). */
-  PARTICIPANT_INTENTS: BWL_COLLECTIONS.PARTICIPANT_INTENTS,
-  PARTICIPANT_INTENT_REQUESTS: BWL_COLLECTIONS.PARTICIPANT_INTENT_REQUESTS,
 
   // Commerce (merchant storefront profiles only — product catalog removed)
   MERCHANT_PROFILES: 'merchant_profiles',

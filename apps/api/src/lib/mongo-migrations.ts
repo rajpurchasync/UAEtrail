@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { COLLECTIONS } from './collections.js';
 import { slugify } from './slug.js';
 import {
+  BWL_RETIRED_SEEKING_COLLECTIONS,
   inferFitnessFromPlaceDifficulty,
   isEmbeddedPersonaSeekingTitle,
   normalizeEmbeddedPersonaSeekingTitle,
@@ -181,11 +182,11 @@ const migrateCarpoolTerminologyToRideshare = async (db: Db): Promise<void> => {
     await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, from, to);
   }
 
-  const intents = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
+  const intents = db.collection(BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS);
   const kindResult = await intents.updateMany({ kind: 'carpool' }, { $set: { kind: 'rideshare' } });
   if (kindResult.modifiedCount > 0) {
     console.log(
-      `[mongo] Migrated ${COLLECTIONS.PARTICIPANT_INTENTS} kind carpool → rideshare (${kindResult.modifiedCount} docs)`
+      `[mongo] Migrated ${BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS} kind carpool → rideshare (${kindResult.modifiedCount} docs)`
     );
   }
 };
@@ -215,7 +216,7 @@ const migrateActivityJoinModeFromRequirements = async (db: Db): Promise<void> =>
 };
 
 const migrateEmbeddedPersonaParticipantIntentTitles = async (db: Db): Promise<void> => {
-  const collection = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
+  const collection = db.collection(BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS);
   const cursor = collection.find({ title: { $type: 'string' } });
   let updated = 0;
 
@@ -506,7 +507,7 @@ const provisionShopTenantsForOrphanMerchants = async (db: Db): Promise<void> => 
 };
 
 const migrateParticipantIntentIdsToString = async (db: Db): Promise<void> => {
-  const collection = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
+  const collection = db.collection(BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS);
   const cursor = collection.find({ _id: { $type: 'objectId' } });
   let migrated = 0;
 
@@ -520,7 +521,7 @@ const migrateParticipantIntentIdsToString = async (db: Db): Promise<void> => {
 
   if (migrated > 0) {
     console.log(
-      `[mongo] Migrated ${COLLECTIONS.PARTICIPANT_INTENTS} _id ObjectId → string UUID (${migrated} docs)`
+      `[mongo] Migrated ${BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS} _id ObjectId → string UUID (${migrated} docs)`
     );
   }
 };
@@ -1177,7 +1178,10 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
 
 /** Drop retired seeking collections when empty (post MIG-DISCO-REG gate). */
 const dropEmptyRetiredSeekingCollections = async (db: Db): Promise<void> => {
-  for (const name of [COLLECTIONS.PARTICIPANT_INTENTS, COLLECTIONS.PARTICIPANT_INTENT_REQUESTS]) {
+  for (const name of [
+    BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENTS,
+    BWL_RETIRED_SEEKING_COLLECTIONS.PARTICIPANT_INTENT_REQUESTS,
+  ]) {
     const col = db.collection(name);
     const count = await col.countDocuments();
     if (count > 0) {

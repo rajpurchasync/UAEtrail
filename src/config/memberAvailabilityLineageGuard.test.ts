@@ -80,12 +80,12 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(
       existsSync(join(process.cwd(), 'apps/api/src/services/seeking-area-match-notifications.ts'))
     ).toBe(false);
-    const intents = read('apps/api/src/lib/participant-intents-store.ts');
+    const intents = read('apps/api/src/lib/retired-seeking-storage-purge.ts');
     expect(intents).not.toMatch(/seeking-area-match-notifications/);
   });
 
-  it('AVAIL-LINE-10: participant-intents-store is ops backfill only', () => {
-    const intents = read('apps/api/src/lib/participant-intents-store.ts');
+  it('AVAIL-LINE-10: retired-seeking-storage-purge is ops backfill only', () => {
+    const intents = read('apps/api/src/lib/retired-seeking-storage-purge.ts');
     expect(intents).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(intents).not.toMatch(/notifyMemberPublishSubscribers/);
     expect(intents).not.toMatch(/createParticipantIntent/);
@@ -99,7 +99,7 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
   });
 
   it('AVAIL-LINE-13: ops backfill/migrate fixed slots set capacity + modalities', () => {
-    const intents = read('apps/api/src/lib/participant-intents-store.ts');
+    const intents = read('apps/api/src/lib/retired-seeking-storage-purge.ts');
     expect(intents).toMatch(/capacity: 'participant'/);
     expect(intents).toMatch(/modalities: \[intentKindToScheduleModality/);
     const migrate = read('apps/api/scripts/migrate-seeking-to-availability.ts');

@@ -12,10 +12,12 @@ import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrows
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { UNIFIED_MAP_FILTER_KEYS } from './exploreBrowseUrlConstants';
 import type { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
+import type { DiscoveryBrowseListSessionSnapshot } from '../../discovery/discoveryBrowseListSessionRead';
 
 type Handlers = ReturnType<typeof useExploreBrowseUrlApplyHandlers>;
 
 export type ExploreBrowseUrlPublicApiContext = {
+  listBrowseSession: DiscoveryBrowseListSessionSnapshot | null;
   mapFilter: MapFilterKey;
   setMapFilter: (v: MapFilterKey) => void;
   activityFilter: ActivityListFilterKey;
@@ -60,6 +62,8 @@ export type ExploreBrowseUrlPublicApiContext = {
 };
 
 export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiContext) => ({
+  listBrowseSession: ctx.listBrowseSession,
+  listCat: ctx.listBrowseSession?.listCat ?? null,
   mapFilter: ctx.mapFilter,
   setMapFilter: ctx.setMapFilter,
   activityFilter: ctx.activityFilter,

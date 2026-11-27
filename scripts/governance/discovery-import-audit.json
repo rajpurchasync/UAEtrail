@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dmcpPhase": 3,
-  "generated": "2026-11-26",
+  "generated": "2026-11-27",
   "description": "Cross-import counts from list/discovery/* into sibling folders. GW-7: list imports explore modules directly (no list facade).",
   "sourceRoots": [
     "src/list",
@@ -13,12 +13,12 @@
   "matrix": {
     "src/list": {
       "..": 223,
-      "browse": 83,
-      "crews": 2,
+      "browse": 81,
+      "crews": 3,
       "components": 1,
       "config": 1,
       "create": 1,
-      "discovery": 1,
+      "discovery": 3,
       "styles": 1,
       "explorer": 1
     },
@@ -33,12 +33,15 @@
       "discoverySession": 1,
       "discoveryPortListPeek": 1,
       "discoveryPortExploreCardChrome": 1,
-      "config": 3,
+      "config": 4,
       "content": 3,
+      "explore": 123,
+      "list": 86,
+      "routing": 2,
       "activity": 2,
-      "explore": 118,
-      "list": 70,
-      "utils": 1
+      "hooks": 2,
+      "utils": 1,
+      "context": 1
     },
     "src/activity-discovery": {
       "..": 14
@@ -61,12 +64,12 @@
   },
   "byTarget": {
     "..": 273,
-    "browse": 83,
-    "crews": 2,
+    "browse": 81,
+    "crews": 3,
     "components": 5,
-    "config": 5,
+    "config": 6,
     "create": 1,
-    "discovery": 10,
+    "discovery": 12,
     "styles": 1,
     "explorer": 1,
     "discoveryPortListBrowseCard": 4,
@@ -77,10 +80,13 @@
     "discoveryPortListPeek": 1,
     "discoveryPortExploreCardChrome": 1,
     "content": 7,
+    "explore": 123,
+    "list": 86,
+    "routing": 2,
     "activity": 2,
-    "explore": 118,
-    "list": 70,
+    "hooks": 2,
     "utils": 1,
+    "context": 1,
     "lib": 6,
     "discover": 1,
     "member": 3,

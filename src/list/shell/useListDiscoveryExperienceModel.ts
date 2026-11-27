@@ -1,11 +1,11 @@
 /** List discovery orchestration — composes browse URL, feed, crews, search, map, compose shells. */
 
-import { useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../context/AuthContext';
-import { reloadExploreMap } from '../../hooks/useExploreMap';
+import { useEffect, useMemo } from 'react';
+import {
+  discoveryListUrlStateOptionsForSurface,
+  useDiscoveryExperienceShell,
+  type DiscoveryBrowseListSessionSnapshot,
+} from '../../discovery/discoverySession';
 import { countExploreSearchScopes } from '../../discovery/discoveryPortExploreSearchRouting';
 import { useBrowseListFeed } from '../browse/useBrowseListFeed';
 import {
@@ -42,6 +42,8 @@ export type ListDiscoveryExperienceProps = {
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   /** Search results — hide in-list search; chrome owns query. */
   suppressSearch?: boolean;
+  /** Explore embed — browse session already read on map shell (B-UNIFY-04 parity). */
+  exploreListBrowseSession?: DiscoveryBrowseListSessionSnapshot | null;
 };
 
 export const useListDiscoveryExperienceModel = ({
@@ -52,19 +54,17 @@ export const useListDiscoveryExperienceModel = ({
   prefetchedCatalogItems,
   onOfferRideshareForAvailabilityItem: embeddedOfferRideshare,
   suppressSearch = false,
+  exploreListBrowseSession = null,
 }: ListDiscoveryExperienceProps) => {
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
   const searchResultsChrome = listDiscoverySearchChrome(surface);
   const exploreSearch = listDiscoveryExploreSearch(surface);
   const suppressListSearch = suppressSearch || exploreSearch;
-  const { user } = useAuth();
   const { clock } = useDisplayPreferences();
-  const navigate = useNavigate();
-  const location = useProductLocation();
-  const { pathname } = location;
-  const [searchParams, setSearchParams] = useProductSearchParams();
-  const queryClient = useQueryClient();
-  const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
+  const { user, navigate, location, pathname, search, searchParams, setSearchParams, isSignedIn } =
+    useDiscoveryExperienceShell();
+
+  const listUrlStateOptions = discoveryListUrlStateOptionsForSurface(surface);
 
   const {
     filters,
@@ -88,10 +88,10 @@ export const useListDiscoveryExperienceModel = ({
     hubVenueRegions,
     filterCount,
   } = useListDiscoveryBrowseUrlModel({
-    mapOverlay: embeddedOnExplore,
-    searchResultsBrowse: searchResultsChrome,
+    ...listUrlStateOptions,
     searchParams,
-    isSignedIn: Boolean(user),
+    isSignedIn,
+    exploreListBrowseSession,
   });
 
   const { handleCreateFabTap, handleOpenMarkAvailability, createFabLabel, offerRideshareForAvailabilityItem } =
@@ -124,17 +124,6 @@ export const useListDiscoveryExperienceModel = ({
     activityDatePreset: filters.activityDatePreset,
     destinationSlug,
   });
-  const wasGuestRef = useRef(!user);
-  useEffect(() => {
-    if (user && wasGuestRef.current) {
-      wasGuestRef.current = false;
-      void reloadExploreMap(queryClient);
-    }
-    if (!user) {
-      wasGuestRef.current = true;
-    }
-  }, [user, queryClient]);
-
   const {
     cards: feedCards,
     filteredItems,

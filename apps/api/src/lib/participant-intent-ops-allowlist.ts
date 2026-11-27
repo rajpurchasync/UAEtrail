@@ -9,12 +9,9 @@ export const PARTICIPANT_INTENT_RESIDUE_PATTERN =
 
 /** Paths relative to `apps/api` (Vitest cwd). */
 export const PARTICIPANT_INTENT_OPS_ALLOWLIST_API_REL = [
-  'src/lib/collections.ts',
   'src/lib/mongo-migrations.ts',
   'src/lib/participant-intent-ops-allowlist.ts',
-  'src/lib/participant-intents-store.ts',
   'src/lib/retired-seeking-storage-purge.ts',
-  'src/lib/seeking-storage-ops.ts',
 ] as const;
 
 export const PARTICIPANT_INTENT_OPS_ALLOWLIST = new Set<string>(

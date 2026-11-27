@@ -5,7 +5,7 @@ import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../ui/addFlow';
 import type { AvailabilityFixedSubmitResult } from '../ui/intentFixedFlowEngine';
 
-type UseExploreCreateFlowBridgeArgs = {
+export type UseExploreCreateFlowBridgeArgs = {
   registerBridge: (next: CreateFlowBridge | null) => void;
   hostingWizardPrefill: HostingWizardPrefill | null | undefined;
   closeCreateFlow: () => void;

@@ -7,8 +7,8 @@
       "note": "seeking:deploy-gate green when Mongo reachable (npm run seeking:deploy-gate or w1:local-gate)"
     },
     "w1": {
-      "participantIntentsRefsInApiSrc": 18,
-      "participantIntentOpsAllowlistFileCount": 6,
+      "participantIntentsRefsInApiSrc": 12,
+      "participantIntentOpsAllowlistFileCount": 3,
       "participantIntentOpsAllowlistOnly": true,
       "participantIntentOpsViolations": [],
       "seekingActivityModeRefsInApiSrc": 3,
@@ -85,8 +85,11 @@
       "listDiscoveryRuntimeImportViolations": [],
       "listImportsExploreDirect": 0,
       "listExploreDirectImportViolations": [],
-      "discoveryImportsListDirect": 12,
+      "discoveryImportsListDirect": 15,
       "discoveryListDirectImportViolations": [
+        "src/discovery/discoveryBrowseListSessionRead.ts",
+        "src/discovery/discoveryBrowseListUrlMerge.ts",
+        "src/discovery/discoveryBrowseSessionParams.ts",
         "src/discovery/discoveryPortListBrowseCard.ts",
         "src/discovery/discoveryPortListBrowseFilters.ts",
         "src/discovery/discoveryPortListBrowseHooks.ts",
@@ -114,7 +117,7 @@
     }
   },
   "governance": {
-    "guardTestFileCount": 162
+    "guardTestFileCount": 164
   },
   "nextActions": []
 }

@@ -289,7 +289,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/browseListBucket.ts',
-        facade: /discoveryPortExploreSearchRouting/,
+        facade: /discoveryPortExploreCatalogFilters/,
         avoidDirect: /from ['"][^'"]*explore\/exploreBrowseTaxonomy/,
       },
       {
@@ -342,7 +342,7 @@ describe('discoverySessionParamsGuard', () => {
   });
 
   const discoveryListFacadeRe =
-    /^src\/discovery\/(?:discoveryPortList|discoverySession(?:List|GeoUrl|MapHandoff|PeopleUrl|FindCrew|Params|Parsers|Taxonomy|Explore))/;
+    /^src\/discovery\/(?:discoveryPortList|discoverySession(?:List|GeoUrl|MapHandoff|PeopleUrl|FindCrew|Params|Parsers|Taxonomy|Explore)|discoveryBrowse(?:ListSession|Session|ListUrl))/;
 
   it('W15 discovery prod routes list browse through discoveryPortList* facades', () => {
     const directList = /from ['"][^'"]*list\//;

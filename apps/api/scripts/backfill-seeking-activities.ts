@@ -6,7 +6,7 @@
  *   npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run
  *   npm --workspace @uaetrail/api run backfill-seeking-activities -- --limit=100
  */
-import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
+import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/retired-seeking-storage-purge.js';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const parseArgs = () => {

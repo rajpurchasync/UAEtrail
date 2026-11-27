@@ -466,9 +466,7 @@
       "sampleFiles": [
         "apps/api/src/lib/mongo-indexes.ts",
         "apps/api/src/lib/mongo-migrations.ts",
-        "apps/api/src/lib/participant-intents-store.ts",
-        "apps/api/src/lib/retired-seeking-storage-purge.ts",
-        "apps/api/src/lib/seeking-storage-ops.ts"
+        "apps/api/src/lib/retired-seeking-storage-purge.ts"
       ]
     },
     "PARTICIPANT_INTENT_REQUESTS": {

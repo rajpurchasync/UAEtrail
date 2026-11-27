@@ -5,7 +5,7 @@
  *   npm --workspace @uaetrail/api run cancel-coordless-participant-intents -- --dry-run
  *   npm --workspace @uaetrail/api run cancel-coordless-participant-intents
  */
-import { cancelActiveParticipantIntentsMissingCoords } from '../src/lib/seeking-storage-ops.js';
+import { cancelActiveParticipantIntentsMissingCoords } from '../src/lib/retired-seeking-storage-purge.js';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const dryRun = process.argv.includes('--dry-run');

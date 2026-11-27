@@ -5,7 +5,8 @@ import { parseExploreDestinationSlug } from '../../discovery/discoveryPortExplor
 import { useExplorePublishedDestinationsQuery } from '../../discovery/discoveryPortExploreBrowseHooks';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
 import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';
-import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
+import { useDiscoveryBrowseGeoScope } from '../../discovery/discoverySession';
+import type { DiscoveryBrowseListSessionSnapshot } from '../../discovery/discoverySession';
 import { countBrowseListFilters } from '../browse/browseListLayout';
 import { parseBrowseListBucket, type BrowseListBucket } from '../browse/browseListBucket';
 import {
@@ -19,6 +20,7 @@ export type ListDiscoveryBrowseUrlInput = {
   searchResultsBrowse: boolean;
   searchParams: URLSearchParams;
   isSignedIn: boolean;
+  exploreListBrowseSession?: DiscoveryBrowseListSessionSnapshot | null;
 };
 
 export const useListDiscoveryBrowseUrlModel = ({
@@ -26,6 +28,7 @@ export const useListDiscoveryBrowseUrlModel = ({
   searchResultsBrowse,
   searchParams,
   isSignedIn,
+  exploreListBrowseSession = null,
 }: ListDiscoveryBrowseUrlInput) => {
   const browseUrl = useListDiscoveryUrlState({
     mapOverlay,
@@ -43,7 +46,7 @@ export const useListDiscoveryBrowseUrlModel = ({
     crewsAvailabilityGuideFilter,
   } = browseUrl;
 
-  useBrowseGeoScopeHydration(geoPath);
+  useDiscoveryBrowseGeoScope(exploreListBrowseSession?.geoPath ?? geoPath);
 
   const isPeopleCategory = listCat === 'people';
   const explorerBucket: BrowseListBucket = parseBrowseListBucket(listCat);

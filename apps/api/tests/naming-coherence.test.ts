@@ -56,7 +56,7 @@ describe('naming coherence (API)', () => {
   });
 
   it('participant intent product paths are retired (ops backfill only)', () => {
-    const content = readFileSync(join(API_SRC, 'lib', 'participant-intents-store.ts'), 'utf8');
+    const content = readFileSync(join(API_SRC, 'lib', 'retired-seeking-storage-purge.ts'), 'utf8');
     expect(content).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(content).not.toMatch(/findSeekingActivityByParticipantIntentId/);
     expect(content).not.toMatch(/listActiveParticipantIntentsForMap/);

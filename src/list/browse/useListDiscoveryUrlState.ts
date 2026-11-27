@@ -1,92 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browseListMapHandoff';
+import { scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';
-import { stripRetiredPeopleListTabParams } from '../../routing/productUrlInbound';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';
-import {
-  EXPLORE_SEARCH_RESULTS_PATH,
-  EXPLORE_SEARCH_SCOPE_PARAM,
-  EXPLORE_SEARCH_VIEW_PARAM,
-  exploreSearchListCatForScope,
-  exploreSearchScopeForListCat,
-  parseExploreSearchBrowseState,
-} from '../../discovery/discoveryPortExploreSearchRouting';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../../discovery/discoveryPortExploreSearchRouting';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
-  BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,
+  mergeDiscoveryBrowseListUrlParams,
   parseBrowseListFilterState,
-  parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
   parseListCatParam,
-  serializeBrowseListSearchParams,
+  readDiscoveryBrowseListSession,
+  type DiscoveryBrowseListUrlMergePatch,
 } from '../../discovery/discoverySession';
-import { BROWSE_GEO_PARAM } from './browseGeoPath';
-
-import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
-import {
-  CREWS_AVAILABILITY_SHEET_PARAM,
-  CREWS_OPEN_URL_PARAM,
-  CREWS_AVAIL_GUIDE_PARAM,
-  parseCrewsAvailabilityGuideFilter,
-  parseCrewsAvailableOpenLens,
-  serializeCrewsAvailabilityGuideFilter,
-  serializeCrewsAvailableOpenLens,
-  type CrewsAvailabilityGuideFilter,
-  type CrewsAvailableOpenLens,
-} from '../crews/crewsOpenSegment';
-import {
-  LIST_LAYOUT_PARAM,
-  parseBrowseListLayout,
-  serializeBrowseListLayout,
-  type BrowseListLayout,
-} from './browseListLayout';
-import {
-  LIST_SORT_PARAM,
-  parseBrowseListSort,
-  serializeBrowseListSort,
-  type BrowseListSortMode,
-} from './listBrowseSort';
-
-const LIST_FILTER_PARAM_KEYS = [
-  'q',
-  'topics',
-  'filter',
-  'tripTypes',
-  'placeTypes',
-  'price',
-  'when',
-  'date',
-  'regions',
-  BROWSE_GEO_PARAM,
-  'hasTrip',
-  'facilityKinds',
-  LIST_CAT_PARAM,
-  PEOPLE_LIST_TAB_URL_PARAM,
-  LIST_LAYOUT_PARAM,
-  LIST_SORT_PARAM,
-  CREWS_OPEN_URL_PARAM,
-  CREWS_AVAILABILITY_SHEET_PARAM,
-] as const;
-
-/** Explore-only keys — keep when list overlay updates browse filters. */
-const EXPLORE_PRESERVE_PARAM_KEYS = [
-  'searchScope',
-  'searchFocus',
-  'panel',
-  'pinKind',
-  'view',
-  'places',
-  'activity',
-  'subtype',
-  'outingTopic',
-  'pin',
-  'myPlan',
-  'list',
-] as const;
+import { CREWS_AVAILABILITY_SHEET_PARAM } from '../crews/crewsOpenSegment';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
+import type { BrowseListLayout } from './browseListLayout';
+import type { BrowseListSortMode } from './listBrowseSort';
 
 type UseListDiscoveryUrlStateOptions = {
   /** Keep `browse=1` on `/explore` when discover filters change. */
@@ -102,44 +35,26 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   const location = useLocation();
   const navigate = useNavigate();
 
-  const rawListCat = useMemo(
-    () => parseListCatParam(searchParams.get(LIST_CAT_PARAM)),
-    [searchParams]
+  const readInput = useMemo(
+    () => ({
+      pathname: location.pathname,
+      searchParams,
+      mapOverlay,
+    }),
+    [location.pathname, mapOverlay, searchParams]
   );
 
-  const listCat = useMemo(() => {
-    if (location.pathname === EXPLORE_SEARCH_RESULTS_PATH) {
-      return exploreSearchListCatForScope(parseExploreSearchBrowseState(searchParams).searchScope);
-    }
-    if (mapOverlay) return rawListCat;
-    if (rawListCat === 'people' || rawListCat === 'agencies') return rawListCat;
-    if (rawListCat) return rawListCat;
-    const inferred = inferListCatFromExploreHandoff(parseBrowseListFilterState(searchParams), searchParams);
-    if (inferred) return inferred;
-    return 'activities';
-  }, [location.pathname, mapOverlay, rawListCat, searchParams]);
-
-  const filters = useMemo(() => {
-    const raw = parseBrowseListFilterState(searchParams);
-    if (listCat === 'activities' || listCat === 'venues') {
-      return scopeBrowseListStateForListCat(raw, listCat);
-    }
-    return raw;
-  }, [searchParams, listCat]);
-
-  const venueRegions = useMemo(() => parseBrowseListVenueRegions(searchParams), [searchParams]);
-
-  const geoPath = useMemo(() => parseBrowseListGeoPath(searchParams), [searchParams]);
-
-  const layout = useMemo(
-    () => parseBrowseListLayout(searchParams.get(LIST_LAYOUT_PARAM)),
-    [searchParams]
-  );
-
-  const sort = useMemo(
-    () => parseBrowseListSort(searchParams.get(LIST_SORT_PARAM)),
-    [searchParams]
-  );
+  const session = useMemo(() => readDiscoveryBrowseListSession(readInput), [readInput]);
+  const {
+    listCat,
+    filters,
+    venueRegions,
+    geoPath,
+    layout,
+    sort,
+    crewsOpenLens,
+    crewsAvailabilityGuideFilter,
+  } = session;
 
   const syncUrl = useCallback(
     (
@@ -161,98 +76,22 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
           locationState: location.state,
         },
         (params) => {
-          const patchedListCat =
-            patch.listCat !== undefined ? patch.listCat : listCat;
-          let next: BrowseListFilterState = {
-            ...filters,
-            ...patch,
-          };
-          let regions = patch.regions ?? venueRegions;
-          const nextGeo = patch.geoPath ?? geoPath;
-          if (!mapOverlay && (patchedListCat === 'activities' || patchedListCat === 'venues')) {
-            next = scopeBrowseListStateForListCat(next, patchedListCat);
-          }
-          const listParams = serializeBrowseListSearchParams(next, regions, nextGeo);
-          const nextLayout = patch.layout ?? layout;
-          const layoutParam = serializeBrowseListLayout(nextLayout);
-          if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
-
-          const nextSort = patch.sort ?? sort;
-          const sortParam = serializeBrowseListSort(nextSort);
-          if (sortParam) listParams.set(LIST_SORT_PARAM, sortParam);
-          else listParams.delete(LIST_SORT_PARAM);
-
-          const preserved = new Map<string, string>();
-          if (mapOverlay) {
-            for (const key of EXPLORE_PRESERVE_PARAM_KEYS) {
-              const value = searchParams.get(key);
-              if (value) preserved.set(key, value);
-            }
-          }
-          for (const key of LIST_FILTER_PARAM_KEYS) {
-            params.delete(key);
-          }
-          listParams.forEach((value, key) => {
-            params.set(key, value);
+          mergeDiscoveryBrowseListUrlParams(params, patch as DiscoveryBrowseListUrlMergePatch, {
+            pathname: location.pathname,
+            mapOverlay,
+            session,
+            baseSearchParams: searchParams,
           });
-          if (patch.crewsOpen !== undefined) {
-            const serializedOpen = patch.crewsOpen
-              ? serializeCrewsAvailableOpenLens(patch.crewsOpen)
-              : null;
-            if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
-            else params.delete(CREWS_OPEN_URL_PARAM);
-          }
-          if (patch.crewsAvailGuide !== undefined) {
-            const serializedGuide = patch.crewsAvailGuide
-              ? serializeCrewsAvailabilityGuideFilter(patch.crewsAvailGuide)
-              : null;
-            if (serializedGuide) params.set(CREWS_AVAIL_GUIDE_PARAM, serializedGuide);
-            else params.delete(CREWS_AVAIL_GUIDE_PARAM);
-          }
-          if (mapOverlay) {
-            preserved.forEach((value, key) => {
-              params.set(key, value);
-            });
-          }
-          if (patch.listCat === null) {
-            params.delete(LIST_CAT_PARAM);
-          } else if (patch.listCat) {
-            params.set(LIST_CAT_PARAM, patch.listCat);
-          } else if (patchedListCat && patchedListCat !== 'activities') {
-            params.set(LIST_CAT_PARAM, patchedListCat);
-          } else if (!mapOverlay) {
-            params.set(LIST_CAT_PARAM, 'activities');
-          } else if (listCat) {
-            params.set(LIST_CAT_PARAM, listCat);
-          }
-          if (mapOverlay) {
-            params.set('list', '1');
-            params.delete(BROWSE_DISCOVER_PARAM);
-          }
-          if (location.pathname === EXPLORE_SEARCH_RESULTS_PATH) {
-            const scope = exploreSearchScopeForListCat(patchedListCat);
-            if (scope === 'join') params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
-            else params.set(EXPLORE_SEARCH_SCOPE_PARAM, scope);
-            const resultsView = searchParams.get(EXPLORE_SEARCH_VIEW_PARAM);
-            if (resultsView === 'map') params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
-            else params.delete(EXPLORE_SEARCH_VIEW_PARAM);
-          }
-          stripRetiredPeopleListTabParams(params);
         }
       );
     },
     [
-      filters,
-      venueRegions,
-      geoPath,
-      listCat,
-      layout,
-      sort,
       location.pathname,
       location.state,
       mapOverlay,
       navigate,
       searchParams,
+      session,
       setSearchParams,
     ]
   );
@@ -315,16 +154,6 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   );
 
   const searchString = searchParams.toString();
-
-  const crewsOpenLens = useMemo(
-    () => parseCrewsAvailableOpenLens(searchParams.get(CREWS_OPEN_URL_PARAM)),
-    [searchParams]
-  );
-
-  const crewsAvailabilityGuideFilter = useMemo(
-    () => parseCrewsAvailabilityGuideFilter(searchParams.get(CREWS_AVAIL_GUIDE_PARAM)),
-    [searchParams]
-  );
 
   const availabilityParamStrippedRef = useRef(false);
   useEffect(() => {

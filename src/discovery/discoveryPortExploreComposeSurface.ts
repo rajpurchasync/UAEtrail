@@ -5,6 +5,11 @@ export {
   useComposeImmersiveChrome,
 } from '../explore/create/ComposeImmersiveChromeContext';
 export { useExploreCreateFlowBridge } from '../explore/shell/useExploreCreateFlowBridge';
+export {
+  useDiscoveryComposePublishReload,
+  useDiscoveryCreateFabActions,
+  useDiscoveryExperienceComposeBridge,
+} from './useDiscoveryExperienceComposer';
 export { resolveCreateEntryPreset } from '../explore/create/composeFabEntry';
 export { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
 export { useHostingFromActivity } from '../explore/create/hooks/useHostingFromActivity';

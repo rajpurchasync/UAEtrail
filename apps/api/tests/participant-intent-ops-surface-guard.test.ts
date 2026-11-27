@@ -37,7 +37,21 @@ describe('participant intent ops surface guard (W1b/W1e)', () => {
       }
     }
     expect(violations).toEqual([]);
-    expect(PARTICIPANT_INTENT_OPS_ALLOWLIST.size).toBeGreaterThanOrEqual(5);
+    expect(PARTICIPANT_INTENT_OPS_ALLOWLIST.size).toBe(3);
+  });
+
+  it('A-SEEK-03: collections.ts is off ops allowlist (retired wire lives in shared-types + ops modules only)', () => {
+    expect(PARTICIPANT_INTENT_OPS_ALLOWLIST.has('src/lib/collections.ts')).toBe(false);
+    const collections = readFileSync(join(ROOT, 'src/lib/collections.ts'), 'utf8');
+    expect(collections).not.toMatch(/PARTICIPANT_INTENT/);
+  });
+
+  it('A-SEEK-02: sole residue module is retired-seeking-storage-purge (migrations + allowlist only)', () => {
+    expect(existsSync(join(ROOT, 'src/lib/participant-intents-store.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/lib/seeking-storage-ops.ts'))).toBe(false);
+    const purge = readFileSync(join(ROOT, 'src/lib/retired-seeking-storage-purge.ts'), 'utf8');
+    expect(purge).toMatch(/backfillSeekingActivitiesForActiveIntents/);
+    expect(purge).toMatch(/purgeRetiredSeekingStorage/);
   });
 
   it('ops allowlist entries exist under apps/api', () => {

@@ -6,7 +6,8 @@ export const useExploreBrowseUrlHydrateFromSearch = (
   searchParams: URLSearchParams,
   isDesktop: boolean,
   isSignedIn: boolean,
-  setters: ExploreBrowseUrlSetterBundle
+  setters: ExploreBrowseUrlSetterBundle,
+  pathname: string
 ): void => {
   const applyHydratedState = useCallback(
     (state: Parameters<typeof applyExploreBrowseHydratedState>[1]) =>
@@ -16,7 +17,10 @@ export const useExploreBrowseUrlHydrateFromSearch = (
   const browseSearchKey = searchParams.toString();
   useEffect(() => {
     applyHydratedState(
-      clampGuestCrewsBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)
+      clampGuestCrewsBrowse(
+        parseExploreBrowseStateFromSearchParams(searchParams, isDesktop, { pathname }),
+        isSignedIn
+      )
     );
-  }, [browseSearchKey, isDesktop, isSignedIn, applyHydratedState]);
+  }, [browseSearchKey, isDesktop, isSignedIn, pathname, applyHydratedState, searchParams]);
 };

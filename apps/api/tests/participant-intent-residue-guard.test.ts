@@ -23,8 +23,8 @@ describe('participant intent residue (MIG-DISCO-REG)', () => {
     expect(existsSync(join(process.cwd(), 'src/domain/participant-intent.ts'))).toBe(false);
   });
 
-  it('participant_intents Mongo collection is backfill-only in participant-intents-store', () => {
-    const store = read('src/lib/participant-intents-store.ts');
+  it('participant_intents Mongo collection is backfill-only in retired-seeking-storage-purge', () => {
+    const store = read('src/lib/retired-seeking-storage-purge.ts');
     expect(store).toMatch(/export const backfillSeekingActivitiesForActiveIntents/);
     expect(store).not.toMatch(/export const createParticipantIntent/);
     expect(store).not.toMatch(/export const updateParticipantIntent/);

@@ -34,7 +34,7 @@ describe('discoverySummaryOfferRideshareParity (MIG-DISCO-REG)', () => {
     const composeBridge = read('src/list/shell/useListDiscoveryComposeBridgeModel.ts');
     expect(list).toContain('offerRideshareForAvailabilityItem');
     expect(composeBridge).toContain('useHostingWizardPrefill');
-    expect(composeBridge).toContain('useExploreCreateFlowBridge');
+    expect(composeBridge).toMatch(/useDiscoveryExperienceComposeBridge|useExploreCreateFlowBridge/);
     const panels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
     expect(panels).toContain('onOfferRideshareForAvailabilityItem');
   });

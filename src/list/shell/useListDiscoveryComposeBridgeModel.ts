@@ -1,6 +1,6 @@
 /** List surfaces — CreateFlow bridge, FAB, availability compose, offer-rideshare launcher. */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { NavigateFunction, SetURLSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
@@ -10,17 +10,14 @@ import {
   listDiscoverySearchRegisterBridgeStub,
 } from '../browse/listDiscoverySearchCreateFlowStub';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { reloadExploreMap } from '../../hooks/useExploreMap';
-import { intentOpenCompose } from '../../discovery/discoveryPortExploreCompose';
 import {
-  useExploreCreateFlowBridge,
-  resolveCreateEntryPreset,
+  useDiscoveryCreateFabActions,
+  useDiscoveryExperienceComposeBridge,
   useHostingFromActivity,
   useHostingWizardPrefill,
 } from '../../discovery/discoveryPortExploreComposeSurface';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { parseListPlanWithUserId } from '../browse/listComposeQuery';
-import { resolveBrowseListCreateFabLabel } from '../browse/browseListCopy';
 
 export type ListDiscoveryComposeBridgeInput = {
   exploreSearch: boolean;
@@ -47,7 +44,7 @@ export const useListDiscoveryComposeBridgeModel = ({
   searchParams,
   setSearchParams,
   navigate,
-  locationPathname,
+  locationPathname: _locationPathname,
   locationSearch,
   createFabContext,
 }: ListDiscoveryComposeBridgeInput) => {
@@ -58,25 +55,12 @@ export const useListDiscoveryComposeBridgeModel = ({
   const queryClient = useQueryClient();
   const { refresh: refreshHostGate, tenantId } = useMemberStatus({ enabled: Boolean(user) });
 
-  const reloadFeed = useCallback(async () => {
-    await reloadExploreMap(queryClient);
-    void refreshHostGate();
-  }, [queryClient, refreshHostGate]);
-
-  const createFabLabel = useMemo(
-    () => resolveBrowseListCreateFabLabel(locationPathname, locationSearch, createFabContext),
-    [locationPathname, locationSearch, createFabContext]
-  );
-
-  const handleCreateFabTap = useCallback(() => {
-    compose.handleCreateTap(
-      resolveCreateEntryPreset(locationPathname, locationSearch, createFabContext)
-    );
-  }, [compose, locationPathname, locationSearch, createFabContext]);
-
-  const handleOpenMarkAvailability = useCallback(() => {
-    compose.handleCreateTap(intentOpenCompose());
-  }, [compose]);
+  const { createFabLabel, handleCreateFabTap, handleOpenMarkAvailability } = useDiscoveryCreateFabActions({
+    compose,
+    pathname,
+    fabSearch: locationSearch,
+    createFabContext,
+  });
 
   const hostingFrom = useHostingFromActivity({
     user,
@@ -103,28 +87,27 @@ export const useListDiscoveryComposeBridgeModel = ({
     setSelectedId: setListSelectedId,
   });
 
-  useExploreCreateFlowBridge({
+  useDiscoveryExperienceComposeBridge({
     enabled: !embeddedOnExplore && Boolean(createFlowCtx),
     registerBridge,
+    queryClient,
+    refreshHostGate,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     closeCreateFlow: hostingLauncher.closeCreateFlow,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
     rideshareLinkAvailability: hostingLauncher.rideshareLinkAvailability,
     setRideshareLinkAvailability: hostingLauncher.setRideshareLinkAvailability,
     handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
-    handleActivityPublished: reloadFeed,
-    handleAvailabilityFixedSubmitted: () => void reloadFeed(),
-    handleAddSubmitted: () => void reloadFeed(),
     planWithFriendUserId,
     composeDestinationSlug: null,
     facilityOnPlaceId: null,
     tenantId,
-    refreshHostGate,
   });
 
-  const offerRideshareForAvailabilityItem = embeddedOnExplore
-    ? embeddedOfferRideshare
-    : hostingLauncher.offerRideshareForAvailabilityItem;
+  const offerRideshareForAvailabilityItem = useMemo(
+    () => (embeddedOnExplore ? embeddedOfferRideshare : hostingLauncher.offerRideshareForAvailabilityItem),
+    [embeddedOnExplore, embeddedOfferRideshare, hostingLauncher.offerRideshareForAvailabilityItem]
+  );
 
   return {
     handleCreateFabTap,

@@ -16,7 +16,7 @@ describe('catalogTruthGuard (DMCP Phase 2 · MIG-DISCO-REG)', () => {
   });
 
   it('CAT-02-02: Find crew writes use PUT /me/availability only', () => {
-    const store = read('apps/api/src/lib/participant-intents-store.ts');
+    const store = read('apps/api/src/lib/retired-seeking-storage-purge.ts');
     expect(store).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(store).not.toMatch(/createParticipantIntent/);
     const composer = read('apps/api/src/routes/user/composeUserMemberRoutes.ts');

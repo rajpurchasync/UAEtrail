@@ -34,6 +34,7 @@ import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
+import { useExploreListBrowseSessionOverlay } from './useExploreListBrowseSessionOverlay';
 
 export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 
@@ -53,7 +54,12 @@ export const useExploreBrowseUrlState = ({
 }: UseExploreBrowseUrlStateArgs) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const initial = useRef(clampGuestCrewsBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)).current;
+  const initial = useRef(
+    clampGuestCrewsBrowse(
+      parseExploreBrowseStateFromSearchParams(searchParams, isDesktop, { pathname: location.pathname }),
+      isSignedIn
+    )
+  ).current;
 
   const [mapFilter, setMapFilter] = useState<MapFilterKey>(initial.mapFilter);
   const [activityFilter, setActivityFilter] = useState<ActivityListFilterKey>(initial.activityFilter);
@@ -193,7 +199,13 @@ export const useExploreBrowseUrlState = ({
       }),
     []
   );
-  useExploreBrowseUrlHydrateFromSearch(searchParams, isDesktop, isSignedIn, browseSetters);
+  useExploreBrowseUrlHydrateFromSearch(searchParams, isDesktop, isSignedIn, browseSetters, location.pathname);
+
+  const listBrowseSession = useExploreListBrowseSessionOverlay(
+    listOpen,
+    location.pathname,
+    searchParams
+  );
   useExploreBrowsePeekDismissOnFilterChange(searchParams, clearSelection);
   useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop });
 
@@ -260,6 +272,7 @@ export const useExploreBrowseUrlState = ({
   );
 
   return buildExploreBrowseUrlPublicApi({
+    listBrowseSession,
     mapFilter,
     setMapFilter,
     activityFilter,

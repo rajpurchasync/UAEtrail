@@ -62,6 +62,12 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
+import { mergeExploreHydrateWithListBrowseSession } from '../discovery/discoveryBrowseListSessionExploreParity';
+
+export type ParseExploreBrowseStateOptions = {
+  pathname?: string;
+};
+
 const isCrewsBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
 
@@ -112,7 +118,8 @@ export const clampGuestCrewsBrowse = (
 /** Parse explore browse UI state from URL (R2 / C18). */
 export const parseExploreBrowseStateFromSearchParams = (
   searchParams: URLSearchParams,
-  isDesktop: boolean
+  isDesktop: boolean,
+  options?: ParseExploreBrowseStateOptions
 ): ExploreBrowseUrlHydratedState => {
   const nextMapFilterRaw = parseMapFilter(searchParams.get('filter'));
   let nextPanel = parseExplorePanel(searchParams.get('panel'));
@@ -149,7 +156,7 @@ export const parseExploreBrowseStateFromSearchParams = (
   }
   const nextSubtype = parseExploreOthersSubtype(searchParams.get('subtype'), nextMapFilter);
 
-  return {
+  const hydrated: ExploreBrowseUrlHydratedState = {
     mapFilter: nextMapFilter,
     activityFilter,
     panel: nextPanel,
@@ -194,4 +201,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
     facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
   };
+
+  if (!options?.pathname) return hydrated;
+  return mergeExploreHydrateWithListBrowseSession(hydrated, options.pathname, searchParams, isDesktop);
 };

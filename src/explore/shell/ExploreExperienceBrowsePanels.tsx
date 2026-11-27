@@ -5,6 +5,7 @@ import { ExploreDesktopDockedPanelRail } from '../ui/ExploreDesktopDockedPanelRa
 import { ExploreDesktopListDrawer } from '../ui/ExploreDesktopListDrawer';
 import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
 import type { ComponentProps, ReactNode } from 'react';
+import type { DiscoveryBrowseListSessionSnapshot } from '../../discovery/discoverySession';
 
 const ListDiscoveryExperience = lazy(() =>
   import('../../discovery/discoveryPortListEmbed').then((module) => ({
@@ -27,6 +28,7 @@ type Props = {
   crewsBrowsePanelProps: CrewsBrowsePanelComponentProps;
   mapStage: ReactNode;
   prefetchedCatalogItems?: import('@uaetrail/shared-types').ExploreMapItemDTO[];
+  listBrowseSession?: DiscoveryBrowseListSessionSnapshot | null;
 };
 
 /** Map stage plus desktop catalog drawer and mobile Crews sheet. */
@@ -36,6 +38,7 @@ export const ExploreExperienceBrowsePanels = ({
   crewsBrowsePanelProps,
   mapStage,
   prefetchedCatalogItems,
+  listBrowseSession,
 }: Props) => {
   const crewsMobileSheet = browse.showListPanel && !isDesktop && browse.listMode === 'crews';
   const desktopCatalog = isDesktop && browse.showDesktopCatalogDrawer;
@@ -60,6 +63,7 @@ export const ExploreExperienceBrowsePanels = ({
               surface="exploreSidebar"
               onCloseMapOverlay={browse.closeListPanel}
               prefetchedCatalogItems={prefetchedCatalogItems}
+              exploreListBrowseSession={listBrowseSession}
               onOfferRideshareForAvailabilityItem={
                 crewsBrowsePanelProps.onOfferRideshareForAvailabilityItem
               }

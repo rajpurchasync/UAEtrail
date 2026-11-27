@@ -66,14 +66,14 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
 
   it('CTX-APP-11: browse geo scope hydrates geo tree from registry', () => {
     expect(read('src/list/browse/useBrowseGeoScopeHydration.ts')).toMatch(/fetchGeoTreeIntoStore/);
-    expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/useBrowseGeoScopeHydration/);
-    expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useBrowseGeoScopeHydration/);
+    expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/useDiscoveryBrowseGeoScope/);
+    expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useDiscoveryBrowseGeoScope/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/useBrowseGeoScopeHydration/);
   });
 
   it('CTX-APP-13: browse filter + geo state uses URL on list and explore', () => {
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListGeoPath/);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/serializeBrowseListSearchParams/);
+    expect(read('src/discovery/discoveryBrowseListSessionRead.ts')).toMatch(/parseBrowseListGeoPath/);
+    expect(read('src/discovery/discoveryBrowseListUrlMerge.ts')).toMatch(/serializeBrowseListSearchParams/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/BROWSE_GEO_PARAM/);
     expect(read('src/explore/ui/useExploreBrowseUrlState.ts')).toMatch(/geoPath/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder\(publishedDestinations\)/);

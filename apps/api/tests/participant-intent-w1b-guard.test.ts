@@ -17,15 +17,14 @@ describe('participant intent W1b guard', () => {
     expect(migrations).toMatch(/PARTICIPANT_INTENT_REQUESTS/);
   });
 
-  it('mongo migrations reference participant_intents collection via COLLECTIONS', () => {
+  it('mongo migrations reference participant_intents via BWL_RETIRED_SEEKING_COLLECTIONS', () => {
     const migrations = read('src/lib/mongo-migrations.ts');
     expect(migrations).not.toMatch(/db\.collection\('participant_intents'\)/);
-    expect(migrations).toMatch(/COLLECTIONS\.PARTICIPANT_INTENTS/);
+    expect(migrations).toMatch(/BWL_RETIRED_SEEKING_COLLECTIONS\.PARTICIPANT_INTENTS/);
   });
 
-  it('collections.ts wires retired seeking stores from BWL_COLLECTIONS', () => {
+  it('A-SEEK-03: collections barrel excludes retired seeking stores', () => {
     const collections = read('src/lib/collections.ts');
-    expect(collections).toMatch(/BWL_COLLECTIONS\.PARTICIPANT_INTENTS/);
-    expect(collections).toMatch(/BWL_COLLECTIONS\.PARTICIPANT_INTENT_REQUESTS/);
+    expect(collections).not.toMatch(/PARTICIPANT_INTENT/);
   });
 });

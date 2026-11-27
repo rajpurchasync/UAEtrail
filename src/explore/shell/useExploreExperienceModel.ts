@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
-import { useExploreCreateFlowBridge } from './useExploreCreateFlowBridge';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useDiscoveryBrowseGeoScope,
+  useDiscoveryExperienceShell,
+} from '../../discovery/discoverySession';
+import { useDiscoveryExperienceComposeBridge } from '../../discovery/useDiscoveryExperienceComposer';
 import { useExploreSearchParamRedirect } from './useExploreSearchParamRedirect';
 import { exploreSearchHomePath } from '../search/exploreSearchRouting';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
@@ -33,14 +34,8 @@ import { useCrewDiscoveryBrowseBundle } from '@/crew-discovery/hooks/useCrewDisc
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { useExploreMapInteractionHandlers } from './useExploreMapInteractionHandlers';
-import { resolveBrowseListCreateFabLabel } from '../../discovery/discoverySession';
-import {
-  resolveCreateEntryPreset,
-  resolveExploreMapCreateFabHints,
-} from '../create/composeFabEntry';
-import { intentOpenCompose } from '../compose';
-import { useBrowseGeoScopeHydration } from '../../discovery/discoverySession';
-import { reloadExploreMap } from '../../hooks/useExploreMap';
+import { useDiscoveryCreateFabActions } from '../../discovery/useDiscoveryExperienceComposer';
+import { resolveExploreMapCreateFabHints } from '../create/composeFabEntry';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -57,7 +52,16 @@ export const useExploreExperienceModel = () => {
   } = useMemberStatus({
     enabled: Boolean(user),
   });
-  const navigate = useNavigate();
+  const {
+    navigate,
+    queryClient,
+    pathname,
+    search,
+    searchParams,
+    setSearchParams,
+    fabSearch,
+    locationState,
+  } = useDiscoveryExperienceShell();
   const navigateMemberPublishGate = useCallback(
     (returnPath: string) =>
       navigate(
@@ -75,19 +79,6 @@ export const useExploreExperienceModel = () => {
       ),
     [navigate, user?.id, profileComplete, guideProfileComplete, canPublish, isCommunityHost, hostTiers]
   );
-  const [searchParams, setSearchParams] = useProductSearchParams();
-  const queryClient = useQueryClient();
-  const wasGuestRef = useRef(!user);
-  useEffect(() => {
-    if (user && wasGuestRef.current) {
-      wasGuestRef.current = false;
-      void reloadExploreMap(queryClient);
-    }
-    if (!user) {
-      wasGuestRef.current = true;
-    }
-  }, [user, queryClient]);
-  const { pathname, search, state: locationState } = useProductLocation();
   const facilityOnPlaceId = parseFacilityOnPlaceId(searchParams);
   const isDesktop = useMinWidthLg();
   /** Side nav + in-map right rail for guest gates (md+), not browse panel layout (lg+). */
@@ -108,7 +99,7 @@ export const useExploreExperienceModel = () => {
     setSearchParams,
     clearSelection,
   });
-  useBrowseGeoScopeHydration(browse.geoPath);
+  useDiscoveryBrowseGeoScope(browse.geoPath);
 
   useEffect(() => {
     if (!browse.listOpen) setHighlightedExploreItemId(null);
@@ -181,24 +172,17 @@ export const useExploreExperienceModel = () => {
     ]
   );
 
-  const fabSearch = useMemo(
-    () => (searchParams.toString() ? `?${searchParams.toString()}` : search),
-    [searchParams, search]
-  );
-
-  const primaryFabLabel = useMemo(
-    () => resolveBrowseListCreateFabLabel(pathname, fabSearch, createFabHints),
-    [pathname, fabSearch, createFabHints]
-  );
-
-  const handlePrimaryFabTap = useCallback(() => {
-    clearSelection();
-    compose.handleCreateTap(resolveCreateEntryPreset(pathname, fabSearch, createFabHints));
-  }, [clearSelection, compose, pathname, fabSearch, createFabHints]);
-
-  const handleOpenMarkAvailability = useCallback(() => {
-    compose.handleCreateTap(intentOpenCompose());
-  }, [compose]);
+  const {
+    createFabLabel: primaryFabLabel,
+    handleCreateFabTap: handlePrimaryFabTap,
+    handleOpenMarkAvailability,
+  } = useDiscoveryCreateFabActions({
+    compose,
+    pathname,
+    fabSearch,
+    createFabContext: createFabHints,
+    onBeforeCreateTap: clearSelection,
+  });
 
   const planWithFriendUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
@@ -357,8 +341,10 @@ export const useExploreExperienceModel = () => {
     [selectionItems, selection]
   );
 
-  useExploreCreateFlowBridge({
+  useDiscoveryExperienceComposeBridge({
     registerBridge,
+    queryClient,
+    refreshHostGate,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     closeCreateFlow: hostingLauncher.closeCreateFlow,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
@@ -372,7 +358,6 @@ export const useExploreExperienceModel = () => {
     composeDestinationSlug: destinationSlug,
     facilityOnPlaceId,
     tenantId,
-    refreshHostGate,
   });
 
   return {
