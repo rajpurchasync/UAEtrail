@@ -12,11 +12,11 @@
   "activePrograms": [
     {
       "id": "A-SEEK",
-      "status": "open",
+      "status": "eng-complete",
       "title": "Phase A — seeking / participant_intents code delete",
       "lanes": ["A-SEEK-01", "A-SEEK-02", "A-SEEK-03"],
-      "verify": ["npm run shim:baseline", "npm run verify:system:quick"],
-      "note": "A-SEEK-03: BWL_RETIRED_SEEKING_COLLECTIONS; COLLECTIONS barrel clean; allowlist 3. Next: drop retired wire after all envs purge empty collections."
+      "verify": ["npm run shim:baseline", "npm run verify:system:quick", "npm run a-seek:ops-check"],
+      "note": "Eng done (allowlist 3, BWL_RETIRED_SEEKING_COLLECTIONS). Ops: npm run a-seek:ops-check per env before release; drop empty collections via migration 2025112509 when purge reports zero."
     },
     {
       "id": "B-UNIFY",

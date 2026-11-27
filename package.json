@@ -53,6 +53,7 @@
     "seeking:storage-status": "npm --workspace @uaetrail/api run seeking-storage-status --",
     "seeking:deploy-gate": "npm run seeking:storage-status -- --strict",
     "w1:local-gate": "node scripts/dev/w1-local-deploy-gate.mjs",
+    "a-seek:ops-check": "node scripts/dev/a-seek-ops-check.mjs",
     "purge:seeking-legacy": "npm --workspace @uaetrail/api run purge-seeking-legacy-storage --",
     "mig-disco-reg:ops:preflight": "node scripts/ops/mig-disco-reg-staging-ops.mjs preflight",
     "mig-disco-reg:ops:status": "node scripts/ops/mig-disco-reg-staging-ops.mjs status",
