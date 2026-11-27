@@ -1,9 +1,5 @@
 import type { CrewPillarId } from '@uaetrail/shared-types';
-import {
-  CREW_PILLAR_SPECS,
-  crewHubStatTabToPillar,
-  crewPeopleFacetToPillar,
-} from '@uaetrail/shared-types';
+import { CREW_PILLAR_SPECS, crewHubStatTabToPillar, crewPeopleFacetToPillar } from '@uaetrail/shared-types';
 import { GROUPS_PATH, MY_CREWS_PATH } from '../config/surfacePaths';
 import { exploreCrewsPath } from '../config/routingCatalog';
 

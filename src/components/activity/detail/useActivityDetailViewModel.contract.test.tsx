@@ -53,4 +53,13 @@ describe('useActivityDetailViewModel (contract)', () => {
     );
     expect(result.current.publicDetail).toBe(false);
   });
+
+  it('requiresSignIn guest hides place crew body on consumer page', () => {
+    const { result } = renderHook(() =>
+      useActivityDetailViewModel({ activity, layout: 'page', requiresSignIn: true })
+    );
+    expect(result.current.publicDetail).toBe(true);
+    expect(result.current.showPlaceCrewBody).toBe(false);
+    expect(result.current.showPlaceLockedOnMobile).toBe(true);
+  });
 });

@@ -21,13 +21,11 @@ if (!existsSync(mapPath)) {
   process.exit(1);
 }
 
-const map = JSON.parse(readFileSync(mapPath, 'utf8'));
-const archive = JSON.parse(readFileSync(join(root, 'scripts/governance/platform-migration-archive.json'), 'utf8'));
-
-const routingMigs = (archive.migrations ?? []).filter((m) => m.id?.startsWith('MIG-ROUTING-CANON'));
-if (routingMigs.length === 0) {
-  fail('platform-migration-archive.json must list MIG-ROUTING-CANON-* migrations (§8.7)');
+if (existsSync(join(root, 'scripts/governance/platform-migration-archive.json'))) {
+  fail('platform-migration-archive.json must not exist (retired)');
 }
+
+const map = JSON.parse(readFileSync(mapPath, 'utf8'));
 
 const coherence = readFileSync(join(root, 'docs/SYSTEM_COHERENCE.md'), 'utf8');
 if (!coherence.includes('#### 8.7 Routing alignment')) {
@@ -106,4 +104,4 @@ if (failed) {
   process.exit(1);
 }
 
-console.log(`[verify:routing-canon] OK — enforcement=${enforcement}, ${routingMigs.length} routing migration(s)`);
+console.log(`[verify:routing-canon] OK — enforcement=${enforcement}`);

@@ -66,7 +66,7 @@ Use **one row** per concern. Do not copy these tables into `experiment/*` or new
 | **HTTP routes** | [`API_ROUTING.md`](./API_ROUTING.md) + [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4–5 | `/me/status`, `/publishing/*`, `/me/seeking-posts` |
 | **SPA paths & redirects** | [`NAVIGATION.md`](./NAVIGATION.md) + `src/config/routingCatalog.ts` | `/explore`, `/publishing/*`, legacy `/host/*` |
 | **Bounded context placement** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 + §3.0 | Where code and clients live |
-| **Implementation schedule** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6–8.8 + `scripts/governance/platform-governance.json` | Migrations only — not parallel plan docs |
+| **Ops gates & closed migrations** | `scripts/governance/platform-governance.json` + guards | Not markdown schedules — §8.4.9 / §8.7 / §8.9 in `SYSTEM_COHERENCE` only |
 
 **Retired product paths (docs + code):** `/operator/*` and `/host/*` as **consumer or API** trees → **`/publishing/*`**; `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`; shop **product catalog** (`/product/:id`, `/shop/products`, `/shop/checkout`, `/admin/shop`) → explore shops browse or `/admin/hosts`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
 
@@ -83,7 +83,7 @@ Use **one row** per concern. Do not copy these tables into `experiment/*` or new
 
 Do **not** put new product semantics only in `experiment/*` phase trackers or deleted Tier-4 snapshots (see [`archive/README.md`](./archive/README.md)).
 
-**Tier-1 dedupe (platform program P0):** Implementation schedules live in **`SYSTEM_COHERENCE.md` §8** only. Do not recreate `docs/experiment/*` plan files — use [`experiment/README.md`](./experiment/README.md). Superseded narratives: one-line stubs at doc root or `docs/archive/`.
+**Tier-1 dedupe:** Product truth in **§3–§7** + domain docs — not §8 phase tables (removed). Do not recreate `docs/experiment/*` plan files or `docs/archive/**` bodies. Superseded root docs: one-line stubs only; archive = pointer table in [`archive/README.md`](./archive/README.md).
 
 ---
 
@@ -93,7 +93,7 @@ Do **not** put new product semantics only in `experiment/*` phase trackers or de
 |---------|--------|
 | `npm run verify:system` | Full alignment (docs, domain, bounded-context manifest, explore) |
 | `npm run verify:system:quick` | CI subset |
-| `npm run verify:docs` | Tier-1 exists; banned phrases; merged-doc stubs; `experiment/*` plan file cap (§8.6.4) |
+| `npm run verify:docs` | Tier-1 exists; banned phrases; merged-doc stubs; `experiment/*` plan file cap |
 | `npm run verify:domain` | Routing + bounded-context tests |
 | `npm run verify:host-member` | Host/member slice only |
 

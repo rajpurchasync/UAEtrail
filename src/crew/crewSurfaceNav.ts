@@ -19,3 +19,5 @@ export const groupsPathFromCrews = (options?: Omit<Parameters<typeof groupsPath>
 export const crewsReturnBackState = () => mobileBackNavState(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);
 
 export const crewsListFallbackLabel = PRODUCT_CREWS_TAB_LABEL;
+
+export { CREW_PILLAR_SURFACE_PATH, crewPillarSpec } from './crewPillarSurfaces';

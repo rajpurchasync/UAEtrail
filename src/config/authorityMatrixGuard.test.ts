@@ -119,13 +119,8 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(byId.get('social.group_create')?.note).toMatch(/Team/);
     expect(byId.get('social.friend_request')?.note).toMatch(/Friends/);
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
-    expect(
-      JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.find(
-        (m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER'
-      )?.status
-    ).toBe(
-      'complete'
-    );
+    expect(existsSync(join(ROOT, 'src/config/communityDiscoverGuard.test.ts'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(false);
     expect(read('src/config/peopleGraphPlanSpineGuard.test.ts')).toMatch(/PEOPLE-SPINE-06/);
     expect(read('package.json')).toMatch(/verify:people-graph-plan/);
   });

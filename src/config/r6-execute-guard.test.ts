@@ -32,6 +32,42 @@ describe('R6 tests that execute (not token-only)', () => {
     expect(source).not.toMatch(/readFileSync/);
   });
 
+  it('activity detail hero facts execute outside the hook', () => {
+    const source = read('src/components/activity/detail/activityDetailViewModelHeroFacts.test.ts');
+    expect(source).toMatch(/resolveActivityDetailViewModelHeroFacts/);
+    expect(source).not.toMatch(/readFileSync/);
+  });
+
+  it('activity detail peek card executes outside the hook', () => {
+    const source = read('src/components/activity/detail/activityDetailViewModelPeekCard.test.ts');
+    expect(source).toMatch(/resolveActivityDetailPeekParityCard/);
+    expect(source).not.toMatch(/readFileSync/);
+  });
+
+  it('activity detail place access and roster execute outside the hook', () => {
+    const place = read('src/components/activity/detail/activityDetailViewModelPlaceAccess.test.ts');
+    const roster = read('src/components/activity/detail/activityDetailViewModelRoster.test.ts');
+    expect(place).toMatch(/resolveActivityDetailPlaceAccess/);
+    expect(roster).toMatch(/filterActivityDetailRosterParticipants/);
+    expect(place).not.toMatch(/readFileSync/);
+    expect(roster).not.toMatch(/readFileSync/);
+  });
+
+  it('discovery explore policy contract encodes dual ports without readFile token tests', () => {
+    const source = read('src/discovery/discoveryPortExplorePolicy.contract.test.ts');
+    expect(source).toMatch(/POLICY-GUEST/);
+    expect(source).toMatch(/POLICY-COMPOSE/);
+    expect(source).toMatch(/discoveryPortExploreGuestWire/);
+    expect(source).not.toMatch(/readFileSync\([^)]*\.tsx?['"]/);
+  });
+
+  it('ActivityDetailView RTL uses the real view model hook', () => {
+    const source = read('src/components/activity/ActivityDetailView.rtl.test.tsx');
+    expect(source).toMatch(/@testing-library\/react/);
+    expect(source).toMatch(/useActivityDetailJoinSurfaces/);
+    expect(source).not.toMatch(/vi\.mock\('\.\/detail\/useActivityDetailViewModel'/);
+  });
+
   it('activity detail view model contract runs renderHook', () => {
     const source = read('src/components/activity/detail/useActivityDetailViewModel.contract.test.tsx');
     expect(source).toMatch(/renderHook/);

@@ -61,7 +61,7 @@ describe('discoverySessionParamsGuard', () => {
   it('mobile + social chrome import list routing via discoverySession barrel', () => {
     for (const rel of [
       'src/components/mobile/MobileTabHeader.tsx',
-      'src/components/social/MyCrewSurfacePanel.tsx',
+      'src/my-crew/MyCrewHubHeader.tsx',
     ]) {
       expect(read(rel)).toMatch(/discoverySession/);
       expect(read(rel)).not.toMatch(/list\/browse\/browseListRouting/);
@@ -144,9 +144,8 @@ describe('discoverySessionParamsGuard', () => {
     }
     for (const rel of [
       'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
-      'src/list/explorer/FindCrewHubBackLink.tsx',
       'src/list/explorer/ListCrewsExplorer.tsx',
-      'src/list/crews/CrewsHubAppBar.tsx',
+      'src/list/explorer/ListMyCrewHub.tsx',
     ]) {
       if (/list\/browse\/browseListRouting/.test(read(rel))) violations.push(rel);
     }
@@ -320,7 +319,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
-        facade: /discoveryPortExploreBrowseHooks|discoveryPortExploreCatalogFilters/,
+        facade: /discoveryPortExploreBrowseWire|discoveryPortExploreCatalogFilters/,
       },
       {
         rel: 'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
@@ -388,7 +387,7 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(
       /exploreMapPathAfterPeopleFullScreen/
     );
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(
       /exploreMapPathAfterPeopleFullScreen/
     );
     expect(read('src/discovery/discoveryPortExploreGuest.ts')).not.toMatch(/resolveWelcomeFinishExplorePath/);
@@ -399,16 +398,16 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/config/desktopNav.ts')).not.toMatch(/discoveryPortExploreBrowse/);
     expect(read('src/config/desktopNav.ts')).toMatch(/isDiscoverBrowseRoute/);
     expect(read('src/discovery/discoveryPortExploreRouting.ts')).toMatch(/isDiscoverBrowseRoute/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/isDiscoverBrowseRoute/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(/isDiscoverBrowseRoute/);
     expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/exploreItemMatchesQuery/);
     expect(read('src/explore/ui/useExploreMapViewport.ts')).toMatch(/discoveryPortExploreGuestWire/);
     expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).not.toMatch(/routingCatalog/);
     expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(/config\/platform/);
     expect(read('src/discovery/discoveryPortExploreMapPin.ts')).toMatch(/isPlacesMapItem/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/isPlacesMapItem/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(/isPlacesMapItem/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/discoveryPortExploreMapPin/);
     expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/parseExploreDestinationSlug/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/parseExploreDestinationSlug/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(/parseExploreDestinationSlug/);
     expect(read('src/list/browse/ListFeedActionsProvider.tsx')).not.toMatch(/routingCatalog/);
     expect(read('src/list/browse/ListFeedActionsProvider.tsx')).toMatch(/activityDetailPath/);
     expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(
@@ -418,7 +417,7 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES/);
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/EXPLORE_SEARCH_GUEST_PLACEHOLDER/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(
       /EXPLORE_GUEST_MAP_PREVIEW_NOTICE/
     );
     expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(
@@ -431,15 +430,16 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/isSignedIn/);
     expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
     expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreBrowse.ts'))).toBe(false);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).toMatch(/useExploreBrowseUrlState/);
-    expect(read('src/crew-discovery/hooks/useCrewDiscoveryBrowseBundle.ts')).toMatch(/discoveryPortExploreBrowseUrl/);
-    expect(read('src/discovery/discoveryPortExploreBrowseHooks.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/useExplorePublishedDestinationsQuery/);
-    expect(read('src/config/useExploreRegionPillOptions.ts')).toMatch(/discoveryPortExploreBrowseHooks/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).toMatch(/useExploreBrowseUrlState/);
+    expect(read('src/crew-discovery/hooks/useCrewDiscoveryBrowseBundle.ts')).toMatch(/discoveryPortExploreBrowseWire/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
+    expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreBrowseHooks.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExploreBrowseUrl.ts'))).toBe(false);
+    expect(read('src/config/useExploreRegionPillOptions.ts')).toMatch(/discoveryPortExploreBrowseWire/);
     expect(read('src/config/useExploreRegionPillOptions.ts')).not.toMatch(/discoveryPortExploreBrowse['"]/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/ExploreSearchScopeCounts/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/parseExploreMapFilterPillsParam/);
-    expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(/ExploreSearchScopeCounts/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(/parseExploreMapFilterPillsParam/);
+    expect(read('src/discovery/discoveryPortExploreBrowseWire.ts')).not.toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL/);
     expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/parseExploreMapFilterPillsParam/);
     expect(read('src/discovery/discoveryPortExploreMapChrome.ts')).toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS/);
     expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/ExploreSearchScopeCounts/);

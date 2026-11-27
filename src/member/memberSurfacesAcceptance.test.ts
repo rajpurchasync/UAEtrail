@@ -470,7 +470,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
     );
     const crewAside = read('src/components/activity/detail/tabs/ActivityDetailCrewAside.tsx');
     expect(crewAside).toContain('ActivityDetailHostCrewHub');
-    expect(model).toContain('resolveActivityDetailHeroStatusChips');
+    expect(model).toContain('resolveActivityDetailViewModelHeroFacts');
+    expect(read('src/components/activity/detail/activityDetailViewModelHeroFacts.ts')).toContain(
+      'resolveActivityDetailHeroStatusChips'
+    );
     const footersShim = read('src/activity/activityDetailTabFooters.ts');
     expect(footersShim).toContain('@uaetrail/shared-types');
     const footersPolicy = read('packages/shared-types/src/activity-detail-tab-footers.ts');

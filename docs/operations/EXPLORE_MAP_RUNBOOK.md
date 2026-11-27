@@ -2,7 +2,7 @@
 
 How `/explore` stays in sync with MongoDB: venue catalog, cache, and local env.
 
-**Refactor (Oct 2026):** S8 discovery implementation is closed — bbox-scoped fetch + FE flags ship behind env vars. **Production default** still uses full-region `GET /explore/map` until [bbox staging promotion](#bbox-map-fetch--staging-promotion-r5) passes. Tracker: [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §8.6 **MIG-EXPLORE-READ** · archive: [`system-refactor-plan-2026-10.md`](../archive/system-refactor-plan-2026-10.md).
+**Refactor (Oct 2026):** S8 discovery implementation is closed — bbox-scoped fetch + FE flags ship behind env vars. **Production default** still uses full-region `GET /explore/map` until [bbox staging promotion](#bbox-map-fetch--staging-promotion-r5) passes. Gate: **`PRE_DEPLOY_CHECKLIST.md`** § S10e · `explore-map` contract tests.
 
 ## When the map updates
 

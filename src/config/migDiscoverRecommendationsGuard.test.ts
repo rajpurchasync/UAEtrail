@@ -25,20 +25,15 @@ describe('migDiscoverRecommendationsGuard (MIG-DISCOVER-RECOMMENDATIONS)', () =>
   it('REC-02: map shell uses server rows when signed in', () => {
     expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/useDiscoverMapRecommendations/);
     expect(read('src/explore/ui/ExploreMapRecommendedSheet.tsx')).toMatch(/RecommendationSignalChips/);
-    expect(read('scripts/governance/discover-recommendations-touchpoints.json')).toMatch(/REC-8/);
     expect(read('packages/shared-types/src/map-explore-recommendation-score.ts')).toMatch(/near_you/);
-    expect(read('src/crew-discovery/panel/crewBrowse/CrewBrowseRecommendedBody.tsx')).toMatch(
-      /resolveRecommendedCrewFeedRows/
-    );
+    expect(read('src/crew-discovery/resolveRecommendedCrewFeedRows.ts')).toMatch(/resolveRecommendedCrewFeedRows/);
     expect(read('src/crew-discovery/panel/crewBrowse/CrewBrowseMemberRow.tsx')).toMatch(
       /CrewRecommendationBucketChip/
     );
     expect(existsSync(join(ROOT, 'apps/api/tests/discover-recommendations-http.test.ts'))).toBe(true);
     expect(read('docs/API_ROUTING.md')).toMatch(/GET \| `\/discover\/recommendations`/);
     expect(read('docs/API_ROUTING.md')).toMatch(/surface=crew/);
-    expect(read('src/crew-discovery/panel/crewBrowse/CrewBrowseRecommendedBody.tsx')).toMatch(
-      /useDiscoverCrewRecommendations/
-    );
+    expect(read('src/explore/search/useExploreSearchRecommendedCrew.ts')).toMatch(/useDiscoverCrewRecommendations/);
     expect(read('packages/shared-types/src/recommended-crew-feed.ts')).toMatch(/buildRecommendedCrewFeedRefs/);
     expect(read('src/explore/recommend/resolveExploreMapRecommendationItems.ts')).toMatch(
       /buildExploreMapRecommendations/
@@ -46,12 +41,7 @@ describe('migDiscoverRecommendationsGuard (MIG-DISCOVER-RECOMMENDATIONS)', () =>
     expect(read('packages/shared-types/src/platform-layer-api.ts')).toMatch(/discoverRecommendations/);
   });
 
-  it('REC-03: program registered', () => {
-    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json')) as {
-      programs: { programId: string; status: string; scheduleDoc?: string }[];
-    };
-    const row = registry.programs.find((m) => m.programId === 'MIG-DISCOVER-RECOMMENDATIONS');
-    expect(row?.scheduleDoc).toBe('scripts/governance/discover-recommendations-touchpoints.json');
-    expect(row?.status).toBe('complete');
+  it('REC-03: delivery touchpoints schedule removed', () => {
+    expect(existsSync(join(ROOT, 'scripts/governance/discover-recommendations-touchpoints.json'))).toBe(false);
   });
 });

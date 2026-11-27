@@ -381,12 +381,14 @@ describe('activity detail program — wiring', () => {
     const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
     const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
+    const peekCard = read('src/components/activity/detail/activityDetailViewModelPeekCard.ts');
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(aboutIdx).toBeGreaterThan(-1);
     expect(body).not.toMatch(/<ActivityDetailHostProfileCard/);
     expect(hostIdx).toBeGreaterThan(-1);
     expect(publishedFactsIdx).toBeGreaterThan(-1);
-    expect(model).toMatch(/buildActivityDetailPageShellCard/);
+    expect(model).toMatch(/resolveActivityDetailPeekParityCard/);
+    expect(peekCard).toMatch(/buildActivityDetailPageShellCard/);
     expect(extrasIdx).toBeGreaterThan(aboutIdx);
     expect(body).not.toMatch(/consumerInline|ActivityDetailPlaceTabPanels/);
     expect(consumerBody).toMatch(/factsOnly/);

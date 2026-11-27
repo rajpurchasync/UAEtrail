@@ -25,16 +25,16 @@ describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
     expect(vitestIdx).toBeGreaterThan(preflightIdx);
   });
 
-  it('P5-SLO-02: smoke script, package scripts, and migration row exist', () => {
+  it('P5-SLO-02: smoke script and package scripts exist', () => {
     expect(existsSync(join(ROOT, 'scripts/ops/p5-slo-smoke.mjs'))).toBe(true);
     const pkg = JSON.parse(read('package.json')) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
     expect(pkg.scripts?.['p5:slo-preflight']).toMatch(/--preflight/);
-    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
-      migrations?: { id: string; status: string }[];
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
+      phases?: { id: string; engineeringStatus?: string }[];
     };
-    const mig = archive.migrations?.find((row) => row.id === 'MIG-P5-SLO-SMOKE');
-    expect(mig).toBeTruthy();
+    expect(program.phases?.find((p) => p.id === 'P5')?.engineeringStatus).toBe('complete');
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(false);
   });
 
   it('P5-SLO-03: P5 slos[] and PRE_DEPLOY checklist list the same SLO ids', () => {

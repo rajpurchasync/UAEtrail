@@ -10,13 +10,13 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  * @see platform-governance.json phases[].P4b · releaseOpsProgramGuard
  */
 describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
-  it('P4B-PHASE-01: every P4b migration row is complete', () => {
-    const p4b = (JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations ?? []).filter(
-      (m: { phase?: string }) => m.phase === 'P4b'
-    );
-    expect(p4b.length).toBeGreaterThan(0);
-    const open = p4b.filter((m) => m.status !== 'complete');
-    expect(open.map((m) => m.id)).toEqual([]);
+  it('P4B-PHASE-01: P4b engineering closed in platform-governance', () => {
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
+      phases?: { id: string; engineeringStatus?: string; status?: string }[];
+    };
+    const p4b = program.phases?.find((p) => p.id === 'P4b');
+    expect(p4b?.engineeringStatus).toBe('complete');
+    expect(p4b?.status).toBe('in_progress');
   });
 
   it('P4B-PHASE-02: P4b exit criteria reference S10f ops and verify:system', () => {

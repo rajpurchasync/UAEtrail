@@ -19,6 +19,12 @@ const R6_CONTRACTS = [
   'packages/shared-types/src/notification-bookmark-path.test.ts',
   'src/components/activity/ActivityDetailView.rtl.test.tsx',
   'src/components/activity/detail/useActivityDetailViewModel.contract.test.tsx',
+  'src/components/activity/detail/activityDetailViewModelHeroFacts.test.ts',
+  'src/components/activity/detail/activityDetailViewModelPeekCard.test.ts',
+  'src/components/activity/detail/activityDetailViewModelPlaceAccess.test.ts',
+  'src/components/activity/detail/activityDetailViewModelRoster.test.ts',
+  'src/components/activity/detail/activityDetailViewModelSplit.guard.test.ts',
+  'src/discovery/discoveryPortExplorePolicy.contract.test.ts',
 ];
 
 describe('R6 program closure — executing contracts registered', () => {

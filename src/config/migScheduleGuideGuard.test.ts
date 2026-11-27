@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = join(process.cwd());
@@ -163,12 +163,6 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
     expect(connections).toMatch(/engagementTerms:/);
     const fixed = readFileSync(join(ROOT, 'apps/api/scripts/seed-demo-availability-fixed.ts'), 'utf8');
     expect(fixed).toMatch(/modalities: projection\.modalities/);
-    const archive = JSON.parse(
-      readFileSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'), 'utf8')
-    ) as {
-      migrations: { id: string; status: string }[];
-    };
-    const mig = archive.migrations?.find((row) => row.id === 'MIG-SCHEDULE-GUIDE');
-    expect(mig?.status).toBe('complete');
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(false);
   });
 });

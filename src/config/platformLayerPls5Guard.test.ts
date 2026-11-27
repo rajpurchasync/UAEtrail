@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { UPL_INTENT_OPEN_ACTION } from '../content/upl-glossary';
 import { BROWSE_LIST_CREATE_CREW } from '../discovery/discoveryPortListBrowseCard';
@@ -27,16 +27,9 @@ describe('platformLayerPls5Guard (MIG-PLATFORM-LAYER-SPINE closure)', () => {
     expect(read('apps/api/src/routes/user/registerDiscoverCrewRoutes.ts')).toMatch(/\/discover\/crew/);
   });
 
-  it('LAYER-20: PLS-5 complete and migration closed in program', () => {
-    const spine = JSON.parse(read('scripts/governance/platform-layer-spine-touchpoints.json')) as {
-      phases: { id: string; status: string }[];
-    };
-    const p5 = spine.phases.find((p) => p.id === 'PLS-5');
-    expect(p5?.status).toBe('complete');
-    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
-      migrations: { id: string; status: string }[];
-    };
-    const mig = archive.migrations.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');
-    expect(mig?.status).toBe('complete');
+  it('LAYER-20: PLS-5 shipped in code (no spine schedule JSON)', () => {
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-layer-spine-touchpoints.json'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/ExploreMapRecommendedSheet.tsx'))).toBe(true);
+    expect(read('src/config/platformLayerSpineGuard.test.ts')).toMatch(/MIG-PLATFORM-LAYER-SPINE/);
   });
 });

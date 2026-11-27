@@ -29,13 +29,11 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     const mg = read('packages/shared-types/src/member-group.ts');
     expect(mg).toMatch(/MEMBER_GROUP_KINDS = \['team', 'outing_crew'\]/);
     expect(read('src/pages/Groups.tsx')).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL|Teams/);
-    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json'));
-    const mig = archive.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
-    expect(mig?.status).toBe('complete');
+    expect(read('src/config/communityDiscoverGuard.test.ts')).toMatch(/communityDiscoverGuard/);
   });
 
   it('CREW-PILLAR-03: Friends surface vs guides directory', () => {
-    expect(read('src/list/crews/crewsStatTab.ts')).toMatch(/crewsStatTabPillar/);
+    expect(read('src/list/crews/findCrewPeopleFacets.ts')).toMatch(/FIND_CREW_PEOPLE_STAT_ORDER/);
     expect(read('src/list/crews/crewsGuides.ts')).toMatch(/GUIDE_DIRECTORY_PROFILE_ROLES/);
     expect(read('src/content/productNorthStar.ts')).toMatch(/PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends'/);
     expect(read('src/content/productNorthStar.ts')).toMatch(/PRODUCT_CREWS_TAB_LABEL = 'Crews'/);
@@ -62,7 +60,8 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
 
   it('CREW-PILLAR-06: FE surface map exists', () => {
     expect(read('src/crew/crewPillarSurfaces.ts')).toMatch(/CREW_PILLAR_SURFACE_PATH/);
-    expect(read('scripts/governance/people-vocabulary-touchpoints.json')).toMatch(/"crewPillars"/);
+    expect(read('packages/shared-types/src/crew-people-surfaces.ts')).toMatch(/CREW_PEOPLE_SURFACE_MANIFEST_IDS/);
+    expect(existsSync(join(ROOT, 'scripts/governance/people-vocabulary-touchpoints.json'))).toBe(false);
   });
 
   it('CREW-PILLAR-02b: Groups surface is Teams (not discoverable communities)', () => {
@@ -75,7 +74,7 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(existsSync(join(ROOT, 'src/member/memberHireableRoles.ts'))).toBe(false);
     expect(read('src/list/crews/crewsGuides.ts')).not.toMatch(/memberHireable|HIREABLE_/);
     expect(read('packages/shared-types/src/crew-pillars.ts')).not.toMatch(/'hireable'/);
-    expect(read('scripts/governance/people-vocabulary-touchpoints.json')).toMatch(/"find_crew"/);
+    expect(read('packages/shared-types/src/crew-people-surfaces.ts')).toMatch(/find_crew|find'/);
   });
 
   it('CREW-PILLAR-07: friend request coordination deep link uses socialRequestsPath', () => {

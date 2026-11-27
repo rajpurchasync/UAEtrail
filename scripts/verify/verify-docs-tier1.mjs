@@ -7,7 +7,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Living experiment plans (excl. README). See SYSTEM_COHERENCE §8.6.4 */
+/** Living experiment plans (excl. README). See DOCS_GOVERNANCE */
 const MAX_EXPERIMENT_PLANS = 12;
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');

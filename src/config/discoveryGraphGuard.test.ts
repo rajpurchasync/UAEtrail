@@ -60,11 +60,12 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(existsSync(join(process.cwd(), 'src/discovery/discoveryPortExploreRuntime.ts'))).toBe(false);
   });
 
-  it('DISC-03-07: W90 retired discoveryPortExploreBrowse — BrowseHooks + BrowseUrl only', () => {
+  it('DISC-03-07: W90 browse wire — BrowseWire only (retired Browse / Hooks / Url ports)', () => {
     const discovery = join(process.cwd(), 'src/discovery');
     expect(existsSync(join(discovery, 'discoveryPortExploreBrowse.ts'))).toBe(false);
-    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseHooks.ts'))).toBe(true);
-    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseUrl.ts'))).toBe(true);
+    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseHooks.ts'))).toBe(false);
+    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseUrl.ts'))).toBe(false);
+    expect(existsSync(join(discovery, 'discoveryPortExploreBrowseWire.ts'))).toBe(true);
     expect(read('src/list/browse/browseListCopy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
   });
 
@@ -95,9 +96,6 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
   it('DISC-03-10: W99 booking search guest where copy via GuestWire', () => {
     expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER/);
     expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/resolveExploreSearchBookingWherePlaceholder/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(
-      /resolveExploreSearchBookingWherePlaceholder/
-    );
     expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
@@ -127,10 +125,6 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(feed);
     expect(read('src/explore/search/ExploreSearchHome.tsx')).not.toMatch(
       /from ['"]\.\/exploreSearchHomeCopy['"]/
-    );
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(feed);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).not.toMatch(
-      /resolveExploreSearchBookingWherePlaceholder[\s\S]*from ['"]\.\/exploreSearchHomeCopy['"]/
     );
     expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(feed);
   });
@@ -554,9 +548,10 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('DISC-03-17: FE discovery burn-down program closed (ledger + shim)', () => {
-    const ws = JSON.parse(read('scripts/governance/parallel-burn-down-workstreams.json'));
-    expect(ws.programStatus).toBe('closed');
+  it('DISC-03-17: discovery cross-import metrics at baseline (enforced by guards, not a program ledger)', () => {
+    expect(existsSync(join(process.cwd(), 'scripts/governance/parallel-burn-down-workstreams.json'))).toBe(
+      false
+    );
     const audit = JSON.parse(read('scripts/governance/discovery-import-audit.json'));
     expect(audit.listExploreImports).toBe(0);
     const baseline = JSON.parse(read('scripts/governance/shim-burn-down-baseline.json'));

@@ -7,7 +7,7 @@ const ROOT = process.cwd();
 describe('platformProgramNamingGuard (GW-4 governance spine)', () => {
   it('PGM-NAME-01: platform-governance is the ops index; no legacy program json', () => {
     expect(existsSync(join(ROOT, 'scripts/governance/platform-governance.json'))).toBe(true);
-    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/governance/platform-touchpoint-registry.json'))).toBe(true);
     expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/refactor-program.json'))).toBe(false);

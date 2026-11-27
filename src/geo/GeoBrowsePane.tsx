@@ -29,7 +29,7 @@ import {
   resolveBrowseListSearchPlaceholder,
 } from '../discovery/discoveryPortListGeoBrowse';
 import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreCatalogFilters';
-import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowseHooks';
+import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowseWire';
 import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListBrowseHooks';
 import '../styles/explore-map-chrome.css';
 

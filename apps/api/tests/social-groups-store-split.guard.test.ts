@@ -12,7 +12,26 @@ describe('social groups store split (R5 god-file)', () => {
     const store = read('src/lib/social-groups-store.ts');
     expect(store).toMatch(/social-groups-wall-store/);
     expect(store).not.toMatch(/const presentGroupWallMessages/);
-    expect(store.split(/\r?\n/).length).toBeLessThan(1100);
+    expect(store.split(/\r?\n/).length).toBeLessThan(500);
+  });
+
+  it('routes admin list/detail/delete through social-groups-admin-store', () => {
+    const admin = read('src/lib/social-groups-admin-store.ts');
+    expect(admin).toMatch(/listAllSocialGroupsAdmin/);
+    expect(admin).toMatch(/deleteSocialGroup/);
+    const store = read('src/lib/social-groups-store.ts');
+    expect(store).toMatch(/social-groups-admin-store/);
+    expect(store).not.toMatch(/export const listAllSocialGroupsAdmin/);
+  });
+
+  it('routes invites and membership writes through social-groups-membership-store', () => {
+    const membership = read('src/lib/social-groups-membership-store.ts');
+    expect(membership).toMatch(/createGroupInvite/);
+    expect(membership).toMatch(/updateKidGroupMember/);
+    expect(membership).toMatch(/listGroupMembersDetailed/);
+    const store = read('src/lib/social-groups-store.ts');
+    expect(store).toMatch(/social-groups-membership-store/);
+    expect(store).not.toMatch(/const upsertAdultMembership/);
   });
 
   it('keeps shared Mongo mappers in social-groups-store-internals', () => {

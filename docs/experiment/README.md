@@ -1,6 +1,6 @@
 # Experiment folder (retired)
 
-**Do not add plan files here.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8** + [`scripts/governance/platform-governance.json`](../../scripts/governance/platform-governance.json).
+**Do not add plan files here.** Implementation truth is **code + guards**; open ops gates live in [`platform-governance.json`](../../scripts/governance/platform-governance.json) and [`PRE_DEPLOY_CHECKLIST.md`](../PRE_DEPLOY_CHECKLIST.md) — not markdown schedules.
 
 | Need | Read |
 |------|------|

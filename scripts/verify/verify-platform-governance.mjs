@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Platform governance — ops phases, WIP, touchpoint registry (GW-4).
- * Closed MIG ledger: scripts/governance/platform-migration-archive.json
+ * Closed MIG ledger retired (guards + manifest only).
  * @see docs/SYSTEM_COHERENCE.md §8.6
  */
 import { execSync } from 'node:child_process';
@@ -31,9 +31,8 @@ if (!existsSync(governancePath)) {
   fail('missing scripts/governance/platform-governance.json');
   process.exit(1);
 }
-if (!existsSync(archivePath)) {
-  fail('missing scripts/governance/platform-migration-archive.json');
-  process.exit(1);
+if (existsSync(archivePath)) {
+  fail('scripts/governance/platform-migration-archive.json must not exist (retired ledger)');
 }
 if (!existsSync(registryPath)) {
   fail('missing scripts/governance/platform-touchpoint-registry.json');
@@ -44,7 +43,6 @@ if (existsSync(join(root, 'scripts/platform-program.json'))) {
 }
 
 const governance = JSON.parse(readFileSync(governancePath, 'utf8'));
-const archive = JSON.parse(readFileSync(archivePath, 'utf8'));
 const registry = JSON.parse(readFileSync(registryPath, 'utf8'));
 const coherence = readFileSync(coherencePath, 'utf8');
 
@@ -68,46 +66,11 @@ if (!existsSync(manifestPath)) {
 }
 
 const maxWip = governance.capacity?.maxInProgressMigrations ?? 2;
-const inProgress = (archive.migrations ?? []).filter((m) => m.status === 'in_progress');
-if (inProgress.length > maxWip) {
+const inProgressFromRegistry = (registry.programs ?? []).filter((p) => p.status === 'in_progress');
+if (inProgressFromRegistry.length > maxWip) {
   fail(
-    `${inProgress.length} migrations in_progress (max ${maxWip}): ${inProgress.map((m) => m.id).join(', ')}`
+    `${inProgressFromRegistry.length} in-flight programs in registry (max ${maxWip}): ${inProgressFromRegistry.map((m) => m.programId).join(', ')}`
   );
-}
-
-const phaseIds = new Set((governance.phases ?? []).map((p) => p.id));
-for (const migration of archive.migrations ?? []) {
-  if (!migration.id?.startsWith('MIG-')) {
-    fail(`migration ${migration.id ?? '?'} must use MIG-* id`);
-  }
-  if (migration.phase && !phaseIds.has(migration.phase)) {
-    fail(`migration ${migration.id} references unknown phase ${migration.phase}`);
-  }
-
-  if (migration.status === 'complete') {
-    if (!migration.archivedAt) {
-      fail(`complete migration ${migration.id}: missing archivedAt`);
-    }
-    if (migration.feRoots?.length) {
-      fail(`complete migration ${migration.id}: feRoots not allowed after archive`);
-    }
-    if (migration.apiRoots?.length) {
-      fail(`complete migration ${migration.id}: apiRoots not allowed after archive`);
-    }
-    if (migration.executionPhases?.length) {
-      fail(`complete migration ${migration.id}: executionPhases not allowed after archive`);
-    }
-    continue;
-  }
-
-  if (migration.status === 'in_progress' || migration.status === 'planned') {
-    for (const rel of [...(migration.feRoots ?? []), ...(migration.apiRoots ?? [])]) {
-      const abs = join(root, rel);
-      if (!existsSync(abs)) {
-        fail(`migration ${migration.id}: missing path ${rel}`);
-      }
-    }
-  }
 }
 
 for (const row of registry.programs ?? []) {
@@ -116,6 +79,9 @@ for (const row of registry.programs ?? []) {
   }
   if (!row.scheduleDoc) {
     fail(`registry ${row.programId}: missing scheduleDoc`);
+  }
+  if (row.scheduleDoc.endsWith('.json') && !existsSync(join(root, row.scheduleDoc))) {
+    fail(`registry ${row.programId}: missing schedule file ${row.scheduleDoc}`);
   }
 }
 
@@ -133,7 +99,7 @@ if (failed) {
 
 try {
   execSync(
-    'npx vitest run src/config/programArchiveGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts src/config/platformProgramNamingGuard.test.ts src/config/governanceSurfaceGuard.test.ts src/config/platformTouchpointRegistryGuard.test.ts',
+    'npx vitest run src/config/governanceLedgerRetiredGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts src/config/platformProgramNamingGuard.test.ts src/config/governanceSurfaceGuard.test.ts src/config/platformTouchpointRegistryGuard.test.ts',
     {
       cwd: root,
       stdio: 'inherit',
@@ -146,5 +112,5 @@ try {
 }
 
 console.log(
-  `[verify:platform-governance] OK — ${governance.phases?.length ?? 0} phases, ${archive.migrations?.length ?? 0} archived MIGs, ${registry.programs?.length ?? 0} registry row(s), ${inProgress.length}/${maxWip} WIP`
+  `[verify:platform-governance] OK — ${governance.phases?.length ?? 0} phases, ${registry.programs?.length ?? 0} registry row(s), ${inProgressFromRegistry.length}/${maxWip} WIP`
 );

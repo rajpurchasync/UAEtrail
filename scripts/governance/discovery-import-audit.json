@@ -12,8 +12,8 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 221,
-      "browse": 81,
+      "..": 216,
+      "browse": 78,
       "crews": 3,
       "components": 1,
       "config": 1,
@@ -52,7 +52,7 @@
     "src/crew-discovery": {
       "content": 4,
       "lib": 6,
-      "..": 25,
+      "..": 23,
       "discover": 1,
       "discovery": 5,
       "config": 1,
@@ -63,8 +63,8 @@
     }
   },
   "byTarget": {
-    "..": 270,
-    "browse": 81,
+    "..": 263,
+    "browse": 78,
     "crews": 3,
     "components": 5,
     "config": 6,

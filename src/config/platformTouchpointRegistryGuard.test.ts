@@ -10,32 +10,19 @@ describe('platformTouchpointRegistryGuard (GW-4)', () => {
     programs?: { programId: string; scheduleDoc: string; status: string }[];
   };
 
-  it('REG-01: active schedules registered (touchpoints or verify gate)', () => {
-    const ids = new Set((registry.programs ?? []).map((p) => p.programId));
-    for (const required of [
-      'MIG-PLATFORM-LAYER-SPINE',
-      'MIG-DISCOVER-RECOMMENDATIONS',
-      'MIG-PEOPLE-VOCAB-2026',
-      'MIG-PLATFORM-COMPOSE-OPERATOR-2026',
-    ]) {
-      expect(ids.has(required), required).toBe(true);
-    }
+  it('REG-01: registry exists; empty when eng programs closed', () => {
+    expect(Array.isArray(registry.programs)).toBe(true);
+    expect((registry.programs ?? []).every((p) => p.status !== 'in_progress')).toBe(true);
   });
 
-  it('REG-02: touchpoint JSON files exist on disk', () => {
+  it('REG-02: scheduleDoc paths exist when registry rows use .json files', () => {
     const missing: string[] = [];
     for (const row of registry.programs ?? []) {
-      if (!row.scheduleDoc.endsWith('.json')) continue;
+      if (!row.scheduleDoc?.endsWith('.json')) continue;
       if (!existsSync(join(ROOT, row.scheduleDoc))) {
         missing.push(`${row.programId}: ${row.scheduleDoc}`);
       }
     }
     expect(missing, missing.join('\n')).toEqual([]);
-  });
-
-  it('REG-03: people vocab touchpoints programId matches registry', () => {
-    const manifest = JSON.parse(read('scripts/governance/people-vocabulary-touchpoints.json')) as { programId: string };
-    const row = registry.programs?.find((p) => p.programId === manifest.programId);
-    expect(row?.scheduleDoc).toBe('scripts/governance/people-vocabulary-touchpoints.json');
   });
 });

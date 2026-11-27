@@ -83,10 +83,8 @@ switch (step) {
       console.error('[s10f:ops] checklist FAILED — PRE_DEPLOY missing s10f:ops commands');
       process.exit(1);
     }
-    const archive = JSON.parse(readFileSync(join(root, 'scripts/governance/platform-migration-archive.json'), 'utf8'));
-    const mig = archive.migrations?.find((m) => m.id === 'MIG-SURFACE-ACTIVITY-DETAIL');
-    if (!mig || mig.status !== 'complete') {
-      console.error('[s10f:ops] checklist FAILED — MIG-SURFACE-ACTIVITY-DETAIL must be complete');
+    if (existsSync(join(root, 'scripts/governance/platform-migration-archive.json'))) {
+      console.error('[s10f:ops] checklist FAILED — retired platform-migration-archive.json must not exist');
       process.exit(1);
     }
     console.log('[s10f:ops] checklist OK — eng wiring (run print-routes on staging with BASE_URL)');

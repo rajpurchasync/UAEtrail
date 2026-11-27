@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from './ActivityDetailView';
@@ -10,30 +11,32 @@ vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({ user: null, loading: false }),
 }));
 
+vi.mock('../../hooks/useHostParticipantReviewHints', () => ({
+  useHostParticipantReviewHints: () => ({ hints: [], loading: false }),
+}));
+
 vi.mock('../../activity/useActivityDetailMapPeekHandlers', () => ({
   useActivityDetailMapPeekHandlers: () => ({}),
 }));
 
-const viewModelState = vi.hoisted(() => ({
-  isEmbedded: true,
-  publicDetail: false,
-  showInviteShare: false,
-  activity: { id: 'act-smoke', title: 'Smoke hike', activityType: 'hiking' },
-  previewMode: false,
-  activityTitle: 'Smoke hike',
-  titleChromeLine: 'Smoke hike',
-  stickyFooter: null,
-  peekParityCard: null,
-  heroImage: '',
+vi.mock('./detail/useActivityDetailJoinSurfaces', () => ({
+  useActivityDetailJoinSurfaces: () => ({
+    joinUiState: { tone: 'open' as const, label: "I'm going" },
+    sharePayload: { title: 'Smoke hike', text: '', path: '/activity/act-smoke' },
+    stickyFooter: null,
+    sidebarJoin: null,
+    planRequestManagePanel: null,
+    partyEditPanel: null,
+  }),
 }));
 
-vi.mock('./detail/useActivityDetailViewModel', () => ({
-  useActivityDetailViewModel: () => viewModelState,
-}));
-
-vi.mock('./detail/ActivityDetailBody', () => ({
-  ActivityDetailBody: () => <div data-testid="activity-detail-body">embedded</div>,
-}));
+vi.mock('../ui', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../ui')>();
+  return {
+    ...actual,
+    ShareButton: () => null,
+  };
+});
 
 vi.mock('../mobile/MobileDetailScrollShell', () => ({
   MobileDetailScrollShell: ({ children }: { children?: ReactNode }) => (
@@ -42,75 +45,78 @@ vi.mock('../mobile/MobileDetailScrollShell', () => ({
 }));
 
 vi.mock('../mobile/MobileDetailShell', () => ({
-  MobileDetailShell: ({ children }: { children?: ReactNode }) => (
-    <div data-testid="mobile-detail-shell">{children}</div>
+  MobileDetailShell: ({
+    children,
+    banner,
+  }: {
+    children?: ReactNode;
+    banner?: { title?: string };
+  }) => (
+    <div data-testid="mobile-detail-shell" data-banner-title={banner?.title ?? ''}>
+      {children}
+    </div>
   ),
 }));
 
 vi.mock('../../activity/detail/templates/ActivityDetailSections', () => ({
-  ActivityDetailSections: () => <div data-testid="activity-detail-sections" />,
+  ActivityDetailSections: ({ model }: { model: { activityTitle: string; publicDetail: boolean } }) => (
+    <div data-testid="activity-detail-sections" data-public-detail={String(model.publicDetail)}>
+      {model.activityTitle}
+    </div>
+  ),
 }));
 
 vi.mock('../../activity/activityDetailHeaderChrome', () => ({
   resolveActivityDetailHeaderChrome: () => null,
 }));
 
+const renderDetail = (ui: ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>
+  );
+};
+
 const activity = {
   id: 'act-smoke',
   title: 'Smoke hike',
   activityType: 'hiking',
+  locationName: 'Hatta',
+  date: '2026-02-01',
+  status: 'published',
 } as ActivityDetailDTO;
 
-const defaultViewModel = () => ({
-  isEmbedded: true,
-  publicDetail: false,
-  showInviteShare: false,
-  activity: { id: 'act-smoke', title: 'Smoke hike', activityType: 'hiking' },
-  previewMode: false,
-  activityTitle: 'Smoke hike',
-  titleChromeLine: 'Smoke hike',
-  stickyFooter: null,
-  peekParityCard: null,
-  heroImage: '',
-});
-
-describe('ActivityDetailView (RTL smoke)', () => {
+describe('ActivityDetailView (RTL integration)', () => {
   afterEach(() => cleanup());
 
-  it('renders embedded shell via ActivityDetailBody', () => {
-    Object.assign(viewModelState, defaultViewModel(), { isEmbedded: true, publicDetail: false });
-    render(
-      <MemoryRouter>
-        <ActivityDetailView activity={activity} layout="embedded" />
-      </MemoryRouter>
-    );
-    expect(screen.getByTestId('activity-detail-body')).toBeInTheDocument();
+  it('renders embedded grid via real view model', () => {
+    renderDetail(<ActivityDetailView activity={activity} layout="embedded" />);
+    expect(screen.getByText('About this activity')).toBeInTheDocument();
+    expect(screen.getAllByText('Hatta').length).toBeGreaterThan(0);
   });
 
-  it('renders public scroll template when publicDetail is set', () => {
-    Object.assign(viewModelState, defaultViewModel(), { isEmbedded: false, publicDetail: true });
-    render(
-      <MemoryRouter>
-        <ActivityDetailView activity={activity} />
-      </MemoryRouter>
-    );
+  it('public consumer page wires real view model into sections template', () => {
+    renderDetail(<ActivityDetailView activity={activity} layout="page" detailKind="hiking" />);
+    const sections = screen.getByTestId('activity-detail-sections');
+    expect(sections).toHaveTextContent('Smoke hike');
+    expect(sections).toHaveAttribute('data-public-detail', 'true');
     expect(screen.getByTestId('public-detail-scroll')).toBeInTheDocument();
-    expect(screen.getByTestId('activity-detail-sections')).toBeInTheDocument();
   });
 
-  it('renders classic mobile shell when not embedded and not publicDetail', () => {
-    Object.assign(viewModelState, defaultViewModel(), {
-      isEmbedded: false,
-      publicDetail: false,
-      previewMode: true,
-    });
-    render(
-      <MemoryRouter>
-        <ActivityDetailView activity={activity} previewMode />
-      </MemoryRouter>
-    );
+  it('preview mode uses mobile shell with title chrome from view model', () => {
+    renderDetail(<ActivityDetailView activity={activity} layout="page" previewMode />);
     const shell = screen.getByTestId('mobile-detail-shell');
-    expect(shell).toBeInTheDocument();
-    expect(within(shell).getByTestId('activity-detail-body')).toBeInTheDocument();
+    expect(shell).toHaveAttribute('data-banner-title', 'Smoke hike');
+    expect(within(shell).getByText('About this activity')).toBeInTheDocument();
+  });
+
+  it('requiresSignIn keeps public template but hides place crew surfaces in view model', () => {
+    renderDetail(<ActivityDetailView activity={activity} layout="page" requiresSignIn />);
+    expect(screen.getByTestId('activity-detail-sections')).toHaveAttribute('data-public-detail', 'true');
+    expect(screen.queryByText(/crew/i)).not.toBeInTheDocument();
   });
 });

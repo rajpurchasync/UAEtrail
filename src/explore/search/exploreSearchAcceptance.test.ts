@@ -27,7 +27,7 @@ describe('explore search results', () => {
   it('explore search modules are self-contained (no explore/hub code island)', () => {
     const canonicalSources = [
       'src/explore/search/exploreSearchLastSearch.ts',
-      'src/explore/search/ExploreSearchScopePills.tsx',
+      'src/explore/search/ExploreSearchRecommendedScopePills.tsx',
       'src/explore/search/ExploreSearchBookingHero.tsx',
       'src/explore/search/exploreSearchUpcomingTrips.ts',
     ];

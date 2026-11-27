@@ -142,11 +142,10 @@ describe('doc coherence (Tier 1)', () => {
     expect(existsSync(governancePath)).toBe(true);
     expect(existsSync(join(process.cwd(), 'scripts/platform-program.json'))).toBe(false);
     const governance = JSON.parse(readFileSync(governancePath, 'utf8'));
-    const archive = JSON.parse(readFileSync(join(process.cwd(), 'scripts/governance/platform-migration-archive.json'), 'utf8'));
     expect(governance.authorization?.statement).toMatch(/PCOH|coherence program/i);
     expect(governance.authorization?.authorizedPhases).toContain('PCOH');
     expect(governance.capacity?.maxInProgressMigrations).toBe(2);
-    expect((archive.migrations ?? []).some((m: { id: string }) => m.id === 'MIG-COH-00')).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/governance/platform-migration-archive.json'))).toBe(false);
     expect((governance.phases ?? []).some((p: { id: string }) => p.id === 'PCOH')).toBe(true);
   });
 

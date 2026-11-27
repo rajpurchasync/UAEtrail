@@ -1,6 +1,6 @@
 /**
  * Mobile Crews tab — two product surfaces (must not merge in one body).
- * @see scripts/governance/people-vocabulary-touchpoints.json `surfaces.find_crew` · `surfaces.my_crew`
+ * Find crew vs My crew wire — `peopleVocabularyTouchpointsGuard` (PVOC-03a).
  */
 
 export const CREW_PEOPLE_SURFACE_WIRE = ['find', 'my'] as const;

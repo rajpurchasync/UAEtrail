@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "CTO whole-system audit pillars (greenfield lens vs brownfield). Outputs: npm run system:audit → scripts/governance/system-audit-baseline.json. Narrative: docs/SYSTEM_COHERENCE.md §8.6.",
+  "description": "CTO whole-system audit pillars (greenfield lens vs brownfield). Outputs: npm run system:audit → scripts/governance/system-audit-baseline.json. Narrative: docs/SYSTEM_COHERENCE.md §3–§7.",
   "greenfieldPrinciples": [
     "One write path per aggregate (activity, place, facility, join request, message thread).",
     "Read models explicit (explore map, detail DTO, inbox, coordination attention) — not ad-hoc FE projection stacks.",

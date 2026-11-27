@@ -38,11 +38,7 @@ describe('p4bS10fProgramGuard (P4b S10f ops)', () => {
     expect(preDeploy).toMatch(/S10f/);
   });
 
-  it('S10F-OPS-03: activity-detail migration complete and core guard files exist', () => {
-    const mig = JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.find(
-      (m: { id: string; status: string }) => m.id === 'MIG-SURFACE-ACTIVITY-DETAIL'
-    );
-    expect(mig?.status).toBe('complete');
+  it('S10F-OPS-03: activity-detail guard files exist', () => {
     for (const rel of S10F_GUARD_FILES) {
       expect(existsSync(join(ROOT, rel))).toBe(true);
     }

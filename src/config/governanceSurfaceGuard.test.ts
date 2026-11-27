@@ -23,10 +23,14 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(plans, `remove: ${plans.join(', ')}`).toEqual([]);
   });
 
-  it('GW1-02: people-vocabulary touchpoints omit planFile pointer', () => {
-    const raw = read('scripts/governance/people-vocabulary-touchpoints.json');
-    expect(raw).not.toMatch(/"planFile"/);
-    expect(raw).not.toMatch(/\.cursor\/plans\//);
+  it('GW1-02: no people-vocabulary schedule JSON or planFile pointers in governance', () => {
+    expect(existsSync(join(ROOT, 'scripts/governance/people-vocabulary-touchpoints.json'))).toBe(false);
+    const governanceDir = join(ROOT, 'scripts/governance');
+    for (const name of readdirSync(governanceDir).filter((f) => f.endsWith('.json'))) {
+      const raw = read(`scripts/governance/${name}`);
+      expect(raw, name).not.toMatch(/"planFile"/);
+      expect(raw, name).not.toMatch(/\.cursor\/plans\//);
+    }
   });
 
   it('GW1-03: no program-normalize-archive or compact-ledger shims', () => {
@@ -87,18 +91,15 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(composeAt).toBeGreaterThan(domainAt);
   });
 
-  it('GW1-04: platform-governance has archivePolicy; no MIG-PROGRAM-ARCHIVE row', () => {
+  it('GW1-04: platform-governance has archivePolicy without migration ledger', () => {
     const governance = JSON.parse(read('scripts/governance/platform-governance.json')) as { archivePolicy?: string };
-    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
-      migrations?: { id: string }[];
-    };
-    expect(governance.archivePolicy).toMatch(/touchpoint-registry/i);
-    expect(archive.migrations?.some((m) => m.id === 'MIG-PROGRAM-ARCHIVE')).toBe(false);
+    expect(governance.archivePolicy).toMatch(/touchpoint-registry|bounded-context-manifest/i);
+    expect(governance.archivePolicy ?? '').not.toMatch(/platform-migration-archive/i);
   });
 
   it('GW4-01: retired platform-program.json (GW-4 split spine)', () => {
     expect(existsSync(join(ROOT, 'scripts/governance/platform-governance.json'))).toBe(true);
-    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/governance/platform-touchpoint-registry.json'))).toBe(true);
     expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/compact-platform-program.mjs'))).toBe(false);
@@ -228,7 +229,7 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   });
 
   it('GW12-01: retired module alias exports removed', () => {
-    expect(read('src/list/crews/crewsStatTab.ts')).not.toMatch(/crewsStatTabFromSegment/);
+    expect(read('src/list/crews/findCrewPeopleFacets.ts')).not.toMatch(/crewsStatTabFromSegment/);
     expect(read('src/activity-discovery/catalog/availabilityCatalog.ts')).not.toMatch(
       /ExploreAvailabilityCatalogFilters/
     );

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * MIG-PLATFORM-LAYER-SPINE — Publish · Discover · Join · Connect · Plan · Manage.
- * Schedule: scripts/governance/platform-layer-spine-touchpoints.json
+ * Enforcement: shared-types contracts + platformLayerSpineGuard (schedule JSON retired).
  */
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
@@ -13,23 +13,16 @@ stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const childEnv = () => stripNpmDevdirEnv();
 
-const touchpointsPath = join(root, 'scripts/governance/platform-layer-spine-touchpoints.json');
-if (!existsSync(touchpointsPath)) {
-  console.error('[verify:platform-layer-spine] missing scripts/governance/platform-layer-spine-touchpoints.json');
-  process.exit(1);
+const retired = [
+  'scripts/governance/platform-layer-spine-touchpoints.json',
+  'scripts/governance/platform-layer-spine-touchpoints.schema.json',
+];
+for (const rel of retired) {
+  if (existsSync(join(root, rel))) {
+    console.error(`[verify:platform-layer-spine] retired schedule must not exist: ${rel}`);
+    process.exit(1);
+  }
 }
-
-const spine = JSON.parse(readFileSync(touchpointsPath, 'utf8'));
-const registry = JSON.parse(readFileSync(join(root, 'scripts/governance/platform-touchpoint-registry.json'), 'utf8'));
-const row = registry.programs?.find((p) => p.programId === spine.programId);
-if (!row) {
-  console.error('[verify:platform-layer-spine] registry missing', spine.programId);
-  process.exit(1);
-}
-
-console.log('[verify:platform-layer-spine] program', spine.programId, 'status:', row.status ?? '?');
-const inProgress = (spine.phases ?? []).filter((p) => p.status === 'in_progress');
-console.log('[verify:platform-layer-spine] active phases:', inProgress.map((p) => p.id).join(', ') || 'none');
 
 const run = (label, command) => {
   console.log(`\n[verify:platform-layer-spine] ${label}`);

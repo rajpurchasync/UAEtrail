@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-/** MIG-DISCOVER-RECOMMENDATIONS — server-ranked Discover surfaces. */
+/** Discover recommendations — contract tests only (no touchpoint schedule JSON). */
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
@@ -10,21 +10,11 @@ stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const childEnv = () => stripNpmDevdirEnv();
 
-const touchpointsPath = join(root, 'scripts/governance/discover-recommendations-touchpoints.json');
-if (!existsSync(touchpointsPath)) {
-  console.error('[verify:discover-recommendations] missing touchpoints json');
+const retiredTouchpoints = join(root, 'scripts/governance/discover-recommendations-touchpoints.json');
+if (existsSync(retiredTouchpoints)) {
+  console.error('[verify:discover-recommendations] retired touchpoints json must not exist');
   process.exit(1);
 }
-
-const touchpoints = JSON.parse(readFileSync(touchpointsPath, 'utf8'));
-const registry = JSON.parse(readFileSync(join(root, 'scripts/governance/platform-touchpoint-registry.json'), 'utf8'));
-const row = registry.programs?.find((p) => p.programId === touchpoints.programId);
-if (!row) {
-  console.error('[verify:discover-recommendations] touchpoint registry missing', touchpoints.programId);
-  process.exit(1);
-}
-
-console.log('[verify:discover-recommendations]', touchpoints.programId, 'status:', row.status ?? '?');
 
 try {
   execSync(

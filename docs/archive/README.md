@@ -1,6 +1,6 @@
 # Archived documentation
 
-**Do not implement from this folder.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8.8 (PCOH)** and [`scripts/governance/platform-governance.json`](../../scripts/governance/platform-governance.json) (`MIG-COH-*`).
+**Do not implement from this folder.** Use [`DOCS_INDEX.md`](../DOCS_INDEX.md) → Tier-1 + `wire-lexicon.ts` / guards. Archived files are **one-line stubs** only (no narrative bodies).
 
 | Removed / retired | Use instead |
 |-------------------|-------------|

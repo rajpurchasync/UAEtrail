@@ -9,21 +9,11 @@ import type {
   ActivityParticipationDTO,
   ReviewDTO,
 } from '@uaetrail/shared-types';
-import {
-  activityIsConsumerDiscoverable,
-  exploreActivityPublisherTypeLabel,
-  resolveActivityPublisherProfilePath,
-} from '@uaetrail/shared-types';
+import { activityIsConsumerDiscoverable } from '@uaetrail/shared-types';
 import { PARTICIPANT_PRIVACY } from '../../../config/platform';
 import type { ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
-import { buildGoogleMapsSearchUrl } from '../../../utils/mapLinks';
-import { activityRegistryPlacePath } from '../../../utils/activityRegistryPlacePath';
 import type { ActivityDetailTabId } from '../../../activity/activityDetailTab';
-import {
-  activityKindChromeEmoji,
-  activityKindChromeLabel,
-  activityTitleChromeLine,
-} from '../../../activity/activityKindChrome';
+import { activityTitleChromeLine } from '../../../activity/activityKindChrome';
 import {
   activityDetailShowHostProfileProUpsell,
   activityDetailShowRosterProUpsell,
@@ -45,11 +35,8 @@ import {
 } from '../../../activity/detail/buildActivityDetailPageModel';
 import type { ActivityDetailKind } from '../../../activity/detail/activityDetailKind';
 import type { ActivityDetailTabFooterKind } from '../../../activity/activityDetailTabFooters';
-import {
-  resolveActivityDetailHeroStatusChips,
-  resolveActivityDetailMarketingStatusChips,
-} from '../../../activity/activityDetailHeroStatus';
-import { buildActivityDetailPageShellCard } from '../../../activity/detail/activityDetailPageShellCard';
+import { resolveActivityDetailViewModelHeroFacts } from './activityDetailViewModelHeroFacts';
+import { resolveActivityDetailPeekParityCard } from './activityDetailViewModelPeekCard';
 import { resolveActivityDetailHeroImage } from '../../../activity/resolveActivityDetailHeroImage';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { useActivityDetailJoinSurfaces } from './useActivityDetailJoinSurfaces';
@@ -62,6 +49,11 @@ import { activityHostUserId } from '../../../utils/hostLabels';
 import { resolveJoinRequestUiState } from '../../../utils/joinRequestUi';
 import type { ReactNode } from 'react';
 import type { ActivityRequestView } from '../../../api/types';
+import {
+  resolveActivityDetailHostProfileSurface,
+  resolveActivityDetailPlaceAccess,
+} from './activityDetailViewModelPlaceAccess';
+import { filterActivityDetailRosterParticipants } from './activityDetailViewModelRoster';
 
 export type ActivityDetailViewModelInput = {
   activity: ActivityDetailDTO;
@@ -227,17 +219,16 @@ export const useActivityDetailViewModel = ({
   const heroImageFallback = heroImageResolved.fallback;
 
   const participants = useMemo(() => activity.participants ?? [], [activity.participants]);
-  const rosterParticipants = useMemo(() => {
-    if (!PARTICIPANT_PRIVACY.showPreJoin) return [];
-    if (canAccessCrewSurfaces) {
-      return participants;
-    }
-    if (!viewerEntitlements || viewerEntitlements.canViewFullFriendRoster) {
-      return participants;
-    }
-    const friendSet = new Set(viewerEntitlements?.friendUserIdsOnActivity ?? []);
-    return participants.filter((row) => friendSet.has(row.id));
-  }, [participants, viewerEntitlements, canAccessCrewSurfaces]);
+  const rosterParticipants = useMemo(
+    () =>
+      filterActivityDetailRosterParticipants(
+        participants,
+        Boolean(canAccessCrewSurfaces),
+        viewerEntitlements,
+        PARTICIPANT_PRIVACY.showPreJoin
+      ),
+    [participants, viewerEntitlements, canAccessCrewSurfaces]
+  );
 
   const participantReviewPrompts = useMemo(
     () =>
@@ -264,32 +255,14 @@ export const useActivityDetailViewModel = ({
     hostCrewChatPolicy && !previewMode && !hostReviewHints.loading
   );
 
-  const publishingProfileKind = activity.publishingProfileKind ?? 'community';
-  const hostProfilePath = previewMode
-    ? null
-    : resolveActivityPublisherProfilePath({
-        publishingProfileKind,
-        tenantSlug: activity.tenantSlug,
-        hostUserId: activityHostUserId(activity),
-      });
-  const canOpenHostProfile = Boolean(
-    !viewerEntitlements || viewerEntitlements.canViewHostProfileBeforeJoin
+  const { hostPath, hostProfileHint, canOpenHostProfile, hostProfilePath } =
+    resolveActivityDetailHostProfileSurface(
+    activity,
+    previewMode,
+    viewerEntitlements
   );
-  const hostPath = hostProfilePath && canOpenHostProfile ? hostProfilePath : null;
-  const hostProfileHint =
-    publishingProfileKind && publishingProfileKind !== 'community'
-      ? `${exploreActivityPublisherTypeLabel(publishingProfileKind)} · view profile`
-      : 'Runs this activity · view profile';
-
-  const accessLat =
-    activity.startLat ?? activity.meetingLat ?? activity.parkingLat ?? activity.location?.latitude ?? null;
-  const accessLng =
-    activity.startLng ?? activity.meetingLng ?? activity.parkingLng ?? activity.location?.longitude ?? null;
-  const hasAccessCoordinates = accessLat != null && accessLng != null;
-  const registryPlacePath = previewMode ? null : activityRegistryPlacePath(activity);
-  const registryPlaceName = activity.location?.name?.trim() || activity.locationName?.trim() || null;
-  const openInGoogleMapsUrl =
-    activity.location?.parkingLink ?? (hasAccessCoordinates ? buildGoogleMapsSearchUrl(accessLat, accessLng) : null);
+  const { accessLat, accessLng, hasAccessCoordinates, registryPlacePath, registryPlaceName, openInGoogleMapsUrl } =
+    resolveActivityDetailPlaceAccess(activity, previewMode);
 
   const activityTitle = activity.title || activity.locationName;
   const titleChromeLine = activityTitleChromeLine(activity.activityType, activityTitle);
@@ -390,45 +363,26 @@ export const useActivityDetailViewModel = ({
   });
 
   const isHostUser = Boolean(hostCrewChatPolicy);
-  const heroStatusChips = resolveActivityDetailHeroStatusChips({
+  const { consumerStatusChips, heroFactChips } = resolveActivityDetailViewModelHeroFacts({
+    activity,
     joinUiState,
-    slotsAvailable: activity.slotsAvailable ?? 0,
-    slotsTotal: activity.slotsTotal ?? 0,
     previewMode,
     isHostUser,
-    pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
-    confirmedParticipantCount: activity.participants?.length ?? 0,
+    wireStrips,
+    publicDetail,
+    showMobileTabs,
   });
-  const peekParityCard = useMemo((): DiscoveryCardModel | null => {
-    if (!publicDetail || previewMode) return null;
-    return buildActivityDetailPageShellCard({
-      activity,
-      viewerAccess: viewerAccess ?? null,
-      wireStrips: wireStrips ?? null,
-    });
-  }, [activity, previewMode, publicDetail, viewerAccess, wireStrips]);
-
-  const consumerStatusChips = resolveActivityDetailMarketingStatusChips({
-    joinUiState,
-    slotsAvailable: activity.slotsAvailable ?? 0,
-    slotsTotal: activity.slotsTotal ?? 0,
-    previewMode,
-    isHostUser,
-    pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
-    confirmedParticipantCount: activity.participants?.length ?? 0,
-  });
-
-  const heroFactChips = publicDetail
-    ? consumerStatusChips
-    : showMobileTabs
-      ? [
-          {
-            label: `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`,
-            tone: 'neutral' as const,
-          },
-          ...heroStatusChips,
-        ]
-      : heroStatusChips;
+  const peekParityCard = useMemo(
+    (): DiscoveryCardModel | null =>
+      resolveActivityDetailPeekParityCard(
+        activity,
+        previewMode,
+        publicDetail,
+        viewerAccess,
+        wireStrips
+      ),
+    [activity, previewMode, publicDetail, viewerAccess, wireStrips]
+  );
 
   const canViewSensitivePlanContent = !requiresSignIn && !previewMode;
 

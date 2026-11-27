@@ -181,9 +181,9 @@
   ],
   "stranglerRules": [
     "Work by bounded context id (scripts/governance/bounded-context-manifest.json).",
-    "New in_progress MIG row: id + phase + feRoots/apiRoots until close; then compact via scripts/governance/platform-migration-archive.json only.",
+    "In-flight work: update bounded-context-manifest.json + domain guards; do not add closed MIG ledger files.",
     "At most maxInProgressMigrations in_progress."
   ],
-  "archivePolicy": "GW-4: contracts in bounded-context-manifest.json + *-touchpoints.json + platform-touchpoint-registry.json. Closed ids: platform-migration-archive.json.",
+  "archivePolicy": "GW-4: contracts in bounded-context-manifest.json, domain guard tests, and platform-touchpoint-registry.json (in-flight only).",
   "cleanupWave": "GW-4-platform-governance-split"
 }

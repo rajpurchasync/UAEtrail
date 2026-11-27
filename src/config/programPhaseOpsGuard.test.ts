@@ -17,26 +17,19 @@ type Phase = {
  */
 describe('programPhaseOpsGuard (P4b · P5 ops vs eng)', () => {
   const governance = JSON.parse(read('scripts/governance/platform-governance.json')) as { phases?: Phase[] };
-  const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
-    migrations?: { id: string; phase?: string; status: string }[];
-  };
-
-  it('PHASE-OPS-01: P4b eng closed; all P4b migrations complete', () => {
+  it('PHASE-OPS-01: P4b eng closed; ops gates still open', () => {
     const p4b = governance.phases?.find((p) => p.id === 'P4b');
     expect(p4b?.engineeringStatus).toBe('complete');
     expect((p4b?.opsGatesPending ?? []).length).toBeGreaterThan(0);
     expect(p4b?.status).toBe('in_progress');
-    const open = (archive.migrations ?? []).filter((m) => m.phase === 'P4b' && m.status !== 'complete');
-    expect(open).toEqual([]);
   });
 
-  it('PHASE-OPS-02: P5 eng closed; MIG-P5-SLO-SMOKE migration complete', () => {
+  it('PHASE-OPS-02: P5 eng closed; ops gates still open', () => {
     const p5 = governance.phases?.find((p) => p.id === 'P5');
     expect(p5?.engineeringStatus).toBe('complete');
     expect((p5?.opsGatesPending ?? []).length).toBeGreaterThan(0);
     expect(p5?.status).toBe('in_progress');
-    const mig = archive.migrations?.find((m) => m.id === 'MIG-P5-SLO-SMOKE');
-    expect(mig?.status).toBe('complete');
+    expect(read('src/config/p5SloProgramGuard.test.ts')).toMatch(/P5-SLO/);
   });
 
   it('PHASE-OPS-03: PRE_DEPLOY documents pending ops gates', () => {

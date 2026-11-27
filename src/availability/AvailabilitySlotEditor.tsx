@@ -12,7 +12,7 @@ import {
 } from '@uaetrail/shared-types';
 import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchMyAvailabilityMatchPreview } from '../hooks/memberAvailabilityApi';
-import { useExplorePublishedDestinationsQuery } from '@/discovery/discoveryPortExploreBrowseHooks';
+import { useExplorePublishedDestinationsQuery } from '@/discovery/discoveryPortExploreBrowseWire';
 import { AvailabilityMatchPreview } from '@/discovery/discoveryPortExploreFlowChrome';
 import { mergeVenueStateFilterOptionsWithDestinations } from '../config/regions';
 import { AppButton } from '../components/mobile/AppButton';

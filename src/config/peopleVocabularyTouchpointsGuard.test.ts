@@ -1,52 +1,101 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CREW_PILLAR_IDS } from '@uaetrail/shared-types';
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
-type Touchpoint = {
-  id: string;
-  contextIds: string[];
-  feRoots: string[];
-  uiLabels?: string[];
-  wire?: string[];
-  mustNot?: string[];
-  route?: string;
-};
+/** Primary FE entry points per people-vocab surface (formerly touchpoints schedule). */
+const PEOPLE_VOCAB_FE_ROOTS: Array<{ id: string; paths: string[] }> = [
+  {
+    id: 'surface.my_crews',
+    paths: ['src/pages/MyCrews.tsx', 'src/components/social/SocialHubIndex.tsx'],
+  },
+  {
+    id: 'surface.find_crew',
+    paths: [
+      'src/crew-discovery/panel/CrewsBrowsePanel.tsx',
+      'src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx',
+      'src/crew-discovery/crewBrowseTab.ts',
+    ],
+  },
+  { id: 'surface.teams', paths: ['src/pages/Groups.tsx'] },
+  {
+    id: 'surface.messages',
+    paths: ['src/pages/Messages.tsx', 'src/utils/notificationRouting.ts'],
+  },
+  {
+    id: 'surface.guides_directory',
+    paths: ['src/list/crews/crewsGuides.ts', 'src/crew-discovery/memberBrowseRowModel.ts'],
+  },
+  {
+    id: 'participation.activity_crew_tab',
+    paths: [
+      'src/components/activity/detail/tabs/ActivityDetailCrewAside.tsx',
+      'src/pages/ActivityCrewPage.tsx',
+    ],
+  },
+  {
+    id: 'participation.join_invite',
+    paths: [
+      'src/components/activity/ActivityInviteModalBody.tsx',
+      'src/components/activity/ActivityInviteLauncher.tsx',
+      'src/hooks/activityInviteClientApi.ts',
+    ],
+  },
+  {
+    id: 'member.public_profile',
+    paths: ['src/pages/MemberProfile.tsx', 'src/components/profile/MemberProfileFriendActions.tsx'],
+  },
+  {
+    id: 'compose.intent',
+    paths: [
+      'src/explore/compose.ts',
+      'src/explore/ui/intentFixedFlowEngine.ts',
+      'packages/shared-types/src/member-availability.ts',
+      'packages/shared-types/src/compose-route.ts',
+    ],
+  },
+  {
+    id: 'engagement.wishlist',
+    paths: ['src/wishlist/saveWishlistTarget.ts', 'src/plan/planTab.ts'],
+  },
+  {
+    id: 'notifications.deep_links',
+    paths: ['src/utils/notificationRouting.ts', 'src/utils/notificationTopics.ts'],
+  },
+];
 
-type Manifest = {
-  programId: string;
-  touchpoints: Touchpoint[];
-};
+const INTENT_COMPOSE_FE_ROOTS = [
+  'src/explore/ui/IntentOpenComposeSheet.tsx',
+  'src/components/plan/PlanAvailabilitySection.tsx',
+  'src/explore/ui/intentFixedFlowEngine.ts',
+];
 
 /**
  * MIG-PEOPLE-VOCAB-2026 — system-level vocabulary boundaries (not a single-module rename).
- * Manifest: scripts/governance/people-vocabulary-touchpoints.json
+ * Enforcement: crew-pillars lexicon + these guards (schedule JSON retired).
  */
 describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
-  const manifest: Manifest = JSON.parse(read('scripts/governance/people-vocabulary-touchpoints.json'));
-
-  it('PVOC-00a: manifest documents three surfaces (intent · find crew · my crew)', () => {
-    const raw = JSON.parse(read('scripts/governance/people-vocabulary-touchpoints.json')) as {
-      surfaces?: Record<string, unknown>;
-    };
-    expect(raw.surfaces).toBeTruthy();
-    expect(raw.surfaces).toHaveProperty('intent_compose');
-    expect(raw.surfaces).toHaveProperty('find_crew');
-    expect(raw.surfaces).toHaveProperty('my_crew');
+  it('PVOC-00a: shared-types documents three surfaces (intent · find crew · my crew)', () => {
+    const surfaces = read('packages/shared-types/src/crew-people-surfaces.ts');
+    expect(surfaces).toMatch(/CREW_PEOPLE_SURFACE_MANIFEST_IDS/);
+    expect(surfaces).toMatch(/find_crew/);
+    expect(surfaces).toMatch(/my_crew/);
+    const missingIntent = INTENT_COMPOSE_FE_ROOTS.filter((rel) => !existsSync(join(ROOT, rel)));
+    expect(missingIntent, missingIntent.join('\n')).toEqual([]);
   });
 
   it('PVOC-00b: my crew touchpoint must not host directory browse', () => {
-    const myCrews = manifest.touchpoints.find((tp) => tp.id === 'surface.my_crews');
-    expect(myCrews?.mustNot?.some((line) => /browse|directory/i.test(line))).toBe(true);
-    const findCrew = manifest.touchpoints.find((tp) => tp.id === 'surface.find_crew');
-    expect(findCrew).toBeTruthy();
-    expect(findCrew?.feRoots).toContain('src/crew-discovery/crewBrowseTab.ts');
+    const myCrews = read('src/pages/MyCrews.tsx');
+    expect(myCrews).not.toMatch(/member-discovery\/browse|CrewBrowseTabContent/);
+    expect(existsSync(join(ROOT, 'src/crew-discovery/crewBrowseTab.ts'))).toBe(true);
+    expect(read('src/list/crews/CrewsTabBody.tsx')).not.toMatch(/CrewBrowseMyCrewBody/);
   });
 
   it('PVOC-00: crew pillars match shared-types lexicon', () => {
-    expect(manifest.crewPillars).toEqual([
+    expect(CREW_PILLAR_IDS).toEqual([
       'friends',
       'directory',
       'teams',
@@ -57,23 +106,15 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     ]);
   });
 
-  it('PVOC-01: touchpoint manifest is registered in platform-touchpoint-registry', () => {
-    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json'));
-    const row = registry.programs?.find((m: { programId: string }) => m.programId === manifest.programId);
-    expect(row, manifest.programId).toBeTruthy();
-  });
-
-  it('PVOC-01b: MIG-PEOPLE-VOCAB migration closed', () => {
-    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json'));
-    const row = registry.programs?.find((m: { programId: string }) => m.programId === manifest.programId);
-    expect(row?.status).toBe('complete');
-    expect(row?.scheduleDoc).toBe('scripts/governance/people-vocabulary-touchpoints.json');
+  it('PVOC-01: people vocab touchpoints schedule JSON retired', () => {
+    expect(existsSync(join(ROOT, 'scripts/governance/people-vocabulary-touchpoints.json'))).toBe(false);
+    expect(existsSync(join(ROOT, 'scripts/governance/people-vocabulary-touchpoints.schema.json'))).toBe(false);
   });
 
   it('PVOC-02: every touchpoint primary file exists on disk', () => {
     const missing: string[] = [];
-    for (const tp of manifest.touchpoints) {
-      for (const rel of tp.feRoots) {
+    for (const tp of PEOPLE_VOCAB_FE_ROOTS) {
+      for (const rel of tp.paths) {
         if (!existsSync(join(ROOT, rel))) missing.push(`${tp.id}: ${rel}`);
       }
     }
@@ -85,7 +126,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(tabBody).not.toMatch(/CrewBrowseMyCrewBody/);
     expect(tabBody).not.toMatch(/CrewBrowseGuestDiscoverBody/);
     expect(read('src/list/explorer/ListMyCrewHub.tsx')).toMatch(/MyCrewHubBody/);
-    expect(read('src/list/crews/CrewsHubAppBar.tsx')).toMatch(/findCrewDiscoveryListPath/);
+    expect(read('src/my-crew/MyCrewHubHeader.tsx')).toMatch(/findCrewDiscoveryListPath/);
     expect(read('src/list/crews/findCrewPeopleFacets.ts')).toMatch(/FIND_CREW_PEOPLE_STAT_ORDER/);
     expect(read('src/list/crews/CrewsStatsTabs.tsx')).not.toMatch(/friends/);
     expect(read('packages/shared-types/src/crew-people-surfaces.ts')).toMatch(/CREW_PEOPLE_SURFACE_URL_PARAM/);

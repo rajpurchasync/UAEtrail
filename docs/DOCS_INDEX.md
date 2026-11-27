@@ -2,7 +2,7 @@
 
 **Start here.** Tier-1 is a **closed set** — see [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) (do not add new canonical docs; update the file for your topic).
 
-**Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated map:** `npm run context:map` → `scripts/dev/context-map.md` · **Program / ops:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.6** (eng migrations closed; staging gates in [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
+**Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated map:** `npm run context:map` → `scripts/dev/context-map.md` · **Ops gates:** [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) + [`platform-governance.json`](../scripts/governance/platform-governance.json) (not markdown schedules). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. **Skip** `docs/archive/**` bodies and retired §8 checklists — [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§3–§7** + domain Tier-1 only.
 
 ### Agent / developer — read this, not the whole corpus
 
@@ -13,7 +13,7 @@
 | Routes & URLs | `NAVIGATION.md`, `routingCatalog.ts`, `wire-lexicon.ts` | Old redirect tables unless editing redirects |
 | HTTP handlers | `API_ROUTING.md` + `apps/api/src/routes/*` | Duplicating paths in new markdown |
 | Names & DTOs | `DOMAIN_CANONICALS.md` §6–12, §15 | Full entity glossary in `DOMAIN.md` unless entity work |
-| Drift check | `npm run verify:system:quick` | Reading every guard test by hand |
+| Drift check | `npm run verify:system:quick` | §8 delivery logs, archive essays, guard tests by hand |
 
 **Truth order:** wire-lexicon → manifest → guards/tests → running code → Tier-1 factual deltas (see `DOCS_GOVERNANCE.md`).
 
@@ -30,7 +30,7 @@
 | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account, host tiers, capabilities, host/join/buddy **naming** |
 | [`DOMAIN.md`](./DOMAIN.md) | Entity glossary (Place, Activity, Demand, …) |
 | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |
-| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts, debt register, **platform north star §8.9**, **Program CPC** §8.4, **platform program** §8.6 |
+| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts (**§3–§7**), debt register (**§7**), catalog alignment (**§8.4.9**), routing canon (**§8.7**), platform defaults (**§8.9**) |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
 | [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/publishing/*`, explore, deprecations |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat inbox (`/messages`), `/chat/*` wire, crew wall |
@@ -79,5 +79,5 @@ Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR
 Go live?                   → PRE_DEPLOY_CHECKLIST + DEPLOYMENT
-Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + platform-migration-archive MIG-ARCH-*
+Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + platform-governance.json
 ```

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-11-26",
+  "generated": "2026-11-27",
   "description": "Shim burn-down metrics. Regenerate: npm run shim:baseline",
   "waves": {
     "w0": {
@@ -11,7 +11,7 @@
       "participantIntentOpsAllowlistFileCount": 3,
       "participantIntentOpsAllowlistOnly": true,
       "participantIntentOpsViolations": [],
-      "seekingActivityModeRefsInApiSrc": 3,
+      "seekingActivityModeRefsInApiSrc": 2,
       "seekingActivityModeLiteralRefsInApiSrc": 0,
       "seekingActivityModeLiteralViolations": [],
       "feActivityModeSeekingLiteralRefs": 0,
@@ -117,7 +117,7 @@
     }
   },
   "governance": {
-    "guardTestFileCount": 164
+    "guardTestFileCount": 174
   },
   "nextActions": []
 }

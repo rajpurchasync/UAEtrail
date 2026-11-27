@@ -1,6 +1,0 @@
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Platform layer spine touchpoints",
-  "type": "object",
-  "required": ["version", "programId", "layers", "modules", "phases"]
-}

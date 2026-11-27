@@ -10,15 +10,10 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  * Guards program registration + UPL spine so docs/guards do not drift back to stale compose wire.
  */
 describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', () => {
-  it('PCO-01: migration registered complete on P4b', () => {
-    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json')) as {
-      programs?: Array<{ programId: string; status: string; phase?: string; scheduleDoc: string }>;
-    };
-    const row = registry.programs?.find((m) => m.programId === 'MIG-PLATFORM-COMPOSE-OPERATOR-2026');
-    expect(row).toBeDefined();
-    expect(row?.status).toBe('complete');
-    expect(row?.phase).toBe('P4b');
-    expect(row?.scheduleDoc).toMatch(/verify:compose-spine/);
+  it('PCO-01: compose spine verify wired (no program registry row)', () => {
+    const pkg = JSON.parse(read('package.json')) as { scripts?: Record<string, string> };
+    expect(pkg.scripts?.['verify:compose-spine']).toMatch(/verify-compose-spine/);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(false);
   });
 
   it('PCO-13: Plan upcoming has no availability lens UI (compose intent:open only)', () => {
@@ -73,11 +68,6 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
   it('PCO-05: compose program guard rolls up in verify:domain:fe (GW-3)', () => {
     expect(read('scripts/verify/verify-compose-spine.mjs')).toMatch(/verify:domain:fe/);
     expect(read('scripts/verify/domain-fe-vitest-files.mjs')).toMatch(/migPlatformComposeOperatorProgramGuard\.test\.ts/);
-  });
-
-  it('PCO-06: SYSTEM_COHERENCE references program id', () => {
-    const coherence = read('docs/SYSTEM_COHERENCE.md');
-    expect(coherence).toMatch(/MIG-PLATFORM-COMPOSE-OPERATOR-2026/);
   });
 
   it('PCO-08: FE compose spine — CreateKindSheet + no legacy compose aliases', () => {

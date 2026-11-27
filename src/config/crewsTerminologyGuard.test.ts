@@ -72,7 +72,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
   it('CREWS-05: people list URL module has no INBOUND_BUDDIES alias', () => {
     const peopleUrl = readFileSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'), 'utf8');
     expect(peopleUrl).not.toMatch(/INBOUND_BUDDIES_LIST_TAB_PARAM/);
-    const stats = readFileSync(join(process.cwd(), 'src/list/crews/crewsStatTab.ts'), 'utf8');
+    const stats = readFileSync(join(process.cwd(), 'src/list/crews/findCrewPeopleFacets.ts'), 'utf8');
     expect(stats).not.toMatch(/buddies: 'Buddies'/);
   });
 

@@ -6,7 +6,7 @@
 
 **Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated module map:** `npm run context:map` → `scripts/dev/context-map.md` (code-first; do not duplicate by hand)
 
-**Agents:** Treat **§1–§3** + the manifest as placement truth. **§8** is program history and debt register — do not implement new behavior from §8 rows; grep guards and `wire-lexicon.ts` first. Prefer [`DOCS_INDEX.md`](./DOCS_INDEX.md) “Agent / developer” table over reading this file end-to-end.
+**Agents:** Treat **§1–§3** + the manifest as placement truth. **§§1–7** are architecture truth; **§8** is retired program pointers + catalog alignment (§8.4.9, §8.7, §8.9) — do not implement from removed checklists; grep guards and `wire-lexicon.ts` first. Prefer [`DOCS_INDEX.md`](./DOCS_INDEX.md) “Agent / developer” table over reading this file end-to-end.
 
 ---
 
@@ -156,6 +156,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | destinations | `destinations`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /destinations/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `destinationsApi`, `geoHierarchyApi` | `/destination/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/state/destination/venue search |
 | shop_profiles | `merchant_profiles` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
+| matching | (reads compose; side-effect notify) | `GET /discover/recommendations` — **no** consumer `/matching` mount | — | `apps/api/src/services/matching/*` (import `services/matching/index` only) |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
 
 **API mounts:** `/auth`, `/admin`, `/publishing`, `/chat`, `/shop`, `/media`, `/safety`, `/` (`user.ts`, including public `/reviews`) — see `apps/api/src/routes/index.ts`.
@@ -276,7 +277,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Find crew (availability — MIG-DISCO-REG):** Registry = **`member_availability`** fixed slots; map wire `source: availability`, pin `availability:{userId}:{slotId}`. Summary surface = **`AvailabilityPeekActions`** (profile + message; optional **Offer rideshare** when `canOfferTransport` — dispatch in `discovery/discoveryOfferRideshareDispatch.ts`; people browse rows deep-link to the same pin). Assembler: `discovery-catalog-builder.ts` skips legacy `activityMode: seeking` rows. Ops: `migrate-seeking-to-availability` + `seeking:storage-status` for leftover `participant_intents`; leftover `pin=demand:` is not a product path (`seekingPinHygieneGuard`). Branch closure: [`SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) § MIG-DISCO-REG.
 
-**Parity rule:** Engagement affordances on L2 must match L3 for the same viewer state (`resolvePeekDetailAccess`, activity engagement policy) — see `consumer-detail-surfaces-plan.md`.
+**Parity rule:** Engagement affordances on L2 must match L3 for the same viewer state (`resolvePeekDetailAccess`, activity engagement policy) — §6.1.
 
 **Folder rule:** `src/explore/ui/Explore*.tsx` remaining files are **map chrome** (stage, pills, sheets) until a dedicated pass. **Do not add** new `Explore*` files for entity lists, follows, or people rows — those belong in `crew-discovery` / `discovery`. Folder is the namespace.
 
@@ -366,7 +367,7 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 
 ### 6.2 Frontend surface architecture (system methodology)
 
-**Purpose:** One **object-centric** stack (wire → projection → shell → page composer) across **all** user-facing families — not only map peek and entity detail. Experiment plans (`consumer-detail-surfaces-plan`, `member-surfaces-implementation-plan`) are **workstreams under this section**; they do not replace it.
+**Purpose:** One **object-centric** stack (wire → projection → shell → page composer) across **all** user-facing families — not only map peek and entity detail.
 
 #### 6.2.1 Surface families (layout chrome)
 
@@ -483,7 +484,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C7** | Premium location unlock + old membership page | Legacy freemium copy vs north star | Product TBD | [`NORTHSTAR.md`](./NORTHSTAR.md) |
 | **C8** | `/community`, `/membership` routes | Secondary surfaces vs explore-first IA | Both redirect to `/explore`; `COMMUNITY_PATH` kept for inbound links only | [`NAVIGATION.md`](./NAVIGATION.md) legacy table |
 | **C9** | Notification + privacy matrix incomplete | Rare group/private actor QA | API `notification-actor-label`; FE `notificationConsumerGuard` + `notificationRouting.test`; API route side effects → `scheduleSideEffect` / `scheduleNotification` | **Eng done (Oct 2026)** — manual QA for edge notification kinds |
-| **C10** | 100+ markdown files, multiple “plans” | Agents read wrong doc | **Tier 1** only for truth; experiment cap + stubs (**C27**, §8.6.4) | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) |
+| **C10** | 100+ markdown files, multiple “plans” | Agents read wrong doc | **Tier 1** only for truth; experiment cap + stubs (**C27**, §8) | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) |
 | **C11** | Long flat `api.*` surface | Wrong facade | Domain modules in `src/api/domains/*` | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §10–12 |
 | **C12** | Notification meta dialects | Routing sprawl | `NotificationMeta` + `actorUserId` | §11 |
 | **C13** | Many `*Routing.ts` helpers | Import confusion | `routingCatalog` + `inferNotificationPath` | §10 |
@@ -501,179 +502,28 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C25** | ~~Admin / platform_ops FE roots under-documented~~ | — | **Done (S13-W9)** — `NAVIGATION.md` admin table, `adminSurfacesAcceptance`, manifest `feRoots` | **S13-W9** |
 | **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Host·Find crew·Add on map**; v3 `?compose=` (`host` \| `seek` \| `add` only); contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; compose wire host/seek/add only | **Mitigated (CPC-0–6)** — CPC-7 dual-read tail + `verify:system` before close |
 | **C27** | ~~**Doc corpus sprawl**~~ | — | **Mitigated (Oct 2026)** — `experiment/README` only; retired narratives stubbed or deleted; schedules §8 only | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · `verify:docs` |
-| **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/governance/platform-governance.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
+| **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/governance/platform-governance.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8 + `platform-governance.json` |
 | **C29** | ~~**Write-surface UI lag**~~ | — | **Done (S14-W5)** — location kit, compose shell, pillar steps, Host bodies, UAE destination modes | **S14** §8.3.6 |
 
 **Not debt (intentional):** Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Stale inbound URLs: **nginx** `inbound-bookmark-redirects.conf` + **`canonicalizeInboundProductPath`** only (no SPA bookmark routes). `PlaceDetailPage` may **`Navigate`** when API kind disagrees with URL segment (`/venue` vs hiking place) — data fix, not a retired hub.
 
 ---
 
-## 8. Consolidation phases (system-wide)
+## 8. Programs (retired schedules — do not implement from prose)
 
-Ordered for **coherence**, not feature count:
+**Truth order:** `wire-lexicon.ts` → `bounded-context-manifest.json` → guard tests → running code → factual Tier-1 deltas only ([`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md)).
 
-| Phase | Outcome | Primary docs / commands |
-|-------|---------|-------------------------|
-| **S0** | Single doc entry + automated phrase guards | `DOCS_INDEX`, `verify:docs` |
-| **S1** | One member capability resolver (`GET /me/status`; legacy paths rewritten) enforced server-side | `MEMBER_MODEL`, `verify:host-member` |
-| **S2** | Host route modularization + fulfill removal | **Done** — §8.8 PCOH |
-| **S3** | API mount shells: **`user.ts`**, **`admin.ts`** → `register*` modules only | **Done** — admin registrars + platform master staff; user already modular |
-| **S4** | Frontend `api.*` stays domain-only | **Done (guards)** — `apiLegacyGuard`, `domainImportGuard`, `consumerApiIndexGuard`, `hooksApiFacadeGuard`, ESLint R8; `api/index` only in `src/hooks` facades |
-| **S5** | Privacy notification matrix + viewer access everywhere | §8.8 (this doc) P2 |
-| **S6** | Place detail internal merge + SEO pass | **Done** — R3 `PlaceDetailCore`, thin trail/camp/event wrappers (`placeDetailCore.test.ts`) |
-| **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
-| **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + unified engagement policy | **Done** — program `complete`; wire footers + `activityDetailAcceptance` / AD-CTA matrix |
-| **S7c** | **Viewer access naming** (wire-first, collapse resolver soup) | **Done (NA-1–NA-6)** — plan §22; API `buildActivityViewerAccess`; [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.11 |
-| **S8** | **Discovery architecture** — card VM, explore shell, seeking read cleanup, map bbox spec | **Wave closed (R0–R6, R4 read, R8)** — R5 bbox **promote** via [`EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md); §3 metrics (seeking branches, slim map default) = optional follow-up |
-| **S9** | **Consumer detail shell alignment** — place/destination/shop/agency IA + shared chrome vs activity reference | **Eng complete** — shells Phases 1–7; lineage **§3.2** + API `detail-surface-lineage-contract`; §8.1 `consumerDetailQaMatrixGuard`; §15.3 `consumerDetailAntiDriftGuard`. **Pending:** S10f manual (`npm run s10f:ops:print-routes`) |
-| **S10** | **Production hygiene audit (Oct 2026)** — security, trust, perf, stability (not new audit markdown) | **Eng complete** — **§8.1** waves **core + S10a–d** shipped; **S10e/f** = ops/human gates ([`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)); **S10g** deferred. **Out of scope:** **C18** rewrite; **C19** prod default = staging promote only |
-| **S11** | **Structural module naming (P5 SN-1–SN-8)** — context folders, not synonym renames | **SN-1–SN-8 done** — `useMemberStatus`, `tenantActivityClientApi`, `/publishing` mount, `moduleNamingGuard` SN-6 | §8.8 (this doc) P5 |
-| **S12** | **Hosted + seeking activity coherence** (one host, one map pin, linked transport) | **S12a–d done** | [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Coherence program |
-| **S13** | **Frontend surface methodology** — profiles, discovery projections, admin/operator boundaries, L3 composers (§6.2) | **Guards + W1–W9 shipped** — **product closure = P4b** (`MIG-SURFACE-*`); **W10** = S10f gate | §8.3 · **§8.6 P4b** |
-| **S14** | **Write surfaces** — location pick kit, compose wizard chrome, pillar step modules, destination UX, stale-file hygiene | **Done** — W0–W5 shipped | §8.3.6 · [`CREATE_FLOW.md`](./CREATE_FLOW.md) |
+Engineering programs (**S0–S14**, **CPC**, **PCOH (`MIG-COH-01`…`12`)**, **P0–P6**, **GW-***, **DMCP**) are **closed in code**. Do **not** recreate phase tables, PR checklists, delivery JSON, or archive plan bodies. **Open ops-only gates:** **S10e** (explore bbox promote), **S10f** (`npm run s10f:ops:print-routes`), **P5** staging SLO — [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md).
 
-### 8.3 S13 — unified frontend & UI program (final phase plan)
+| Need | Read | Skip |
+|------|------|------|
+| Placement & surfaces | **§3**, **§6** (this file) | Deleted wave tables (§8.1–8.3, GW-1…16, CPC-* checklists) |
+| Catalog / compose | [`CREATE_FLOW.md`](./CREATE_FLOW.md), **§8.4.9** below | CPC-0…9 progress logs |
+| Routing canon | **§8.7** | Migration register prose in old §8.6 |
+| Vocabulary | `upl-glossary.ts`, `wire-lexicon.ts` | Duplicate glossaries removed from §8.8 |
+| Ship | `PRE_DEPLOY_CHECKLIST.md` | `docs/archive/**` bodies, experiment plans |
 
-**Canonical architecture:** §6.1 (discovery L0–L3) + §6.2 (surface families). **S13** = read/detail surfaces. **S14** (§8.3.6) = write/compose surfaces. Retired `docs/experiment/*` plan files — see [`experiment/README.md`](./experiment/README.md).
-
-#### 8.3.1 Synthesis — one vertical stack per object
-
-**Surfaces** (§6.2.1) provide **route chrome only** — map stage, `ConsumerShell`, `DashboardLayout`, marketing layout. They do **not** own entity UI.
-
-**Per object** (activity, place, area, shop, person), the same five layers apply everywhere the object appears:
-
-| Layer | Responsibility | Policy |
-|-------|----------------|--------|
-| **L0 Wire** | API DTO + `viewerAccess` / entitlements | Server only — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
-| **L1 Projection** | Card/row view model | `discoveryCardModel` (catalog pins) · `memberPeople*` (people browse) · future `activityDetailPageModel` (L3) |
-| **L2 Peek / row / explorer card** | Minimized engagement | `MapPeekShell` + `peek/{entity}/*` · list explorer cards |
-| **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceDetailSections`, `MemberProfile`, `ShopPublicPage`, … |
-| **L3 Shell** | Shared chrome (hero, tabs, sticky footer) | `MobileDetailShell`, `EntityPublicDetailShell`, `ActivityDetailPageShell` |
-
-```mermaid
-flowchart LR
-  subgraph discovery [Discovery shell only]
-    MAP["/explore map"]
-    LIST["/list explorer"]
-    PEOPLE["view=people"]
-  end
-  subgraph L1L2 [L1 VM to L2]
-    CARD[Card / row VM]
-    PEEK[Peek or compact row]
-  end
-  subgraph L3 [Entity L3]
-    ROUTE["/activity · place · /member · /shop …"]
-    COMP[Page composer]
-    SHL[Shared shell]
-  end
-  MAP --> CARD
-  LIST --> CARD
-  PEOPLE --> CARD
-  CARD --> PEEK
-  PEEK -->|"view detail"| ROUTE
-  ROUTE --> COMP --> SHL
-```
-
-**Cross-cutting kits** (§6.2.5): guest gate, join flow, `mapViewerAccessToUi`, **location pick** — imported by L2/L3/write chrome; never forked per surface.
-
-**Write chrome (FAB compose):** `ComposeHost` mounts three **domain** wizards (Host / Find crew / Add). Shared shell and map overlay live in `src/explore/create/` — not a fourth product, not L1 card VMs. Engines stay split (`hostingFlowEngine`, `intentFixedFlowEngine`, `addFlow` / `addFacilityFlow`). Schedule: **S14** (§8.3.6).
-
-#### 8.3.2 Baseline — already shipped (do not rebuild)
-
-| Area | Status | Proof |
-|------|--------|--------|
-| Discovery L1 + unified activity peek (hosted + seeking) | Done | S8, §6.1, `discoveryUiMethodologyGuard` |
-| `viewerAccess` on activity detail + peek parity | Done | S7, `mapDetailEngagementParity` |
-| Place L3 (`PlaceDetailSections` + kind routes) | Done | S6, `placeDetailCore.test.ts`, `placeDetailUiHygieneGuard` |
-| Consumer detail shells (shop/agency/area/activity chrome) | Eng done | S9, `consumerDetailAntiDriftGuard` |
-| Single member route `/member/:userId` + API profile access | Done | `MemberProfile`, `profile-viewer-access` |
-| `/crews` friends list → `/member` links | Done | `MyCrews.tsx` |
-| Discover directory quota + `discover=1` on API | Done | `member-discovery-quota`, `MemberProfile` |
-| Publishing workspace vs consumer Organize split | Done | S12, `CREATE_FLOW` |
-| Module naming / domain API clients | Done | S11, S4 |
-
-**Known gaps (S13 fixes):** human consumer-detail QA sign-off (**W10** — `npm run s10f:ops:print-routes`). **Closed (W1–W9 eng):** profile lenses · people browse VM/shim · guest kit · profile section gates · activity L3 columns + kind composers (**C23**) · place L1 + **camp/event hero facts** · area tabbed hub (S9 Ph 4) · shop/agency `EntityPublicDetailShell` (`publicEntityShellAcceptance`) · admin catalog (C25).
-
-#### 8.3.3 Implementation waves (order + PR boundaries)
-
-Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (wave touch explore → also `test:explore-alignment`). Update §6.2 / `DOMAIN_CANONICALS` §3.2 when behavior changes.
-
-| Wave | ID | Outcome | Primary deliverables | Exit criteria |
-|------|-----|---------|----------------------|---------------|
-| **0** | **S13a** | Charter frozen in Tier-1 | §6.2 (this file), §3.2.2 member lenses, `DOCS_INDEX` | `verify:docs` |
-| **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, **My Crews** (`/crews`), roster chips, notifications, chat; owner preview **`memberPublicPreviewLink`** (`view=public`, not a lens); wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
-| **2** | **S13-W2** | **People browse module unity** | One `CrewBrowseTabContent` import path under `crew-discovery`; `explore/ui/peopleBrowse` re-export **deleted** (EXPLORE-IA); list people browse uses `CrewsBrowsePanel` | `memberSurfacesAcceptance`, `listModuleHygiene` · DISC-METH-11 |
-| **3** | **S13-W3** | **Member browse row VM** | `src/crew-discovery/memberBrowseRowModel.ts` — L1 rows for directory, availability, going, seeking; **not** authorization | `memberBrowseRowModel.test.ts` + panel/list consume VM; C24 closed |
-| **4** | **S13-W4** | **Profile L3 polish** | `MemberProfileView` sections keyed off `viewerAccess` only; activity publisher strip uses `resolveActivityPublisherProfilePath`; owner `?view=public` via `memberPublicPreviewLink` | `detailSurfaceWiringAcceptance`, §15 profile tests |
-| **5** | **S13-W5** | **Discovery projection parity** | L1/L2 engagement parity per `listCat` / people tab; member browse L1 in methodology guards | `discoveryUiMethodologyGuard` DISC-METH-07–09 · `listModuleHygiene` peopleBrowse shim |
-| **6** | **S13-W6** | **Guest + participation kit** | `guestBrowseGateCopy` + `ExploreGuestSignInCard` for people browse, member profile, activity L3, peek-details | `guestParticipationKitGuard.test.ts` + `detailSurfaceWiringAcceptance` DS-WIRE-02 |
-| **7** | **S13-W7** | **Activity L3 kind composers** | `buildActivityDetailPageModel(wire)`; per-kind `*ActivityDetailPage` composes sections (place pattern); remove unwired `planFacts` / shrink `ActivityDetailBody` | `activityDetailAcceptance` per kind; C23 closed |
-| **8** | **S13-W8** | **Entity L3 leftovers (S9)** | Optional: area tabbed hub; place Facts/Transport tab labels; shop/agency `EntityPublicDetailShell` parity audit | `consumerDetailQaMatrixGuard` rows green |
-| **9** | **S13-W9** | **Ops surfaces catalog** | `NAVIGATION.md` § Platform admin table; `adminSurfacesAcceptance` lists `/admin/*` routes; manifest `feRoots` (C25) | No consumer peek imports in `src/pages/admin/*` |
-| **10** | **S13-W10** | **Release gates** | `npm run release:ops:checklist` (CI); human `s10f:ops:print-routes`; S10e bbox promote if scheduled | `PRE_DEPLOY_CHECKLIST` |
-
-**Parallelism:** W1–W2 can ship as one PR if small. **W7** (activity kinds) should not start until **W6** guest kit is stable (same join surfaces). **W8** can run parallel to **W7** by another owner. **W9** is doc/guard-only anytime after W0.
-
-**Explicitly out of S13:** marketing/`/` rewrite · new Mongo entities · operator console feature expansion · C19 production map default (ops) · C1 admin MFA (S10g).
-
-#### 8.3.4 Mapping legacy phase labels
-
-| Old label | S13 wave |
-|-----------|----------|
-| consumer-detail Phase 2 (activity kind) | **W7** |
-| consumer-detail Phase 3–4 (place/destination tabs) | **W8** |
-| consumer-detail Phase 6 (people clarity) | **W1–W4** |
-| member-surfaces people panel | **baseline**; W2–W3 |
-| S13b–g (prior table) | W2–W3 (b), W4 (c), W7 (d), W9 (e), W6 (f), W5 (g) |
-
-#### 8.3.5 Per-PR checklist (all S13 waves)
-
-1. Bounded context from §3.1 — touch `feRoots` in `bounded-context-manifest.json` when adding roots.
-2. No new `Explore*Peek*` entity files; no new `/become-host` links; no product `isHostRole` gates.
-3. Authorization stays on API `viewerAccess` — FE maps with `mapViewerAccessToUi` / `mapProfileViewerAccessToMemberLink`.
-4. Tier-1 doc delta in same PR (at least `NAVIGATION` or `DOMAIN_CANONICALS` §3.2 if routes/links change).
-
-#### 8.3.6 S14 — write surfaces (compose + location kit)
-
-**Does not rebuild** discovery L1–L3, peek, or member profile. Extends §6.2.5 for **writes**.
-
-| Wave | Outcome | Delete / stop using when done |
-|------|---------|-------------------------------|
-| **S14-W0** | Charter (this section + `CREATE_FLOW` code map) | No new compose architecture markdown |
-| **S14-W1** | Location kit: `ComposePlacePickerOverlay`, `ComposeMapEntryRow`, `useComposeMapSession` | Direct `lazy(() => import('…CreatePlacePicker'))` in wizards |
-| **S14-W2** | `ComposeWizardShell` (sheet + wide-page + back: map session first) | Per-flow `FlowSheetChrome` copy-paste where the shell covers it |
-| **S14-W3** | Thin controllers + `availabilityWizard/steps`, `addWizard/steps` | Inline step blocks in `CreateAvailabilityFixedFlow` / `CreateAddFlow` after extract |
-| **S14-W4** | Host bodies → `hostingWizard/bodies/` | Root `hosting*WizardSteps.tsx` barrels |
-| **S14-W5** | Destination product UX (UAE chip, ladder, in-host add-new) | Host-only map apply forks; `showDifficulty` on destination step |
-| **Hygiene** | Guard `composePlatformGuard`; no re-add of `organizeFlow` / `demandFlow` (already gone) | See stale inventory in [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Code map |
-
-**Out of S14:** merging Host/Seek/Add engines · admin `MapPinPicker` · `/publishing/*` console forms · marketing `/`.
-
-### 8.2 S12 — hosted + seeking coherence (phase plan)
-
-| Phase | Outcome | Primary code | Status |
-|-------|---------|--------------|--------|
-| **S12a** | Transport child links via `linkedActivityId` / `linkParentToRideshareActivity`; **no** `link-activity` on rideshare publish | `useExploreRideshareOrganizeLinks.ts`, `hostingActivityPublish.ts`, `linkActivityRideshareOffer.ts` | **Done** |
-| **S12b** | Owner peek = `ExploreActivityMapPeekActions` for seeking + hosted (legacy demand-owner fork only without activity host wire) | `exploreSelectionSelectedCard.ts`, `enrichListFeedCard.ts` | **Done** |
-| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `AvailabilityFixedSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx` | **Done** |
-| **S12d** | Docs/guards: no new `demand`-only product gates; intent APIs read-through only | `seekingPinHygieneGuard` (S12d tests), `discoveryCardModel` leftover flags | **Done** |
-
-### 8.1 S10 remediation waves (phase plan)
-
-Work **in order**; extend `systemCoherenceGuard.test.ts` / `naming-coherence.test.ts` per wave; update §5 bullets when a wave closes.
-
-| Wave | Goal | Scope (representative) | Guard / proof | Status |
-|------|------|------------------------|---------------|--------|
-| **S10-core** | P0–P1 audit items shipped | Demo login, regex search, demo passwords, metrics auth, side effects, inbox batch + degrade, media ACL, shop rails, batched reads (assembler, reviews, entity-follows) | `verify:domain` + §5 | **Done** |
-| **S10a** | Consumer **mount-fetch races** (`useSafeAsyncEffect`) | Inbox, Profile hub/edit/badges, place detail, explore peek hooks, `MemberProfile`, `ActivityDetail`, `JourneyMapPage`, `ShopPublic`; **AreaDetail** uses React Query (OK); plan sections = deep-link sync only | `systemCoherenceGuard` S10a lists | **Done** (Oct 2026) |
-| **S10b** | Publishing workspace (`/host/*`) mount-fetch races | `Activities`, `JoinRequests`, `Places`, `History`, `Team`, `PublicProfileEdit`, `ConsoleShell` reviews chip; hub via `useConsoleHubData` (React Query) | `systemCoherenceGuard` S10b | **Done** (Oct 2026) |
-| **S10c** | API **read batching** (N+1) | Read/list paths batched (incl. member browse, wishlist, group unread, publish notify actor labels); private-profile notify fan-out may still resolve per recipient | `naming-coherence.test.ts` | **Done** (Oct 2026) |
-| **S10d** | Explore **runtime hygiene** (not C18 rewrite) | Browse URL migrations, organize/pin-deep-link callback deps, rideshare gate deps | `systemCoherenceGuard` S10d | **Done** (Oct 2026) |
-| **S10e** | **C19** map bbox **promote** | Staging flags `EXPLORE_MAP_BBOX` + `VITE_EXPLORE_MAP_BBOX`; p95 bbox vs full map per runbook | `npm run s10e:staging-checklist` (`--verify` optional); [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | **Deferred (eng)** — prod/staging promote pending ops; P2 eng may proceed behind flags |
-| **S10f** | **Manual QA** | S9 §8 routes + C9 notification edge cases | `npm run s10f:ops:checklist` (CI) · `BASE_URL=… s10f:ops:print-routes` (human); `activityDetailS10fBridgeGuard` | **Pending (human)** |
-| **S10g** | **C1** platform admin hardening | MFA, impersonation, cross-tenant — not a quick slice | `MEMBER_MODEL` / security review | Deferred |
-
-Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place; **S5** manual QA + knip optional. **S8** coded tracks are complete — remaining discovery scale work is **R5 promotion** (ops) and optional metrics (**C19**); discovery execution archive = [`archive/system-refactor-plan-2026-10.md`](./archive/system-refactor-plan-2026-10.md). **Platform program (P0–P6):** §8.6 + [`platform-governance.json`](../scripts/governance/platform-governance.json). **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated). **S9** eng is complete; §8 manual QA overlaps **S10f**. **S10** engineering remediation closed Oct 2026 — run **`npm run verify:system`** before release; staging bbox (**S10e**) and printed QA routes (**S10f**) are the remaining human/ops gates.
+**Machine state (regenerated, not step history):** [`platform-governance.json`](../scripts/governance/platform-governance.json) (ops gates), `npm run shim:baseline` → `shim-burn-down-baseline.json`, `discovery-import-audit.json`. **No** closed MIG archive JSON.
 
 ### 8.4 Program CPC — Catalog & Publishing Coherence (**C26**)
 
@@ -751,153 +601,10 @@ AdminGeo tree (geoRef on coords): country → state → area (city) → optional
 | D7 | Cutover: optional `CATALOG_V2` read flag → single deploy → redirects **CPC-6** |
 | F1–F6 | FAB **Create Trip · Add a venue · Find a Crew**; compose wire `activity` \| `place` \| `intent` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 
-#### 8.4.6 Phase plan & checklists
 
-Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:quick` each PR; **`npm run verify:system`** before closing **CPC-7**.
+#### 8.4.6 Program status
 
----
-
-**CPC-0 — Tier-1 canon (docs only)**  
-*Context for implementers: §8.4.1–8.4.5; no code required.*
-
-- [x] `SYSTEM_COHERENCE.md` §8.4 + **C26** (this section)
-- [x] `CREATE_FLOW.md` — tab FABs + `activity` \| `place` \| `intent` compose wire, legacy inbound map
-- [x] `DOMAIN.md` — Place vs Facility vs Shop layers; geography §8.4.2
-- [x] `DOMAIN_CANONICALS.md` §1.7 — ontology + compose wire
-- [x] `NAVIGATION.md` — FAB, `/profile/submissions` target, contributions redirect note
-- [x] `API_ROUTING.md` — target `/facilities`, `/places/catalog` (stubs marked **CPC**)
-- [x] `DOCS_INDEX.md` — CREATE_FLOW blurb
-- [x] `scripts/governance/bounded-context-manifest.json` — **`facilities`** context stub (populate in CPC-2+)
-- [x] `npm run verify:docs`
-
----
-
-**CPC-1 — Shared types & contracts**  
-*Depends: CPC-0. Context: `packages/shared-types` mirrors §8.4.1.*
-
-- [x] `FacilityDTO`, `FacilityKind`, `PlaceCatalogQuery`, `FacilityCatalogQuery`
-- [x] `PlaceViewerAccessDTO`, `FacilityViewerAccessDTO`, shared `CatalogActionId` (or extend activity pattern)
-- [x] `moderationStatus` + `publicationStatus` enums (catalog)
-- [x] `registeredByUserId` on DTOs; `@deprecated submittedById` dual-read
-- [x] `PLACE_CATALOG_KINDS` + `isPlaceCatalogKind` (facility split in CPC-2; deprecated `DESTINATION_*` aliases)
-- [x] Compose wire: `plan` / `contribute`, `PlanMode`, `parseComposeWire` / `formatComposeWire` + legacy map
-- [x] Tests: `compose-route.test.ts`, `compose.test.ts`, `placeKind.test.ts`
-- [x] `npm run verify:system:quick` (2026-10-16)
-
----
-
-**CPC-2 — Data: `facilities` collection + backfill**  
-*Depends: CPC-1. Context: migrate from `locations` where `isFacilityPlaceKind`.*
-
-- [x] `facilities` schema in API domain types + `collections.ts`
-- [x] Mongo migration M1: create collection + indexes (`destinationId`, `onSiteId`, `facilityKind`, moderation/publication)
-- [x] M2: backfill from facility rows in `locations`
-- [x] M3: backfill `community-shop` → `outdoor_shop` facilities
-- [x] M4: backfill `moderationStatus` / `publicationStatus` on places (and facilities)
-- [x] Staging row-count reconciliation script / test (`reconcileCatalogCpcMigration` + `catalog-cpc-migration.test.ts`)
-- [x] API tests: migration idempotency or fixture seed
-
----
-
-**CPC-3 — API: facility routes + place policy + catalog reads**  
-*Depends: CPC-2. Context: `buildPlaceViewerAccess`; replace `place-nearby-facilities`.*
-
-- [x] `GET /facilities`, `GET /facilities/:id`, `POST /me/facilities` (list + detail + member submit; admin `POST /facilities` deferred)
-- [x] `GET /places/catalog` (evolve from `/places/registry`; places only, `segment=place`)
-- [x] `GET /facilities/catalog`
-- [x] `buildPlaceViewerAccess` + wire on `GET /places/:id`
-- [x] `buildFacilityViewerAccess` + wire on `GET /facilities/:id`
-- [x] Place detail: `nearbyFacilities[]` by `onSiteId` (`facilities` collection)
-- [x] `apps/api/tests/place-viewer-access-contract.test.ts` (new)
-- [x] `apps/api/tests/facility-catalog-contract.test.ts` (new)
-- [x] Extend `detail-surface-lineage-contract.test.ts` for facility activate → public GET
-- [x] Dual-write places/facilities moderation fields during transition (`withCatalogLifecycleFields` + `upsertFacilityFromLocationRow` on admin update)
-
----
-
-**CPC-4 — API: member submit unification**  
-*Depends: CPC-3 (or parallel after CPC-1 for places-only).*
-
-- [x] All member place submits → `POST /me/places` only (remove new `/me/locations` clients)
-- [x] Facility submit → `POST /me/facilities` with `destinationId`, optional `onSiteId`, `facilityKind`
-- [x] Admin: `/admin/facilities` uses facility store (not `locations` segment only)
-- [x] Audit actions: `place.submit`, `facility.submit` (keep `location.submit` alias one release)
-- [x] `notifyAdminsLocationSubmitted` → generic catalog submit copy (`notifyAdminsCatalogSubmitted`)
-- [x] §8.4.9 implementation alignment map + §3 matrix vocabulary (no **contribute** in architecture rows)
-- [x] FE facades: `memberCatalogSubmitClientApi`, `placeCatalogReadsClientApi`, `placeCatalogClient` (+ legacy shims)
-- [x] API facade: `location-submit.ts` (`buildPlaceSubmitPayload`); routes use the same builder
-- [x] Terminology guards: `cpc-terminology-guard.test.ts` (API), `cpcTerminologyGuard.test.ts` (FE subset)
-
----
-
-**CPC-5 — Discovery: explore map & list**
-*Depends: CPC-3.*
-
-- [x] Explore map reads facilities from `facilities` collection
-- [x] Shop **tenant** pins unchanged (`shop_profiles` context)
-- [x] Community outdoor_shop: peek-only projection (`catalog-profile-exposure`)
-- [x] Update `explore-map-layers.test.ts`
-- [x] Area lens rollups use facility map pins (`placeKind` on explore items)
-
----
-
-**CPC-6 — FE: routes, detail shells, redirects**  
-*Depends: CPC-3, CPC-5.*
-
-- [x] Canonical `/place/:id` — single `PlaceDetailSections`
-- [x] `/facility/:id` — `FacilityDetailSections`
-- [x] Client redirects: `/trail`, `/camp`, `/venue`, `/event` → `/place/:id`
-- [x] `/profile/submissions` + redirect `/contributions`
-- [x] `routingCatalog.ts`, `entity-path.ts` (`placeDetailPath` → `/place/:id`)
-- [x] `TrailDetail` / `CampDetail` / `EventDetail` → redirect wrappers
-- [x] `placeDetailClientApi`, `facilityDetailClientApi` hooks
-- [x] `consumerDetailQaMatrixGuard` / domain tests updated
-
----
-
-**CPC-7 — FE: legacy removal & guards**  
-*Depends: CPC-6.*
-
-- [x] Member `POST /me/facilities` — **no** `locations` dual-write (`facility-submit.ts` + guard)
-- [x] Admin facility CRUD — **no** `locations` dual-write (`createAdminFacility` + guard)
-- [x] Terminology guard: `submitUserLocation` scan + catalog submit orchestrators in FE guard
-- [x] API guard: member facility route + contribute route naming (`cpc-terminology-guard`)
-- [x] **§5.1** HTTP surface-first model (public / `/me` / `/admin`); catalog registrar matrix §8.4.9
-- [x] `catalog-http-surface-guard.test.ts` — places + facilities registrars; no profile-first monolith routes
-- [x] `updateAdminLocation` — facility sync **only** when `locationRowRepresentsFacility` (legacy amenity rows in `locations`)
-- [x] Public place wire: `registeredByUserId` only; `submittedById` on **admin** DTO (`toLocationDto` + guards)
-- [x] Remove `GET /me/status` flat publish dual-read (nested `publish` only; Oct 2026)
-- [x] **C26** → mitigated in §7 (CPC-0–6 shipped; dual-read removal telemetry-gated)
-- [x] `npm run verify:system` (full gate — Oct 2026)
-
----
-
-**CPC-8 — Ops & links**  
-*Depends: CPC-6.*
-
-- [x] `operations/EXPLORE_MAP_RUNBOOK.md` — facility seed (`seed:catalog-facilities`)
-- [x] Agent manifest — `/place/`, `/facility/`, `/api/places`, `/api/facilities`; discover URLs use `placeDetailPath` (canonical `/place/:id`)
-- [x] Push review prompt — `canonicalPlaceDetailPath` in `review-prompt.ts`
-- [x] `PRE_DEPLOY_CHECKLIST.md` CPC cutover bullets
-
----
-
-**CPC-9 — Tab FABs + `activity` \| `place` \| `intent` compose wire**  
-*Can start after CPC-1; must finish before CPC-7. Context: `CreateKindSheet`, `composeFabEntry`.*
-
-- [x] Per-tab FABs → **Create Trip** · **Add a venue** · **Find a Crew** (bottom nav **Plan** = schedule, not FAB)
-- [x] compose wire emit: `activity:*` \| `place:*` \| `intent:open` \| `intent:fixed:*` (legacy inbound parse in shared-types)
-- [x] Find crew: fixed → `intentFixedFlowEngine`; flexible → `IntentOpenComposeSheet` / `member_availability`
-- [x] Add a venue: **Place** (trail/camp/other) \| **Facility** (kinds)
-- [x] `formatComposeQuery` / `parseExploreCompose` canonical emit (`packages/shared-types/compose-route.ts`)
-- [x] `composeFlowCatalog.ts` flow ids: `activity.*` / `place.*` / `intent.*`
-- [x] `composeWireEmitGuard` / explore compose route guards
-- [x] Add-on-map wizard modules: `addFlow.ts` / `addFacilityFlow.ts` / `CreateAddFlow.tsx`
-- [ ] `src/content/productNorthStar.ts` if FAB strings centralized
-
-**Supersession (shipped):** Tab FAB product copy with canonical `?compose=` emit (`activity` \| `place` \| `intent`); inbound `host` \| `seek` \| `add` bookmarks parse only — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
-
----
+**CPC-0–9 eng complete.** Gate: `npm run verify:system` · `cpc-terminology-guard` · `catalog-http-surface-guard`. Phase checklists removed — do not restore.
 
 #### 8.4.9 Implementation alignment map (anti-drift)
 
@@ -975,10 +682,6 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 ---
 
-#### 8.4.7 Suggested PR order
-
-`CPC-0` → `CPC-1` → `CPC-2` → `CPC-3` + `CPC-4` → `CPC-5` → `CPC-9` (parallel with CPC-5/6) → `CPC-6` → `CPC-7` → `CPC-8`.
-
 #### 8.4.8 Bounded contexts (target manifest)
 
 | Context id | Responsibility | Storage |
@@ -991,254 +694,24 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 §3 **Places** / **Facilities** rows and §8.4.9 implementation map are the living alignment source (updated CPC-4).
 
-### 8.5 Program MIG-DESTINATION-GEO-2026 — geography assignment
+### 8.5 Destination geography (**MIG-DESTINATION-GEO-2026**)
 
-**Status:** **Cutover complete (P0–P10 + hard wire)** — single path: `destinationId`, `onSiteId`, `GET /api/destinations`, `/destination/:slug`, `?destination=`; Mongo **`2025112507`** renames store **`areas` → `destinations`**, backfills `placeHubLabel`, unsets legacy `areaId` / `areaLabel` / `parentPlaceId` / `catalogAreaId` on catalog rows. **AdminGeo** `geoRef` is SoT for country / state / **geo area (city)**. **Not in scope:** nested geo URLs; GW-7 inbound choke (`canonicalizeInboundProductPath`, not duplicate nginx tables for `/area`).
+**Status:** **Eng complete (P0–P10)** — `destinationId`, `onSiteId`, `GET /destinations`, `/destination/:slug`, `?destination=` only (no `?area=`). **Canon:** [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 · [`DOMAIN.md`](./DOMAIN.md) § Geography · `packages/shared-types/src/destination.ts` · `geographyTerminologyGuard`. Phase checklists removed.
 
-**Read between phases:** this §8.5 · [`DOMAIN.md`](./DOMAIN.md) § Geography · [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 · `packages/shared-types/src/destination.ts`.
+### 8.6 Platform program (P0–P6) — retired narrative
 
-**Vocabulary:** **AdminGeo** (`geoRef`) · **Destination** (curated hub) · **Place (site)** (hostable spot on map) · **Facility** (amenity pin). **Geo “area”** = city/municipality tier only — never the curated hub.
+**Eng complete.** Ops: **S10e/S10f**, **P5** staging SLO. **Governance JSON only** (not living markdown schedules):
 
-#### 8.5.0 Locked decisions
-
-| ID | Decision |
-|----|----------|
-| D0.1 | Mongo collection **`destinations`** (renamed from `areas`); preserve `area-seed-*` ids as `destinationId` |
-| D0.2 | `resolveDestinationId` reads **`destinationId` only** (no `areaId` wire) |
-| D0.3 | `/destination/:slug` canonical; **no** `/area/*` inbound rewrite (retired with nginx redirect) |
-| D0.4 | Listed catalog requires `destinationId` + `geoRef` (P4+) |
-| D0.5 | Facility trail scope → `onSiteId` rename from `parentPlaceId` (P9) |
-
-#### 8.5.1 Target assignment (catalog graph)
-
-**Graph reference:** AdminGeo **tree** + catalog **edges** — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.0 (mermaid).
-
-```text
-AdminGeo (auto, geoRef) on coords
-Destination (curated destinationId) — not a map pin
-  ├── Place (site) — trail, camp, spot
-  └── Facility — optional onSiteId
-Activity → `locationId` (wire) / `placeId` (DTO alias) → Place (site) only
-```
-
-#### 8.5.2 Completion record
-
-| Phase | PR / commit | Date | Gate |
-|-------|-------------|------|------|
-| P0–P1 | | | verify:system:quick |
-| P2–P3 | | | migration + quick |
-| P4 | | | geo contract |
-| P5 | | | map contract |
-| P6 | | | lineage contract |
-| P7–P8 | | | quick + inbound |
-| P9–P10 | | | **verify:system** |
-
-#### 8.5.3 Phase checklist
-
-Mark `[x]` in the PR that completes the item.
-
-**P0 — Canon**
-
-- [x] §8.5 this section (living record)
-- [x] DOMAIN / DOMAIN_CANONICALS §12.1 Destination tree delta
-- [x] NAVIGATION `/destination/:slug` + legacy `/area`
-- [x] `bounded-context-manifest.json` program note
-- [x] `geographyTerminologyGuard` GEO-07 (program wire)
-
-**P1 — Shared types**
-
-- [x] `destination.ts` — `destinationHubPath`, `resolveDestinationId`, DTO aliases
-- [x] `wire-lexicon` `DESTINATIONS`
-- [x] `destinationId` on `LocationDTO` / `FacilityDTO`
-- [x] `destination.test.ts`
-- [x] `npm run verify:system:quick` (pending final run on merge PR)
-
-**P2 — Destinations API**
-
-- [x] `destinations-store.ts` → Mongo `destinations`
-- [x] `GET /api/destinations`, `GET /api/destinations/:slug`
-- [x] `destination-public-read` + route registrar
-- [x] `destinations-public.test.ts`
-
-**P3 — Data backfill**
-
-- [x] `MONGO_MIGRATION_VERSION = 2025112503` + `runDestinationGeoMigrations`
-- [x] Catalog writes use `catalogDestinationIdUpdate` (`destinationId` only)
-- [x] Mappers emit `destinationId` on place/facility DTO reads
-- [x] Member availability upsert dual-writes `destinationId`
-- [x] Admin facility patch sets `destinationId` only (`catalogDestinationIdUpdate`)
-- [ ] Remaining catalog write paths (audit in P9)
-
-**P4 — AdminGeo authority**
-
-- [x] `resolveExploreDestinationSlugQuery` (API + FE explore filter)
-- [x] `GET /explore/map` accepts `destination` query only
-- [x] `assertActiveListedPlaceHasCatalogGeo` on admin place activate
-- [x] Facility listed publish gate (`assertActiveListedFacilityHasCatalogGeo`)
-
-**P5 — Explore map destination lens**
-
-- [x] `destinationId` / `destinationSlug` on catalog map items (`discovery-catalog-builder`)
-- [x] `filterExploreMapItemsByDestinationSlug` shared (API bbox + FE filter)
-- [x] Availability pins dual-emit destination fields
-- [ ] Recommendation scoring uses `destinationId` (extend if needed in P9)
-
-**P6 — Compose / catalog lineage**
-
-- [x] `assertActiveListedFacilityHasCatalogGeo` on admin facility activate/create
-- [x] Admin facility patch sets `destinationId` via `catalogDestinationIdUpdate`
-- [x] `member-availability` upsert dual-writes `destinationId`
-- [x] Hosting publish validates place via `resolveDestinationId` (`destinationId` only)
-
-**P7 — FE destination hubs**
-
-- [x] `GET /destinations` + hub detail via `destinationsApi` / `destinationHubClientApi`
-- [x] SPA `/destination/:slug` only (no `/area/:slug` route)
-- [x] `destinationHubPath` is the product emit helper
-- [x] Explore URL builder emits `?destination=` only
-
-**P8 — Inbound**
-
-- [x] Retired `/area/:slug` inbound rewrite — bookmarks must use `/destination/:slug` (no nginx `/area` block)
-
-**P9 — API cutover (read paths)**
-
-- [x] Public reads: **`GET /api/destinations`** only (`registerPublicAreaRoutes` removed)
-- [x] `destinations-http-canonical-guard.test.ts`
-- [x] DTOs / explore lens: **`destinationId`** / **`destinationSlug`** (no consumer `areaId`)
-- [x] `onSiteId` on facilities + migration **2025112506** unset legacy fields (D0.5)
-
-**P10 — Program close (eng)**
-
-- [x] Explore URLs emit **`?destination=`** only (no `?area=` read path)
-- [x] Consumer API: `destinationsApi` public + admin reads → `/destinations`; `apiClientSurfaceGuard`
-- [ ] `npm run verify:system` on staging (ops sign-off)
-- [x] Mongo `areas` → `destinations` collection rename (**2025112507**)
-
-**Program eng status:** **P0–P10 code complete** — ops: staging verify + deploy checklist.
-
-**Gate:** `npm run verify:system:quick` each PR; **`npm run verify:system`** before P10 close.
-
-### 8.6 Platform program (P0–P6) — CEO-approved Oct 2026
-
-**Purpose:** Whole-repo strategic refactor (scalability, performance, debt) **without losing context** between waves. **Engineering work is horizontal** (API registrar + `src/api/domains/*` + UI roots per §3.1) — JSON and gates track it; they do not replace code alignment. **CTO whole-system audit** (12 pillars, greenfield vs brownfield): `scripts/governance/cto-audit-pillars.json` · baseline `npm run system:audit` → `scripts/governance/system-audit-baseline.json`. **This section + machine JSON are the only living roadmap** — do not add `AUDIT_*`, `PLAN_*`, or parallel CTO markdown.
-
-#### 8.6.0 Authorization (CTO charter — 2026-10-17)
-
-> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). DMCP eng verify complete (phases 0–8). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.**
-
-| Rule | Detail |
-|------|--------|
-| **Capacity** | ~**30–40%** engineering on platform waves; product continues on strangler slices |
-| **WIP limit** | At most **2** migrations `in_progress` at once (`platform-governance.json` → `capacity.maxInProgressMigrations`; enforced by `verify:platform-governance`) |
-| **P0–P1** | **Complete** (Oct 2026) — census, W0 audit, CPC catalog wire, seeking storage gate |
-| **P4** | **API routes only** — CQRS-light complete (eng); not whole-product UI/storage unification |
-| **P4b** | **Eng complete** — all `MIG-SURFACE-*` shipped; **S10f** human QA on staging (`s10f:ops:print-routes`) |
-| **PCOH** | **Complete** — §8.8 UPL/BWL separation, domain dedup, `MIG-COH-00`…`12` |
-| **P5–P6** | P5 SLO with COH-08 ops; P6 gated on §7 / S10g |
-
-Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherence; remaining ACTIVITY-DETAIL S10f + P5 SLO; release gated on S10e/S10f.*
-
-| Artifact | Role |
-|----------|------|
-| [`scripts/governance/platform-governance.json`](../scripts/governance/platform-governance.json) | Phases **P0–P6** + **P4b** ops · [`platform-migration-archive.json`](../scripts/governance/platform-migration-archive.json) · [`platform-touchpoint-registry.json`](../scripts/governance/platform-touchpoint-registry.json) |
-| **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** | **Complete (P4b)** — compose kinds **activity · place · intent**; operator **`/operator/*`**; anti-regression **`migPlatformComposeOperatorProgramGuard`** |
-| **`MIG-PLATFORM-LAYER-SPINE`** | **Complete (P4b)** — **Publish · Discover · Join · Connect · Plan · Manage**; schedule [`scripts/governance/platform-layer-spine-touchpoints.json`](../scripts/governance/platform-layer-spine-touchpoints.json); gate **`verify:platform-layer-spine`** |
-| **`MIG-DISCOVER-RECOMMENDATIONS`** | **Complete (P4)** — `GET /discover/recommendations` (`surface=map\|crew`); shared `map-explore-recommendation-score`; [`scripts/governance/discover-recommendations-touchpoints.json`](../scripts/governance/discover-recommendations-touchpoints.json); gate **`verify:discover-recommendations`** |
-| [`scripts/governance/repo-census-baseline.json`](../scripts/governance/repo-census-baseline.json) | P0 inventory (`npm run repo:census`; knip issue count optional) |
-| [`scripts/governance/bounded-context-manifest.json`](../scripts/governance/bounded-context-manifest.json) | Context → API/FE roots (update per migration PR) |
-| §7 register | **C27** (docs) · **C28** (program spine) · close rows when migrations complete |
-
-**Gate every phase:** `npm run verify:system:quick` minimum; phase close → `npm run verify:system` + update this table + `platform-governance.json` status fields.
-
-**GitHub CI:** PR/push → `.github/workflows/ci.yml` runs **`verify:system:quick`**; push **`main`** → `.github/workflows/system-verify.yml` runs **`verify:system`** (full, incl. `test:explore-alignment`). PR Lighthouse → `lighthouse.yml` (warn-first).
-
-#### 8.6.2 Platform governance spine (GW-4)
-
-| File (`scripts/governance/`) | Role |
+| File | Role |
 |------|------|
-| **`platform-governance.json`** | Ops + phases + `authorization.statement` (sync `PRE_DEPLOY_CHECKLIST.md`), WIP cap |
-| **`platform-touchpoint-registry.json`** | Active `MIG-*` → `scheduleDoc` / verify gate |
-| **`platform-migration-archive.json`** | Closed migration ids (`archivedAt` only — not a living backlog) |
-| **`*-touchpoints.json` + manifest** | Layer contracts + context roots |
+| [`platform-governance.json`](../scripts/governance/platform-governance.json) | Open ops phases + WIP cap (`verify:platform-governance`) |
+| [`platform-touchpoint-registry.json`](../scripts/governance/platform-touchpoint-registry.json) | In-flight programs only (empty when eng closed) |
+| [`routing-canonical-map.json`](../scripts/governance/routing-canonical-map.json) | Routing canon (**§8.7**) |
+| [`authority-matrix.json`](../scripts/governance/authority-matrix.json) | Capability resolvers (DMCP) |
 
-Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest — not new Tier-1 schedules (**C28**).
+**CTO authorization (synced with JSON):** CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). DMCP eng verify complete (phases 0–8). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.
 
-**Governance cleanup waves** (no dual schedules, no agent plan markdown):
-
-| Wave | Scope | Gate |
-|------|--------|------|
-| **GW-1** | Compact migration ledger; remove `.cursor/plans`; drop normalize-archive shim — **complete** (ledger → GW-4 split) | `governanceSurfaceGuard` |
-| **GW-2** | Retire matching re-export shims (`wishlist-alerts`, `availability-hosted-match-notifications`) — **complete** | `platformLayerMatchingGuard` · `governanceSurfaceGuard` GW2-01 |
-| **GW-2b** | Roster strangler removed; FE **`@deprecated` re-export shims** (`activityPublicSeo`, detail header chrome, place header alias) — **complete** | `governanceSurfaceGuard` GW2-02 · GW2b-03 · `platformLayerPls5Guard` LAYER-19 |
-| **GW-3** | Spine orchestrators scorecard/API-only where `verify:domain:fe` already runs FE guards; `verify:system` runs domain **before** spines — **complete** | `governanceSurfaceGuard` GW3-01 · GW3-02 |
-| **GW-4** | Retire `platform-program.json` → **`platform-governance.json`** (ops/phases) · **`platform-migration-archive.json`** (closed MIG ledger) · **`platform-touchpoint-registry.json`** (active schedules) — **complete** | `governanceSurfaceGuard` GW4-01 · `verify:platform-governance` |
-| **GW-5** | **`scripts/` layout** — `governance/` · `verify/` · `lib/` · `ops/` · `dev/` · `archive/`; retire one-off root shims (`verify-platform-program`, `align-routing-imports`, `verify-hero-gutter`, …) — **complete** | `governanceSurfaceGuard` GW5-01 · GW5-02 · `scripts/README.md` |
-| **GW-6** | FE hygiene — dead stubs + retired path/copy/scroll aliases (`messagesGroupChatPath`, `FIND_CREW` FAB copy, place path shims, buddy lazy exports) — **complete** | `governanceSurfaceGuard` GW6-01 · GW6-02 |
-| **GW-7** | Consumer SPA — drop inbound redirect modules, `AppRoutes` `<Navigate>` bookmark shims; nginx `inbound-bookmark-redirects.conf`; wire `canonicalizeNotificationBookmarkPath` + API `migrateStaleNotificationBookmarkPaths`; Vite/Vitest resolve `@uaetrail/shared-types` from `packages/shared-types/src`; canonical `/settings` · `/crews` · `/operator` only — **complete** | `governanceSurfaceGuard` GW7-01–09 · `routingHygiene` GW7-09 · `appSettingsRoutingGuard` · `productUrlInboundGuard` INBOUND-06–08 |
-| **GW-8** | FE/API alias trim — retired browse URL parsers, `formatGroupWallReplyBody`, `HostDetails`/`TenantProfile` FE types, API `member-routes` trip/seeking shims — **complete** | `governanceSurfaceGuard` GW8-01 · list browse URL tests · `groupWallReply.test` |
-| **GW-9** | Member profile wire — `operatorProfilePath` (replaces `hostProfilePath` on `GET /member/:id/profile`) — **complete** | `governanceSurfaceGuard` GW9-01 |
-| **GW-10** | Explore map wire — `featuredPerson` only on `ExploreMapItemDTO`; drop `hostName`/`hostAvatar`/`requesterUserId` item duplicates; `organizerDetails` off tenant public DTO — **complete** | `governanceSurfaceGuard` GW10-01 · `exploreMapItemWireGuard` |
-| **GW-11** | Component props — `MessageMemberButton.memberUserId` only; `ExploreResponsiveSheet.composePresentation` only — **complete** | `governanceSurfaceGuard` GW11-01 · `createFlowModuleGuard` |
-| **GW-12** | Module alias purge — crews stat tab, availability catalog, browse URL handlers, hosting publish shim, admin userTypes, SEO place schemas, list map width, `TenantPublicDTO.merchantId` — **complete** | `governanceSurfaceGuard` GW12-01 · `hostingPublishDestination.test` |
-| **GW-13** | Friends/crews UPL — canonical `/crews`; `/buddies` rewrites in `canonicalizeNotificationBookmarkPath` + unified notification bookmark migration (no duplicate Mongo step); availability map `updatedAt` sort + index — **complete** | `governanceSurfaceGuard` GW13-01 · `crewsTerminologyGuard` |
-| **GW-14** | Wire hygiene — `resolveNotificationActorUserId`, drop duplicate discovery card person fields, `ListFeedActions` `joinStateLoadingForCard` only, member-group labels (`memberGroupRowLabel`) — **complete** | `governanceSurfaceGuard` GW14-01 · `notification-meta.test` · `member-group.test` |
-| **GW-15** | Client + HTTP friends naming — `GET /me/friends`, `friendsApi`, `useMeFriendsNetwork`, `exploreOthersSubtype`; no `seeking` search haystack — **complete** | `governanceSurfaceGuard` GW15-01 · `exploreOthersSubtype.test` · `people-http-canonical-guard` |
-| **GW-16** | Full friends wire — `friend-store`, `Friend*DTO`, no `segment=buddies`, `friendsOnly` query, group role `member`, notification `connection_friend_*` — **complete** | `governanceSurfaceGuard` GW16-01 · `memberAvailabilityLineageGuard` |
-
-#### 8.6.1 Phases (outcomes)
-
-| Phase | Owner | Window | Outcome | Status |
-|-------|-------|--------|---------|--------|
-| **P0** | platform | 2–6 wk | Census + doc trim + **W0** system audit (`system:audit` v2) | **Complete** |
-| **P1** | product-eng | 4–8 wk | CPC catalog wire + seeking storage gate | **Complete** (repeat `seeking:deploy-gate` per env at release) |
-| **P2** | platform | 6–10 wk | **MIG-OUTBOX**, **MIG-EXPLORE-READ** (flags); **S10e** promote ops | **Complete** (eng) |
-| **P3** | platform | 6–10 wk | **MIG-CLIENT-QUERY** (TanStack Query on consumer reads) | **Complete** (eng) |
-| **P4** | platform | 8–12 wk | **API only** — CQRS-light; all **`apps/api/src/routes/**`** → `services/*` (no `*-store` in routes) | **Complete** (eng) |
-| **P4b** | product-eng | 8–16 wk | Surface unification after PCOH | **`engineeringStatus: complete`** — `status` open until S10f/S10e ops signed |
-| **PCOH** | product-eng + platform | pre-launch | §8.8 coherence program (`MIG-COH-*`) | **Complete** |
-| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **`engineeringStatus: complete`** — staging `p5:slo-smoke` + PRE_DEPLOY § SLO sign-off pending |
-| **P6** | platform | ongoing | **C1**/S10g, §7 burn-down | **Gated** |
-| **MIG-SCHEDULE-GUIDE** | product-eng | 2026-Q4 | Guide ladder + schedule blocks + unified calendar | **Complete** |
-
-**Relationship to S0–S13:** **S8–S11** eng closed. **S13** methodology + guards shipped; **P4b** `MIG-SURFACE-*` eng **complete** (`p4bPhaseProgramGuard`) — phase **`in_progress`** only until **S10f** staging sign-off. **P*** = platform capacity (~30–40%) on top of product slices.
-
-#### 8.6.2 Migration register (machine + human)
-
-| ID | Phase | Focus | Status |
-|----|-------|-------|--------|
-| **MIG-P0-CENSUS** | P0 | `repo:census` baseline; SPA routes, API registrars, knip count | **Complete** |
-| **MIG-P0-DOCS** | P0 | Stub superseded experiment plans; archive copies | **Complete** |
-| **MIG-W0-SYSTEM-AUDIT** | P0 | CTO baseline: collections, route map (`register*` + mounted routers + `registerActivityRoute`) | **Complete** |
-| **MIG-MANIFEST-DOMAINS** | P0 | All `src/api/domains/*` assigned in manifest | **Complete** |
-| **MIG-PLAN-HUB** | P0 | Plan manage deep links (one surface, not program center) | **Complete** |
-| **MIG-CPC-P1** | P1 | CPC-7+ catalog vocabulary (**C26**) | **Complete** |
-| **MIG-SEEKING-READ** | P1 | `seeking:deploy-gate`; C20 read paths | **Complete** |
-| **MIG-OUTBOX** | P2 | Side-effect outbox (production default on; `SIDE_EFFECT_OUTBOX=0` blocked in prod) | **Complete** |
-| **MIG-EXPLORE-READ** | P2 | Map `presentation` is the card copy. No second `discoveryCard` payload or projection flag | **Complete** |
-| **MIG-CLIENT-QUERY** | P3 | `clientQueryKeys` + hooks across discovery, social, member, messaging, place detail | **Complete** |
-| **MIG-CQRS-ROUTES** | P4 | Route CQRS guard; entire `apps/api/src/routes/**` tree → read/command services (no `*-store`) | **Complete** |
-| **MIG-CQRS-ROUTE-DATA** | P4 | Route layer → services for `auth-users`, `chat-data`, `social-data` (guard enforced) | **Complete** |
-| **MIG-CQRS-ROUTE-AUTH** | P4 | `auth.ts` → `auth-*-commands` + `auth-session-flow`; HTTP cookies in `auth-route-http` | **Complete** |
-| **MIG-P5-SLO-SMOKE** | P5 | `p5SloProgramGuard` + `p5:slo-preflight` in `verify:domain` + probes contract | **Eng complete** — staging `p5:slo-smoke` + PRE_DEPLOY SLO sign-off pending |
-| **MIG-SURFACE-ACTIVITY-DETAIL** | P4b | Activity L3 + guest/join + peek/list parity (`participationPresentationGuard`) | **Eng complete** — S10f staging sign-off pending |
-| **MIG-SURFACE-EXPLORE-IA** | P4b | Map / browse / list / discover one IA | **Complete** |
-| **MIG-SURFACE-MEMBER-PEOPLE** | P4b | Profile lenses + people browse unity | **Complete** |
-| **MIG-SURFACE-ADMIN-OPS** | P4b | Admin surface catalog + boundaries | **Complete** (folded into COH-11) |
-| **MIG-SERVICE-IDENTITY-BOUNDARY** | P4b | Services off raw `auth-users` / chat-data libs | **Complete** |
-| **MIG-DOCS-EXPERIMENT-STUB** | P4b | Experiment plans → stubs; bodies in `docs/archive/experiment/` | **Complete** |
-| **MIG-ROUTING-CANON-P0** | P4b | `routing-canonical-map.json` + `verify:routing-canon` + §8.7 schedule | **Complete** |
-| **MIG-ROUTING-CANON-P1** | P4b | Publishing plane: `/publishing` only — delete `/host` SPA + API shims | **Complete** |
-| **MIG-ROUTING-CANON-P2** | P4b | Member identity: `/member/:id` SPA ↔ API `/member/:userId/*` | **Complete** |
-| **MIG-ROUTING-CANON-P3** | P4b | People/discovery API family under `/me/member-discovery/*`; drop `/social` mount | **Complete** |
-| **MIG-ROUTING-CANON-P4** | P4b | Trust: `POST /safety/reports` + `safetyApi` domain module | **Complete** |
-| **MIG-ROUTING-CANON-P5** | P4b | Engagement `/me/*` domain module boundaries (goals, wishlist, follows) | **Complete** (folded into COH-09) |
-| **MIG-ROUTING-CANON-P11** | P4b | SPA legacy route purge (no `Navigate` aliases) after API/client aligned | **Complete** (folded into COH-12) |
-| **MIG-PEOPLE-VOCAB-2026** | P4b | Friends/crews UPL; `people-vocabulary-touchpoints.json` | **Complete** |
-| **MIG-SCHEDULE-GUIDE** | P4b | Guide ladder + availability slots (capacity + modalities) | **Complete** |
-| **MIG-PLATFORM-LAYER-SPINE** | P4b | Six consumer layers + crew discover/join/connect/plan split (`platform-layers.ts`) | **Complete** — PLS-0–5 |
-
-**Platform layers (MIG-PLATFORM-LAYER-SPINE):** **Publish** (supply) · **Discover** (read catalogs/feeds) · **Join** (hosted activity commit only) · **Connect** (Friends, clubs, chat) · **Plan** (wishlist, personal hub) · **Manage** (host/operator after publish). Machine schedule: `scripts/governance/platform-layer-spine-touchpoints.json`. Backend **matching** context (`apps/api/src/services/matching/*` — predicates + notify; import `services/matching/index` only) — **no** consumer `/matching` route; reads stay on **Discover** / **Plan** HTTP. Phases: `platform-layer-spine-touchpoints.json` → `decisions.matching`.
+**CTO audit baseline:** `npm run system:audit` → `system-audit-baseline.json` (pillar config: `cto-audit-pillars.json`) — inventory metric, not a product spec. **GW-1…GW-16** and **DMCP** checklist tables removed; invariants live in `governanceSurfaceGuard` and domain guards.
 
 #### 8.7 Routing alignment (end-to-end — no redirect shims)
 
@@ -1255,164 +728,29 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **6–10** | MIG-SURFACE-* + MIG-SERVICE-IDENTITY-BOUNDARY | Per context | discovery, places, admin, services |
 | **11** | MIG-ROUTING-CANON-P11 | `App.tsx` legacy `Navigate` routes | `routingHygiene` bans |
 
-**Doc corpus:** **MIG-DOCS-EXPERIMENT-STUB** complete — `docs/experiment/README.md` only; superseded files stubbed at `docs/` root or removed. Schedules **only** in §8.
+**Doc corpus:** `docs/experiment/README.md` stub only — no per-plan markdown. **Do not** add delivery checklists back to Tier-1.
 
-#### 8.6.3 Context continuity (do not skip)
+### 8.8 Coherence program 2026 (PCOH) — vocabulary pointer
 
-1. **Phase charter** — one row in §8.6.1; expand only in `platform-governance.json` `exitCriteria`, not new docs.
-2. **Strangler** — dual-run until exit criteria; then delete legacy paths in the **same PR** as manifest update.
-3. **Freeze** — while a migration is `in_progress`, no new legacy URLs/strings in that `feRoots` tree (`verify:domain` + code review).
-4. **Handoff** — `DOCS_INDEX` § Platform program blurb updated at phase close (one paragraph).
-5. **Agents / humans** — read `DOCS_INDEX` → §8 → manifest; **do not** recreate `experiment/*` plan markdown.
+**Status:** **Complete** (PCOH — enforced by `wire-lexicon.ts`, `upl-glossary.ts`, and domain guards). **Do not implement from** `docs/archive/**`, retired stubs, or duplicate glossaries below — use code modules.
 
-#### 8.6.4 P0 checklist (doc trim targets)
-
-- [x] `platform-governance.json` + `verify:platform-governance` in `verify:system` (incl. CTO line + WIP limit)
-- [x] DMCP Phase 0 — `scripts/governance/authority-matrix.json` + `verify:authority-matrix` in `verify:system` (five capability axes → sole resolvers)
-- [x] DMCP Phase 1 — `resolvePublishingWorkspaceAccess` (no `UserRole` broaden) + `publish.isPlatformStaff` on `GET /me/status`
-- [x] DMCP Phase 2 — `verify:catalog-truth` (single `GET /explore/map` catalog; find crew = `member_availability`; seeking/demand product paths guarded)
-- [x] DMCP Phase 3 — `verify:discovery-graph` + **eighteen** `discoveryPortExplore*` ports (`discoveryPortNamingGuard` W97); `listExploreImports` **0** (budget ≤25); retired `discoveryListRuntime` list facade; UI/wire split (Search · SearchRouting · GuestWire · CatalogFilters); folded OptionalFilterWire + SearchFeed into sibling ports; burn-down program **closed** 2026-11-27 (`scripts/governance/parallel-burn-down-workstreams.json` `programStatus: closed`)
-- [x] DMCP Phase 4 — `verify:compose-spine` (host · availability · add wire; FAB + plan → `CreateFlowProvider`; `composeSpineGuard` + COMPOSE-LINE-06)
-- [x] DMCP Phase 5 — `verify:participation-spine` (`activityJoinClientApi` · `publishingJoinQueueClientApi`; L3/peek presentation; S10f bridge guards; human sign-off still `s10f:ops:print-routes`)
-- [x] DMCP Phase 6 — `verify:storefront-spine` (`PublishingProfileKind` · `/publishing` console · shop/agency facades · `PRO_MEMBERSHIP_PATH`; `operatorStorefrontSpineGuard`)
-- [x] DMCP Phase 7 — `verify:people-graph-plan` (Teams · outing crew · **Friends** · `/plan` hub; retired `buddies=` browse segment; `peopleGraphPlanSpineGuard` + `crewsTerminologyGuard`)
-- [x] DMCP Phase 8 — `verify:release-ops` (`releaseOpsSpineGuard` + S10f/P5/MIG-DISCO-REG program guards; `release:ops:checklist` — staging sign-off still human)
-- [x] DMCP eng complete — `authority-matrix.json` `dmcpStatus: complete` (phases 0–8)
-- [x] **MIG-COMMUNITY-DISCOVER** — `complete` in `platform-governance.json` (explore/me/admin community APIs · `/clubs/:slug` · `communityDiscoverGuard`)
-- [x] Archive [`system-refactor-plan`](./archive/system-refactor-plan-2026-10.md) + [`system-structure-deep-audit`](./archive/system-structure-deep-audit-2026-10.md); experiment stubs
-- [x] `repo:census` baseline — SPA `<Route>` count, API `register*Routes` files, knip `issueCount`
-- [x] Tier-1 dedupe policy — no duplicate phase schedules in `experiment/*` ([`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md))
-- [x] Living experiment plans ≤ **12** files (excl. `README.md`; enforced by `verify:docs`)
-- [x] **MIG-PLAN-HUB** + **MIG-W0-SYSTEM-AUDIT** → P0 `complete` in `platform-governance.json`
-- [ ] **S10f** human QA + **S10e** ops promote (release gates for P2+; track in §8.1) — **next after FE discovery burn-down closed** (2026-11-27; `parallel-burn-down-workstreams.json` `activePrograms`)
-
-### 8.8 Coherence program 2026 (PCOH) — sole implementation schedule
-
-**Authority:** Pre-launch aggressive deduplication, strict **UPL / BWL separation**, one write path per entity. **Do not implement from** `docs/archive/**`, retired `docs/experiment/` plans, or superseded root stubs (`UAE_Trail_Homepage.md`, `design-tokens.md`, …) — **PCOH + `MIG-COH-*`** in [`platform-governance.json`](../scripts/governance/platform-governance.json) drive work.
-
-**Code contracts (not prose docs):**
+**Code contracts:**
 
 | Layer | Module | Role |
 |-------|--------|------|
-| **UPL** | [`src/content/upl-glossary.ts`](../src/content/upl-glossary.ts), [`workspaceVocabulary.ts`](../src/content/workspaceVocabulary.ts), [`geographyVocabulary.ts`](../src/place/geographyVocabulary.ts), [`productNorthStar.ts`](../src/content/productNorthStar.ts) | Member-visible labels only |
-| **BWL** | [`packages/shared-types/src/wire-lexicon.ts`](../packages/shared-types/src/wire-lexicon.ts), [`collections.ts`](../apps/api/src/lib/collections.ts) | HTTP, JSON, Mongo, internal modules |
-| **Presentation** | `packages/shared-types` `*-display`, `*-presentation`, `viewer-access` | Maps BWL → UI labels/paths |
+| **UPL** | [`src/content/upl-glossary.ts`](../src/content/upl-glossary.ts), [`workspaceVocabulary.ts`](../src/content/workspaceVocabulary.ts), [`productNorthStar.ts`](../src/content/productNorthStar.ts) | Member-visible labels |
+| **BWL** | [`packages/shared-types/src/wire-lexicon.ts`](../packages/shared-types/src/wire-lexicon.ts), [`collections.ts`](../apps/api/src/lib/collections.ts) | HTTP, JSON, Mongo |
+| **Presentation** | shared-types `*-display`, `viewer-access` | BWL → UI |
 
-**Rules:** R1 UPL only in `src/content/*` + vocabulary modules. R2 BWL stable until a `MIG-COH-*` PR migrates it. R3 No UPL words in new route path segments. R4 Presentation builders are the only place that combines BWL + UPL. R5 Work by manifest **context id**.
+**Rules:** UPL only in `src/content/*` · BWL changes via `MIG-COH-*` PRs · one write path per entity (§3) · `npm run verify:system`.
 
-#### 8.8.1 UI Product Language (UPL) — complete glossary
+**MIG-COH-01** (seeking model): activities-only seeking; `participant_intents` retired — see `seekingPinHygieneGuard` and [`SEEKING_STORAGE_RUNBOOK.md](./operations/SEEKING_STORAGE_RUNBOOK.md).
 
-| UPL term | Meaning |
-|----------|---------|
-| Find your crew | North-star people discovery (`productNorthStar`, explore people panel) |
-| Explore | Map-first home `/explore` |
-| Activity | Scheduled outing |
-| Host | Person leading **this** activity |
-| Hosted by | Card/detail attribution |
-| Host an outing | Create/publish on map (FAB Host + Host / publish capability) |
-| Looking for company | Seeking mode on map (not availability calendar) |
-| Destination | Admin-curated hub grouping Places/Facilities (hub `/destination/:slug`); **not a map pin**. Country / state / city come from AdminGeo `geoRef` |
-| Place | Trail, camp, or event venue in catalog |
-| Facility | Amenity POI |
-| Spots | Map lens for Place pins |
-| People | Browse/discover members (not map pins) |
-| Buddies | Page title for mutual connections |
-| Friends | List label for accepted buddies (UPL only) |
-| Following | One-way member follow |
-| Plan | Personal hub `/plan` |
-| Goals | Personal outdoor targets |
-| Availability | When I'm free to go (Plan) — **not** seeking |
-| Pro membership | Upgrade for **individual guides** and **shops/agencies** |
-| Operator | Shop or agency **business** (UI) — not HTTP console prefix |
-| Publishing workspace | Console shell (manage outings, team, requests) |
-| Wishlist, Groups, Messages, Reviews, Shop | Engagement surfaces |
-
-**Join copy:** Host / join request / comment **for the host** (`upl-glossary`, `joinWithdrawCopy`). BWL JSON is **`hostNote`** (COH-06); not a second product field.
-
-#### 8.8.2 Backend Wire Lexicon (BWL) — complete glossary
-
-| BWL | Meaning |
-|-----|---------|
-| `activities` + `activity_mode: hosted \| seeking` | All outings; **delete** parallel `participant_intents` (MIG-COH-01) |
-| `activity_requests` / `note` / `hostNote` | Join queue; joiner message vs host decision |
-| `host_id`, `created_by_id` | Activity person ids (keep; UPL “Host”) |
-| `locations` (+ HTTP `/places` only after COH-02) | Place catalog |
-| `facilities`, `destinations` | CPC |
-| `tenants`, `tenant_memberships` | Business orgs |
-| `pro_applications` | Target collection rename; HTTP is `/me/pro-application` now (COH-03). Collection still `host_applications` |
-| `auth_users` | Members |
-| `buddy_*` | Mutual graph — **never** `friend` in BWL |
-| `user_follows`, `entity_follows` | Follow edges |
-| `member_availability`, `user_goals` | Plan commitment (distinct from seeking) |
-| `user_wishlist` (migrated from `user_favorites`) | COH-09 |
-| `/publishing` | Publishing workspace HTTP (COH-04); `x-organisation-id` |
-| `/me/member-discovery/*` | People discovery API (keep this prefix; network `segment=friends\|followed\|all`) |
-| `explore_map` sources | `activity` · `place` · `facility` · `shop` · `agency`. Area is not a pin. Retire `demand`; `venue` / `catalog_place` → `place` (COH-02) |
-| `UserRole`, `HostPublishingTier`, `GET /me/status` | RBAC / capabilities — not UPL |
-
-#### 8.8.3 Bounded contexts — topics covered (manifest §3)
-
-All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `shop_profiles`, `member_discovery`, `engagement`, `destinations`, `availability`, `media`, `platform_ops`.
-
-**Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; stale bookmark normalization (GW-7 nginx + `canonicalizeNotificationBookmarkPath`); `verify:system` / journey tests.
-
-**Removed products (do not restore):** trail-points wallet, `/host` API/SPA, `/social` graph mount, bare rewards domains (`manifest.removedProducts`), **shop product catalog** (`/shop/products`, `/shop/checkout`, `/admin/shop`, `ProductDetail`, Mongo `products` / `shop_orders` / `order_line_items`).
-
-#### 8.8.4 Canonical API flows (one BWL path each)
-
-Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=friends\|followed\|all`) · Friends `/me/friends` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Destinations `GET /destinations` (hub names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
-
-**Delete flows:** participant-intent CRUD/join, `demand:` map ids, dual `/locations` HTTP. `/people` orphan registrar removed (COH-05).
-
-#### 8.8.5 PCOH phases (execution order)
-
-| Phase | MIG-COH | BWL focus | UPL focus |
-|-------|---------|-----------|-----------|
-| **0** | MIG-COH-00 | `wire-lexicon`, leak guards | `upl-glossary`, program JSON |
-| **1** | MIG-COH-01 | Seeking = activities only; drop intents | “Looking for company” copy |
-| **2** | MIG-COH-02 | HTTP `/places`; map `place` + `facility`; Area is a name | Place, Facility, Area, Spots |
-| **3** | MIG-COH-03 | `pro_applications`, `/me/pro-application` | Pro membership only |
-| **4** | MIG-COH-04 | `/publishing` mount | Guide/Operator workspace titles |
-| **5** | MIG-COH-05 | People API cleanup; `buddies` segment | People, Friends, crew |
-| **6** | MIG-COH-06 | JSON `hostNote` | Comment for the host |
-| **7** | MIG-COH-07 | Publisher resolver; `/member` for individuals; `/guide` removed | Host / business attribution |
-| **8** | MIG-COH-08 | Map public vs overlay; outbox invalidation | — |
-| **9** | MIG-COH-09 | Deleted `socialApi` / `socialRouter`; `buddiesApi` · `groupsApi` · `wishlistApi` · `entityFollowApi` · `reviewsApi`; `user_wishlist` | Page titles unchanged |
-| **10** | MIG-COH-10 | Single Host compose tree (`create/hosting` + `hostingFlowEngine`); organize/createOrganize shims removed | Host (FAB) |
-| **11** | MIG-COH-11 | Admin `registerAdmin*` + `adminSurfacesAcceptance`; shop `registerShop*` split; `socialGraphRouter` / `demandFlow.ts` shims deleted | Admin console (`pages/admin/*`, no `Admin*.tsx` prefix) |
-| **12** | MIG-COH-12 | Navigate-only page shims deleted; `verify:domain` fe/api/journey shards; `routingHygiene` bans | Bookmark redirects live in `App.tsx` only |
-
-**Waves:** W1 = COH-00+01+03 · W2 = COH-02+04+06 · W3 = COH-05+07+08 · W4 = COH-09+10 · W5 = COH-11+12. **WIP:** max 2 `in_progress` migrations (`platform-governance.json`).
-
-**Supersedes:** P4b surface/routing tranches as *schedule* (work folds into COH rows). `MIG-ROUTING-CANON-P5/P11` → COH-09/12. SLO (`MIG-P5-SLO-SMOKE`) runs with COH-08 ops.
-
-#### 8.8.6 Locked defaults (CTO)
-
-| Decision | Default |
-|----------|---------|
-| People HTTP prefix | Keep `/me/member-discovery/*` (COH-05; not `/me/people/*`) |
-| BWL roster segment | `friends` (wire); UPL label “Friends” |
-| `organizer_note` rename | Done (COH-06): JSON/Mongo `hostNote` only. Not snake `host_note` on the wire |
-| `locations` collection | HTTP first in COH-02; collection rename optional same phase |
-| Publishing HTTP | `/publishing` |
-| Activity `host_id` | Keep in BWL |
-| Individual public URL | `/member/:userId` (community and Pro). `/guide` is not a surface |
-| Explore map HTTP | Public `GET /explore/map` (default **slim pin**; `?projection=full` for nested DTOs); signed-in peek `GET /me/discover/overlay` (viewerAccess index only) |
-| Explore map cache bust | `scheduleExploreMapCacheInvalidation` (durable outbox in production); direct Redis delete only in processor/tests/seeds |
-| FE social facade | Deleted (COH-09). Use `friendsApi`, `groupsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` — no `socialApi` / `socialRouter` |
-| Wishlist collection | `user_wishlist` (startup migrate from `user_favorites`) |
-| Reviews HTTP | `GET /reviews` public on `userRouter` before `requireAuth`; writes keep per-route auth |
-| Host compose tree | `create/hosting` + `hostingFlowEngine` + `hostingFlows` (COH-10). No `organizeFlow.ts` / `createOrganize` / `CreateActivityFlow` |
-| Seeking compose engine | `intentFixedFlowEngine.ts` + `CreateAvailabilityFixedFlow.tsx` (no `CreateDemandFlow` / `demandFlow.ts` / `demandWizardSteps`) |
-| People browse module | `src/crew-discovery/*` only. No `explore/ui/peopleBrowse` re-export; no `explore/peopleBrowseTab.ts` |
-| Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` (`GET /shop/shops/:id`) and `registerShopMerchantManageRoutes` (`/shop/organisation/*`). Mongo collection stays `merchant_profiles` |
-| Admin HTTP | `admin.ts` mounts `registerAdmin*` only. Pages: `src/pages/admin/*` (folder-as-namespace; no root `Admin*.tsx`) |
-| SPA legacy pages | No Navigate-only page modules (`ShopManage`, `AgencyManage`, `BecomeHost`, `Membership`, `MerchantPublic`). Bookmark aliases stay inline in `App.tsx`; `routingHygiene` bans new links |
-| Identity / chat / review data libs | `auth-users-store`, `auth-tokens-store`, `chat-messages-store`, `social-reviews-store`. No `auth-users.ts` / `auth-tokens.ts` / `chat-data.ts` / `social-data.ts` (no re-export shim) |
+**Removed products (do not restore):** trail-points wallet, `/host` API/SPA tree, `/social` graph mount, bare rewards domains, shop **product catalog** routes (`manifest.removedProducts`).
 
 #### 8.8.7 Definition of done
 
-One seeking model · one join pipeline · one place HTTP prefix · one publishing HTTP prefix · one pro onboarding BWL · UPL only in content modules · BWL in wire-lexicon · publisher resolver on map/detail/notifications · no `socialApi` / `socialRouter` / empty `socialGraphRouter` · one Host compose tree · shop `registerShop*` · admin `registerAdmin*` + `adminSurfacesAcceptance` · no Navigate-only page modules · identity/chat/review data in `*-store` (no `auth-users.ts` / `chat-data.ts` / `social-data.ts`) · `verify:domain` fe/api/journey shards · `npm run verify:system` + journey suite per §8.8.3.
+One seeking model · one join pipeline · one place HTTP prefix · one publishing HTTP prefix · UPL in content modules · BWL in wire-lexicon · no `socialApi` / `socialRouter` · `verify:domain` + `npm run verify:system`.
 
 ### 8.9 Architecture north star (Nov 2026 — platform defaults)
 
@@ -1478,7 +816,7 @@ One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guar
 1. Which **capability** (§1) and **context** (§3) does this touch?
 2. Does it introduce a **second write path** for the same entity? If yes, stop and extend the existing service.
 3. Update **Tier 1** doc(s): `CREATE_FLOW`, `NAVIGATION`, `API_ROUTING`, or `MEMBER_MODEL` — not only experiment plans.
-4. **Program CPC** work: check off items in §8.4.6; run **`npm run verify:system`** (or `verify:system:quick` before push); explore/FAB also needs `test:explore-alignment`.
+4. **Catalog (CPC)** work: run **`npm run verify:system`** (or `verify:system:quick` before push); explore/FAB also needs `test:explore-alignment`.
 5. **Platform program (P0–P6):** if touching a migration in [`platform-governance.json`](../scripts/governance/platform-governance.json), update manifest roots + migration `status` in the same PR.
 6. **Architecture defaults (§8.9):** do not add rejected stack items (Next.js rewrite, WebSockets for chat, microservices) to Tier-1 “future” lists.
 
@@ -1497,6 +835,6 @@ One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guar
 | Deploy & monorepo layers | `ARCHITECTURE.md` |
 | System-wide debt register | §7–8 (this file) |
 | Platform north star (defaults + rejected stack) | **§8.9** (this file) |
-| Coherence implementation schedule | **§8.8** + `platform-governance.json` `MIG-COH-*` |
+| PCOH closure | `platform-governance.json` + guards (§8.8 pointer) |
 | Schedule / guide / calendar (shipped) | `MEMBER_MODEL.md` · `CREATE_FLOW.md` · `NAVIGATION.md` · `migScheduleGuideGuard` |
 | UPL vs BWL | `src/content/upl-glossary.ts` · `packages/shared-types/src/wire-lexicon.ts` |

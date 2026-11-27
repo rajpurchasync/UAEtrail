@@ -27,9 +27,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(canon).toMatch(/social_groups/);
     expect(canon).toMatch(/Do not.*Teams.*social groups/i);
     expect(read('docs/MEMBER_MODEL.md')).toMatch(/PublishingProfileKind.*`community`/);
-    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json'));
-    const mig = archive.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
-    expect(mig?.status).toBe('complete');
+    expect(read('src/config/communityDiscoverGuard.test.ts')).toMatch(/communityDiscoverGuard/);
   });
 
   it('PEOPLE-SPINE-03: Plan tab is a hub over activities/goals/availability (no Plan entity)', () => {
