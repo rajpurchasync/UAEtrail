@@ -21,7 +21,6 @@ import {
   patchActivityParticipantInMongo,
   patchActivityRequestInMongo,
   releaseSlotsForRequest,
-  toActivityParticipantRecord,
 } from './activity-engagement-store-internals.js';
 import { promoteNextWaitlisted } from './activity-engagement-join-writes.js';
 import {

@@ -5,7 +5,7 @@ describe('exploreMapPathAfterPeopleFullScreen', () => {
   it('closes mobile list sheet and people view params', () => {
     expect(
       exploreMapPathAfterPeopleFullScreen('/explore?list=1&view=people&peopleTab=available&buddies=available')
-    ).toBe('/explore?list=0');
+    ).toBe('/explore?list=0&buddies=available');
   });
 
   it('closes discover browse overlay', () => {

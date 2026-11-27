@@ -42,8 +42,6 @@ const toMapPinRingSource = (source: MapPinSource): MapPinRingSource | undefined 
       return 'shop';
     case 'agency':
       return 'agency';
-    case 'destination':
-      return 'venue';
     default:
       return undefined;
   }
@@ -142,7 +140,7 @@ export const boundsFromPins = (pins: PlaceMapPin[], fallback: MapBounds): MapBou
 };
 
 const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource => {
-  if (pin.id.startsWith('destination:')) return 'destination';
+  if (pin.id.startsWith('destination:')) return 'place';
   if (pin.id.startsWith('venue:')) return 'venue';
   if (pin.id.startsWith('shop:')) return 'shop';
   if (pin.id.startsWith('agency:')) return 'agency';

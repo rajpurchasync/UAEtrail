@@ -1,7 +1,5 @@
 import type {
-  ExploreMapItemDTO,
   MemberBrowseCardDTO,
-  MemberDiscoveryAvailabilityRowDTO,
   MemberDiscoveryQuotaDTO,
   MemberDiscoveryRosterDTO,
 } from '@uaetrail/shared-types';
@@ -10,11 +8,7 @@ import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { listFriendsForUser } from '../lib/friend-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';
-import {
-  matchesExploreActivityDateFilter,
-  parseExploreActivityDatePreset,
-  type ExploreActivityDatePreset,
-} from '../lib/explore-activity-date-filter.js';
+import { parseExploreActivityDatePreset } from '../lib/explore-activity-date-filter.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 import { enrichMemberBrowseDirectory } from './member-discovery-directory-enrich.js';
 import { resolveCityLabelsForViewerBatch } from '../lib/find-crew-visibility-gate.js';

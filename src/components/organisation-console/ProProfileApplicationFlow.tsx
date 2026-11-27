@@ -245,6 +245,7 @@ export const ProProfileApplicationFlow = ({
     return () => {
       disposed = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mapSession stable; full deps retriggers prefill
   }, [open, user, navigate, signInHref, onClose, initialForm, lockedProfileType]);
 
   const handleClose = () => {

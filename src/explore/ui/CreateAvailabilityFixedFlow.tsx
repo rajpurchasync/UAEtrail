@@ -31,6 +31,7 @@ import {
   validateAvailabilityFixedDraft,
   validateAvailabilityFixedStep,
   type IntentFixedWizardStepId,
+  type AvailabilityFixedFlowStepId,
   type AvailabilityFixedSubmitResult,
   type AvailabilityFixedDraft,
   type AvailabilityFixedKind,
@@ -70,7 +71,7 @@ interface CreateAvailabilityFixedFlowProps {
   onSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   signInHref: string;
   availabilityFixedKind?: IntentFixedComposeKind | null;
-  exploredestinationSlug?: string | null;
+  exploreDestinationSlug?: string | null;
   tenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
 }
@@ -157,7 +158,7 @@ export const CreateAvailabilityFixedFlow = ({
     step === 'type' || !kind
       ? 'Find'
       : widePageSteps.length > 1
-        ? availabilityFixedFlowStepTitle(widePageSteps[0], kind)
+        ? availabilityFixedFlowStepTitle(widePageSteps[0] as AvailabilityFixedFlowStepId, kind)
         : step === 'lane' || step === 'engagementTerms'
           ? step === 'lane'
             ? 'Available to go as'

@@ -9,7 +9,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { isEmailConfiguredFromEnv } from './lib/resolve-email-env.mjs';
+import { isEmailConfiguredFromEnv } from '../lib/resolve-email-env.mjs';
 import { ENV_FILE_PRIORITY_KEYS } from './resolve-runtime-env.mjs';
 
 const args = process.argv.slice(2);

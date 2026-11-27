@@ -10,6 +10,7 @@ import { MapPinPicker } from '../../components/ui/MapPinPicker';
 import { ImageUpload } from '../../components/ui';
 import { AssetKeyUpload } from '../../components/ui/AssetKeyUpload';
 import { AppSelect, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { DEFAULT_COUNTRY, type CountryCode } from '../../config/regions';
 import type { AdminCatalogSegment } from '../adminCatalogSegment';
 import {
   CAMPING_ACCESSIBLE,
@@ -41,8 +42,9 @@ export type AdminPlacesCatalogEditWizardProps = {
   handleMapChange: (lat: number | null, lng: number | null) => void;
   toggleArrayItem: (field: 'surfaceType' | 'tags' | 'accessibleBy' | 'season', item: string) => void;
   parentPlaceHubOptions: { value: string; label: string }[];
-  regionOptions: { value: string; label: string }[];
+  regionOptions: string[];
   adminAreas: DestinationDTO[];
+  segmentPlaces: PlaceDTO[];
   error: string | null;
 };
 
@@ -63,6 +65,7 @@ export const AdminPlacesCatalogEditWizard = ({
   parentPlaceHubOptions,
   regionOptions,
   adminAreas,
+  segmentPlaces,
   error,
 }: AdminPlacesCatalogEditWizardProps) => (
   <>

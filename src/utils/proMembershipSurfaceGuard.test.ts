@@ -26,7 +26,7 @@ const listTrackedSourceFiles = (): string[] =>
     .filter(Boolean);
 
 describe('proMembershipSurfaceGuard', () => {
-  it('does not reintroduce duplicate become-organisation page or wizard modules', () => {
+  it('does not reintroduce duplicate become-organisation page or wizard modules', { timeout: 30_000 }, () => {
     const violations: string[] = [];
 
     for (const file of listTrackedSourceFiles()) {

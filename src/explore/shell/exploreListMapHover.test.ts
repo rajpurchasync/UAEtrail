@@ -10,17 +10,22 @@ describe('explore list → map pin hover', () => {
     const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
     const itemLink = read('src/list/browse/BrowseItemLink.tsx');
     const chrome = read('src/explore/ExploreMapChromeContext.tsx');
-    const listDiscovery = read('src/list/shell/useListDiscoveryExperienceModel.ts');
+    const listDiscovery = read('src/list/ListDiscoveryExperience.tsx');
+    const mapSplit = read('src/list/shell/useListDiscoveryMapSplitModel.ts');
+    const pinModel = read('src/explore/ui/exploreMapPinModel.ts');
     expect(model).toMatch(/highlightedExploreItemId/);
     expect(model).toMatch(/setHighlightedExploreItemId/);
     expect(mapShell).toMatch(/highlightedExploreItemId=\{highlightedExploreItemId\}/);
+    expect(mapShell).toMatch(/buildListHoverMapPin/);
+    expect(mapShell).toMatch(/mapPinsWithListHover/);
     expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
     expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
     expect(itemLink).toMatch(/setListHoverExploreItemId/);
     expect(chrome).toMatch(/subscribeListHover/);
-    const mapSplit = read('src/list/shell/useListDiscoveryMapSplitModel.ts');
     expect(listDiscovery).toMatch(/setListMapHighlightedId/);
     expect(mapSplit).toMatch(/showListMapColumn/);
+    expect(pinModel).toMatch(/resolveExploreMapItemPinCoords/);
+    expect(pinModel).toMatch(/buildListHoverMapPin/);
   });
 
   it('pans on list hover only when the pin is outside the comfortable viewport', () => {
@@ -30,7 +35,18 @@ describe('explore list → map pin hover', () => {
     expect(placesMap).toMatch(/placesMapLeafletChrome/);
     expect(chrome).toMatch(/SidecarMapViewportSync/);
     expect(chrome).toMatch(/MapHoverViewportSync/);
-    expect(chrome).toMatch(/anyPinOutsideComfortableView/);
+    expect(chrome).toMatch(/resolveListHoverMapFocus/);
+    expect(chrome).toMatch(/isLatLngInComfortableView/);
+    expect(chrome).toMatch(/highlightFocus/);
+    expect(read('src/list/browse/BrowseItemLink.tsx')).toMatch(/mapPoint/);
+    const exploreStart = chrome.indexOf('export const MapHoverViewportSync');
+    const sidecarStart = chrome.indexOf('export const SidecarMapViewportSync');
+    const exploreHover = chrome.slice(exploreStart, chrome.indexOf('return null;', exploreStart));
+    const sidecarHover = chrome.slice(sidecarStart, chrome.indexOf('return null;', sidecarStart));
+    expect(exploreHover).toMatch(/map\.panTo\(/);
+    expect(sidecarHover).toMatch(/map\.panTo\(/);
+    expect(exploreHover).not.toMatch(/flyTo/);
+    expect(sidecarHover).not.toMatch(/flyTo/);
     expect(cluster).toMatch(/refreshClusterPinEmphasis/);
   });
 });

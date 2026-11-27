@@ -56,6 +56,8 @@ export const mergeExploreHydrateWithListBrowseSession = (
     tripMapTopics:
       filters.tripTopics.length > 0 ? [...filters.tripTopics] : state.tripMapTopics,
     placeMapTopics:
-      filters.placeTopics.length > 0 ? [...filters.placeTopics] : state.placeMapTopics,
+      filters.placeTopics.length > 0
+        ? ([...filters.placeTopics] as ExploreBrowseUrlHydratedState['placeMapTopics'])
+        : state.placeMapTopics,
   };
 };

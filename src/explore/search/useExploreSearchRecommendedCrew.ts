@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
-import { serializeExploreActivityDatePreset } from '../routing';
+import { serializeExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { useAuth } from '../../context/AuthContext';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
 import { useCrewDiscoveryRoster } from '@/crew-discovery/hooks/useCrewDiscoveryRoster';
@@ -60,7 +60,7 @@ export const useExploreSearchRecommendedCrew = ({
       to: availability.range.to,
       date: serializeExploreActivityDatePreset(activityDatePreset),
       destination,
-      kind: null as const,
+      kind: null,
       limit: Math.max(limit, 12),
     }),
     [activityDatePreset, destination, availability.range.from, availability.range.to, limit]

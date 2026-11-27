@@ -46,3 +46,38 @@ export const sidecarFocusCenter = (
   const lng = coords.reduce((sum, entry) => sum + entry.lng, 0) / coords.length;
   return { lat, lng };
 };
+
+type ListHoverFocusPin = {
+  latitude: number;
+  longitude: number;
+  rideshareEndpoint?: 'from' | 'to';
+};
+
+/**
+ * List-hover map focus — prefer the card meeting point / rideshare `from` pin.
+ * Averaging from→to (Marina↔Jebel Jais) pans the sidecar into empty desert at typical zoom.
+ */
+export const resolveListHoverMapFocus = (
+  related: readonly ListHoverFocusPin[],
+  highlightFocus?: { lat: number; lng: number } | null
+): { lat: number; lng: number } | null => {
+  if (
+    highlightFocus != null &&
+    Number.isFinite(highlightFocus.lat) &&
+    Number.isFinite(highlightFocus.lng)
+  ) {
+    return { lat: highlightFocus.lat, lng: highlightFocus.lng };
+  }
+  if (related.length === 0) return null;
+  const fromPin = related.find((entry) => entry.rideshareEndpoint === 'from');
+  if (fromPin) return { lat: fromPin.latitude, lng: fromPin.longitude };
+  if (related.some((entry) => entry.rideshareEndpoint != null) && related.length > 1) {
+    return { lat: related[0]!.latitude, lng: related[0]!.longitude };
+  }
+  if (related.length === 1) {
+    return { lat: related[0]!.latitude, lng: related[0]!.longitude };
+  }
+  return sidecarFocusCenter(
+    related.map((entry) => ({ lat: entry.latitude, lng: entry.longitude }))
+  );
+};

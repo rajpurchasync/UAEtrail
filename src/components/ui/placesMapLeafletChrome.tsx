@@ -4,8 +4,8 @@ import { Marker, useMap, useMapEvents } from 'react-leaflet';
 import { MAP_CONFIG } from '../../config/platform';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
 import {
-  anyPinOutsideComfortableView,
-  resolveSidecarSessionZoom,
+  isLatLngInComfortableView,
+  resolveListHoverMapFocus,
   sidecarFocusCenter,
 } from './placesMapSidecarViewport';
 import { panDeltaToShowPinWithPopup } from './placesMapPinViewport';
@@ -324,12 +324,11 @@ export const SidecarSessionZoom = ({
   return null;
 };
 
-/** List side map — fly at session zoom when hover or selection targets a pin outside the comfortable inset. */
+/** List side map — pan at the current zoom when hover or selection targets a pin outside the comfortable inset. */
 export const SidecarMapViewportSync = ({
   pins,
   highlightedExploreItemId,
   selectedExploreItemId,
-  sessionZoomRef,
 }: {
   pins: PlaceMapPin[];
   highlightedExploreItemId?: string;
@@ -342,14 +341,12 @@ export const SidecarMapViewportSync = ({
     const focusId = highlightedExploreItemId ?? selectedExploreItemId;
     if (!focusId) return;
 
-    const zoom = resolveSidecarSessionZoom(sessionZoomRef.current, map.getZoom());
     const related = pins.filter((entry) => pinMatchesSelection(entry, focusId));
-    if (related.length === 0) return;
-    const coords = related.map((entry) => ({ lat: entry.latitude, lng: entry.longitude }));
-    if (!anyPinOutsideComfortableView(map, coords)) return;
-    const target = sidecarFocusCenter(coords);
-    map.flyTo([target.lat, target.lng], zoom, { duration: 0.4 });
-  }, [map, pins, highlightedExploreItemId, selectedExploreItemId, sessionZoomRef]);
+    const target = resolveListHoverMapFocus(related);
+    if (!target) return;
+    if (isLatLngInComfortableView(map, target.lat, target.lng)) return;
+    map.panTo([target.lat, target.lng], { animate: true, duration: 0.4 });
+  }, [map, pins, highlightedExploreItemId, selectedExploreItemId]);
 
   return null;
 };
@@ -380,22 +377,29 @@ export const MapDeviceLocationMarker = ({
 export const MapHoverViewportSync = ({
   pins,
   highlightedExploreItemId,
+  highlightFocus,
 }: {
   pins: PlaceMapPin[];
   highlightedExploreItemId?: string;
+  /** List card coordinate used when that pin is outside the loaded map window. */
+  highlightFocus?: { lat: number; lng: number } | null;
 }) => {
   const map = useMap();
+  const focusLat = highlightFocus?.lat;
+  const focusLng = highlightFocus?.lng;
 
   useEffect(() => {
     if (!highlightedExploreItemId) return;
 
     const related = pins.filter((entry) => pinMatchesSelection(entry, highlightedExploreItemId));
-    if (related.length === 0) return;
-    const coords = related.map((entry) => ({ lat: entry.latitude, lng: entry.longitude }));
-    if (!anyPinOutsideComfortableView(map, coords)) return;
-    const target = sidecarFocusCenter(coords);
-    map.flyTo([target.lat, target.lng], map.getZoom(), { duration: 0.4 });
-  }, [map, pins, highlightedExploreItemId]);
+    const target = resolveListHoverMapFocus(
+      related,
+      focusLat != null && focusLng != null ? { lat: focusLat, lng: focusLng } : null
+    );
+    if (!target) return;
+    if (isLatLngInComfortableView(map, target.lat, target.lng)) return;
+    map.panTo([target.lat, target.lng], { animate: true, duration: 0.4 });
+  }, [map, pins, highlightedExploreItemId, focusLat, focusLng]);
 
   return null;
 };

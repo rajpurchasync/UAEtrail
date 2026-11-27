@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProductSearchParams } from '../../routing/useProductSearchParams';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
-import { serializeExploreActivityDatePreset } from '../routing';
+import { serializeExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';
 import { parseBrowseListVenueRegions } from '../../discovery/discoverySession';
 import {
@@ -93,6 +93,7 @@ export const useExploreBookingSearchState = () => {
 
   const detectedWhere = useMemo(
     () => resolveExploreSearchDetectedWhereQuery(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- viewer fix + home mount refresh geo label
     [searchHomeActive, viewerFix?.lat, viewerFix?.lng]
   );
   const committedWhere = useMemo(

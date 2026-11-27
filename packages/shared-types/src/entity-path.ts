@@ -1,5 +1,4 @@
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
-import { destinationHubPath } from './destination.js';
 import { canonicalizeNotificationBookmarkPath } from './notification-bookmark-path.js';
 
 /** Public venue kinds that map to place detail routes. */

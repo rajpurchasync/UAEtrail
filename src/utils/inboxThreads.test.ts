@@ -72,8 +72,8 @@ describe('INBOX_QUICK_SORT_PILLS', () => {
     expect(INBOX_QUICK_SORT_PILLS.map((option) => option.label)).toEqual([
       'All',
       'Unread',
-      'Groups',
-      'Community',
+      'Teams',
+      'Outing crew',
       'Friends',
     ]);
     expect(DEFAULT_INBOX_FILTER).toBe('all');

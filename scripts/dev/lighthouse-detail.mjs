@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const configPath = join(root, 'scripts', 'lighthouse-detail.config.json');
+const configPath = join(root, 'scripts', 'governance', 'lighthouse-detail.config.json');
 const distDir = join(root, 'dist');
 const require = createRequire(import.meta.url);
 

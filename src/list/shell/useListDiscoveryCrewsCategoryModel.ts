@@ -163,7 +163,6 @@ export const useListDiscoveryCrewsCategoryAugment = ({
     };
   }, [
     memberRoster.loading,
-    memberRoster.directory.length,
     memberAvailability.loading,
     memberAvailability.people.length,
     exploreCatalogLoading,

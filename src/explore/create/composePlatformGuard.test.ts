@@ -33,7 +33,7 @@ describe('compose write-surface platform (S14)', () => {
     for (const rel of [
       'src/explore/ui/CreateAddFlow.tsx',
       'src/explore/ui/CreateAddFacilityFlow.tsx',
-      'src/explore/ui/CreateHostingActivityFlow.tsx',
+      'src/explore/ui/CreateHostingActivityFlowMapOverlay.tsx',
       'src/explore/ui/CreateAvailabilityFixedFlow.tsx',
       'src/components/organisation-console/ProProfileApplicationFlow.tsx',
     ]) {
@@ -41,6 +41,9 @@ describe('compose write-surface platform (S14)', () => {
       expect(src).not.toMatch(/import\(\s*['"][^'"]*CreatePlacePicker['"]\s*\)/);
       expect(src).toMatch(/ComposePlacePickerOverlay/);
     }
+    const hostFlow = readFileSync(join(ROOT, 'src/explore/ui/CreateHostingActivityFlow.tsx'), 'utf8');
+    expect(hostFlow).not.toMatch(/import\(\s*['"][^'"]*CreatePlacePicker['"]\s*\)/);
+    expect(hostFlow).toMatch(/CreateHostingActivityFlowMapOverlay/);
   });
 
   it('map-entry rows live on Host controller, Seek/Add step modules, intent, and Pro', () => {
@@ -49,7 +52,7 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/availabilityWizard/AvailabilityWizardChrome.tsx',
       'src/explore/ui/addWizard/steps/index.tsx',
       'src/explore/ui/addWizard/facility/FacilityAddWizardSteps.tsx',
-      'src/explore/ui/availabilityWizard/steps/index.tsx',
+      'src/explore/ui/HostingDestinationField.tsx',
       'src/components/organisation-console/ProProfileApplicationFlow.tsx',
     ]) {
       expect(readFileSync(join(ROOT, rel), 'utf8')).toMatch(/ComposeMapEntryRow/);
@@ -108,7 +111,6 @@ describe('compose write-surface platform (S14)', () => {
     for (const rel of [
       'src/explore/ui/CreateAddFlow.tsx',
       'src/explore/ui/CreateAddFacilityFlow.tsx',
-      'src/explore/ui/CreateHostingActivityFlow.tsx',
       'src/explore/ui/CreateAvailabilityFixedFlow.tsx',
     ]) {
       const src = readFileSync(join(ROOT, rel), 'utf8');
@@ -117,6 +119,13 @@ describe('compose write-surface platform (S14)', () => {
       expect(src).not.toMatch(/from ['"][^'"]*ExploreResponsiveSheet['"]/);
       expect(src).not.toMatch(/from ['"][^'"]*ExploreFlowSheetChrome['"]/);
     }
+    const hostFlow = readFileSync(join(ROOT, 'src/explore/ui/CreateHostingActivityFlow.tsx'), 'utf8');
+    expect(hostFlow).toMatch(/ComposeWizardShell/);
+    expect(hostFlow).toMatch(/useHostingActivityFlowNavigation/);
+    expect(hostFlow).not.toMatch(/from ['"][^'"]*ExploreResponsiveSheet['"]/);
+    expect(hostFlow).not.toMatch(/from ['"][^'"]*ExploreFlowSheetChrome['"]/);
+    const hostNav = readFileSync(join(ROOT, 'src/explore/ui/useHostingActivityFlowNavigation.ts'), 'utf8');
+    expect(hostNav).toMatch(/dismissComposeMapIfOpen/);
   });
 
   it('Host destination is UAE-locked listed search plus in-host add-new', () => {
@@ -140,11 +149,13 @@ describe('compose write-surface platform (S14)', () => {
       'utf8'
     );
     expect(hiking).not.toMatch(/showDifficulty/);
-    const flow = readFileSync(join(ROOT, 'src/explore/ui/CreateHostingActivityFlow.tsx'), 'utf8');
-    expect(flow).toMatch(/applyHostDestinationMapLocation/);
-    expect(flow).toMatch(/hostDestinationCatalogSearch/);
-    expect(flow).toMatch(/nearestPlaceCatalogHostingLeaf/);
-    expect(flow).toMatch(/isCatalogDestinationPin\s*\?\s*'adjust'/);
+    const hostMap = readFileSync(join(ROOT, 'src/explore/ui/hostingWizard/hostDestinationMap.ts'), 'utf8');
+    expect(hostMap).toMatch(/applyHostDestinationMapLocation/);
+    expect(hostMap).toMatch(/hostDestinationCatalogSearch/);
+    const overlay = readFileSync(join(ROOT, 'src/explore/ui/CreateHostingActivityFlowMapOverlay.tsx'), 'utf8');
+    expect(overlay).toMatch(/applyHostDestinationMapLocation/);
+    expect(overlay).toMatch(/nearestPlaceCatalogHostingLeaf/);
+    expect(overlay).toMatch(/isCatalogDestinationPin\s*\?\s*'adjust'/);
     expect(existsSync(join(ROOT, 'src/explore/ui/hostingWizard/hostDestinationMap.ts'))).toBe(true);
   });
 

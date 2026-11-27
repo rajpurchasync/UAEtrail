@@ -8,7 +8,6 @@ import {
   resolveActivityEngagementMapPeekStrips,
   resolveCommerceMapViewerAccess,
   resolvePublicPlaceMapViewerAccess,
-  type ActivityJoinMode,
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
   type ExploreMapItemDTO,

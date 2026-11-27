@@ -8,7 +8,11 @@ import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type {
+  CrewBrowseLane,
+  CrewPeopleFacet,
+  CrewProfessionalKind,
+} from '@/crew-discovery/crewBrowseState';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { UNIFIED_MAP_FILTER_KEYS } from './exploreBrowseUrlConstants';
 import type { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
@@ -44,6 +48,7 @@ export type ExploreBrowseUrlPublicApiContext = {
   topicPills: ExploreMapFilterPillKey[];
   crewBrowseLane: CrewBrowseLane;
   crewPeopleFacet: CrewPeopleFacet;
+  crewProfessionalKind: CrewProfessionalKind;
   listMode: ExploreBrowseListMode;
   crewsBrowseOpen: boolean;
   tripMapTopics: TripMapTopicKey[];
@@ -120,6 +125,7 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   closeCrewsBrowsePanel: ctx.handlers.closeCrewsBrowsePanel,
   crewBrowseLane: ctx.crewBrowseLane,
   crewPeopleFacet: ctx.crewPeopleFacet,
+  crewProfessionalKind: ctx.crewProfessionalKind,
   applyCrewBrowseLane: ctx.handlers.applyCrewBrowseLane,
   applyCrewPeopleFacet: ctx.handlers.applyCrewPeopleFacet,
   listMode: ctx.listMode,

@@ -90,7 +90,7 @@ describe('resolveAuthExitFallback', () => {
 describe('isAuthGatedPath', () => {
   it('detects protected routes', () => {
     expect(isAuthGatedPath('/profile')).toBe(true);
-    expect(isAuthGatedPath('/publishing/overview')).toBe(true);
+    expect(isAuthGatedPath('/operator/overview')).toBe(true);
     expect(isAuthGatedPath('/explore')).toBe(false);
   });
 });

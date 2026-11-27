@@ -16,7 +16,6 @@ import {
 } from './compose';
 import {
   parseExploreActivityDatePreset,
-  serializeExploreActivityDatePreset,
   serializeExploreMapActivityDatePreset,
 } from './exploreActivityDateFilter';
 import { serializeExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';

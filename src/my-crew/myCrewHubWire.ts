@@ -24,7 +24,8 @@ export const parseMyCrewMainTab = (raw: string | null, legacyPill: string | null
 };
 
 export const parseMyCrewPeoplePill = (raw: string | null, legacyPill: string | null): MyCrewPeoplePill => {
-  if (raw === 'following' || legacyPill === 'following') return 'following';
+  if (raw && PEOPLE_PILLS.has(raw)) return raw as MyCrewPeoplePill;
+  if (legacyPill === 'following') return 'following';
   return 'friends';
 };
 

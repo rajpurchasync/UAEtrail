@@ -66,7 +66,7 @@ export const usePlanHostingManageDeepLink = ({
       params.delete('checkin');
       params.delete('roster');
     });
-  }, [activities, activitiesLoading, enabled, navigate, pathname, planSearchKey, setSearchParams]);
+  }, [activities, activitiesLoading, enabled, navigate, pathname, planSearchKey, searchParams, setSearchParams]);
 
   return {
     manageActivity,

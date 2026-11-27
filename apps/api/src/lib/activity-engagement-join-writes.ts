@@ -30,7 +30,6 @@ import {
   loadPublishedEventForJoin,
   patchActivityRequestInMongo,
   persistJoinRequestRow,
-  releaseSlotsForRequest,
   stripPartyLineFromNote,
   toActivityRequestRecord,
   withPartyNote,

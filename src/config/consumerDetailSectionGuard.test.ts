@@ -7,8 +7,7 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 describe('consumerDetailSectionGuard', () => {
   it('entity detail surfaces use shared ConsumerDetailSection chrome', () => {
     const surfaces = [
-      'src/place/detail/templates/PlaceDetailSections.tsx',
-      'src/activity/detail/templates/ActivityDetailSections.tsx',
+      'src/facility/detail/templates/FacilityDetailSections.tsx',
       'src/components/destination/DestinationHubPreviewSections.tsx',
       'src/components/shop/ShopPublicPage.tsx',
       'src/detail/shell/SectionCard.tsx',

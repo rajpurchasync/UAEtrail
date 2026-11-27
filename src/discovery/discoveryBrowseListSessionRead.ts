@@ -53,7 +53,7 @@ export const resolveDiscoveryBrowseListCat = ({
   if (pathname === EXPLORE_SEARCH_RESULTS_PATH) {
     return exploreSearchListCatForScope(parseExploreSearchBrowseState(searchParams).searchScope);
   }
-  if (mapOverlay) return rawListCat;
+  if (mapOverlay) return rawListCat ?? 'activities';
   if (rawListCat === 'people' || rawListCat === 'agencies') return rawListCat;
   if (rawListCat) return rawListCat;
   const inferred = inferListCatFromExploreHandoff(parseBrowseListFilterState(searchParams), searchParams);

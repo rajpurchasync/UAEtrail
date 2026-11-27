@@ -176,7 +176,7 @@ export const DestinationDetailView = ({
                   title={area.name}
                   text={summary.slice(0, 120)}
                   path={detailPath}
-                  shareSurface="area"
+                  shareSurface="destination"
                 />
               </div>
             }

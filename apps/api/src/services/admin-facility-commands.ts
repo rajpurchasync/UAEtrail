@@ -11,8 +11,6 @@ import {
 } from '../lib/facilities-store.js';
 import { toFacilityDto } from '../lib/facility-mappers.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map.js';
-import { catalogDestinationIdUpdate } from '@uaetrail/shared-types';
-import { catalogOnSiteIdUpdate } from '../lib/facility-on-site-sync.js';
 import { assertActiveListedFacilityHasCatalogGeo } from '../lib/listed-catalog-geo-gate.js';
 
 export type AdminFacilityWriteInput = {

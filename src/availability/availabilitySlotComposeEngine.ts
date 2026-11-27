@@ -116,8 +116,12 @@ export const openEditorStateFromMemberAvailability = (
   const docModalitiesFallback = (data?.kinds ?? []).filter(
     (kind): kind is ScheduleModality => kind !== 'guide' && isScheduleModality(kind)
   );
-  const modalities =
-    fromSlots.length > 0 ? fromSlots : docModalitiesFallback.length > 0 ? docModalitiesFallback : ['hiking'];
+  const modalities: ScheduleModality[] =
+    fromSlots.length > 0
+      ? fromSlots
+      : docModalitiesFallback.length > 0
+        ? docModalitiesFallback
+        : ['hiking'];
 
   const sample = openSlots[0];
   const transportMode: AvailabilityOpenLogisticsState['transportMode'] =
@@ -240,8 +244,11 @@ export const prefillFromIntentComposeRoute = (
   route: Extract<ExploreComposeWire, { composeKind: 'intent' }>,
   options?: { capacityParam?: string | null }
 ): OpenAvailabilityComposePrefill | FixedAvailabilityComposePrefill => {
-  if (route.mode === 'open') return prefillOpenIntentCompose(options);
-  return prefillFixedIntentCompose(route.kind);
+  if ('mode' in route && route.mode === 'open') return prefillOpenIntentCompose(options);
+  if ('mode' in route && route.mode === 'fixed' && 'kind' in route) {
+    return prefillFixedIntentCompose(route.kind);
+  }
+  return prefillOpenIntentCompose(options);
 };
 
 export const readIntentOpenComposeCapacity = (): AvailabilitySlotCapacity | null => {

@@ -10,7 +10,7 @@ import { FEATURE_FLAGS } from '@/config/platform';
 import { useAuth } from '@/context/AuthContext';
 import { meCommunitiesQueryKey } from '@/crew-discovery/hooks/useMeCommunityDiscoverList';
 
-const communityDetailQueryKey = (slug: string, viewerId: string | null) =>
+export const communityDetailQueryKey = (slug: string, viewerId: string | null) =>
   ['explore', 'communities', 'detail', slug, viewerId] as const;
 
 export const useCommunityDiscoverDetail = (slug: string | undefined, enabled?: boolean) => {

@@ -1855,6 +1855,10 @@ export type {
   AvailabilityPricingKind,
   AvailabilityTourShape,
 } from './member-availability.js';
+export type {
+  AvailabilitySlotTransportMode,
+  AvailabilitySlotVehicleType,
+} from './availability-slot-logistics.js';
 
 export {
   discoveryKindsFromSlots,

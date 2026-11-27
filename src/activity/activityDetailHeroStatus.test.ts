@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ACTIVITY_STATUS_JOIN_REQUESTED } from '../content/activityParticipationCopy';
 import { resolveActivityDetailHeroStatusChips } from './activityDetailHeroStatus';
 
 describe('resolveActivityDetailHeroStatusChips', () => {
@@ -33,7 +34,7 @@ describe('resolveActivityDetailHeroStatusChips', () => {
       previewMode: false,
       isHostUser: false,
     });
-    expect(chips[0]).toEqual({ label: 'Join requested', tone: 'warning' });
+    expect(chips[0]).toEqual({ label: ACTIVITY_STATUS_JOIN_REQUESTED, tone: 'warning' });
   });
 
   it('shows host capacity and invited chips', () => {

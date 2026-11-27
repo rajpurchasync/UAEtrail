@@ -93,7 +93,7 @@ export const patchHostingDestinationBackToListed = (): Partial<CreateActivityDra
   placeLabelSource: 'registry',
   trailName: '',
   customPlaceImages: [],
-  customPlaceProposeddestinationName: '',
+  customPlaceProposedDestinationName: '',
   trailLatitude: null,
   trailLongitude: null,
   registryPlaceId: null,

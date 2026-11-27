@@ -19,8 +19,6 @@ export const PlanBrowseRoute = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
-  const filter = searchParams.get('filter');
-  const role = searchParams.get('role');
   const inboundCreatePath = inboundCreateParamToHostPath(searchParams.get('create'));
   if (inboundCreatePath) {
     return <Navigate to={inboundCreatePath} replace />;

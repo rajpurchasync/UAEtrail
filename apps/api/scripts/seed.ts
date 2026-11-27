@@ -5,7 +5,6 @@ import {
   ActivityType,
   AuthProvider,
   Difficulty,
-  ActivityStatus,
   LocationStatus,
   MembershipRole,
   NotificationType,
@@ -31,7 +30,6 @@ import {
 import {
   findActivityDocInMongo,
   findLocationInMongo,
-  patchActivityInMongo,
   writeActivityDocToMongo,
   writeLocationToMongo,
 } from '../src/lib/entity-sync.js';

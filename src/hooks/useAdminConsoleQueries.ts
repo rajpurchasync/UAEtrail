@@ -9,6 +9,7 @@ import type {
   PlaceDTO,
   SubmissionCandidate,
   TenantListDTO,
+  UserListDTO,
 } from '@uaetrail/shared-types';
 import type {
   AdminContentReportEntry,
@@ -19,7 +20,7 @@ import type {
   OrganisationApplication,
   TenantDetail,
 } from '../api/types';
-import type { AdminSocialGroupListItem, UserListDTO } from '../api/types';
+import type { AdminSocialGroupListItem } from '../api/types';
 import type { AdminCatalogSegment } from '../place/adminCatalogSegment';
 import {
   fetchAdminActivityDetail,

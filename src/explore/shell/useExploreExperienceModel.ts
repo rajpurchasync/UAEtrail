@@ -29,6 +29,7 @@ import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
 import { guestExplorePreviewCanSearch } from '../../discovery/discoveryPortExploreGuestWire';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
+import type { ExploreMapHoverPoint } from '../ExploreMapChromeContext';
 import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import { useCrewDiscoveryBrowseBundle } from '@/crew-discovery/hooks/useCrewDiscoveryBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
@@ -88,7 +89,18 @@ export const useExploreExperienceModel = () => {
     useExploreMapCatalog({ userId: user?.id, searchParams });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [highlightedExploreItemId, setHighlightedExploreItemId] = useState<string | null>(null);
+  const [highlightedExploreItemId, setHighlightedExploreItemIdState] = useState<string | null>(null);
+  const [highlightedExplorePoint, setHighlightedExplorePoint] = useState<ExploreMapHoverPoint | null>(null);
+  const setHighlightedExploreItemId = useCallback((id: string | null, point?: ExploreMapHoverPoint | null) => {
+    setHighlightedExploreItemIdState(id);
+    setHighlightedExplorePoint((current) => {
+      if (!id || point == null || !Number.isFinite(point.lat) || !Number.isFinite(point.lng)) {
+        return null;
+      }
+      if (current && current.lat === point.lat && current.lng === point.lng) return current;
+      return point;
+    });
+  }, []);
   const [linkOnlyPeekItems, setLinkOnlyPeekItems] = useState<ExploreMapItemDTO[]>([]);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
@@ -103,7 +115,7 @@ export const useExploreExperienceModel = () => {
 
   useEffect(() => {
     if (!browse.listOpen) setHighlightedExploreItemId(null);
-  }, [browse.listOpen]);
+  }, [browse.listOpen, setHighlightedExploreItemId]);
 
   const viewport = useExploreMapViewport({
     user,
@@ -379,6 +391,7 @@ export const useExploreExperienceModel = () => {
     selectionItems,
     selectedId,
     highlightedExploreItemId,
+    highlightedExplorePoint,
     setHighlightedExploreItemId,
     viewport,
     mapPins,

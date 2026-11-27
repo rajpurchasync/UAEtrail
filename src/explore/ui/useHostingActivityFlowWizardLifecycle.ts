@@ -12,12 +12,8 @@ import {
   type CreateActivityDraft,
   type CreateActivityKind,
 } from './hostingFlowEngine';
-import {
-  findHostingWizardLinkSessionScope,
-  hostingWizardSessionScope,
-  readHostingWizardSession,
-  writeHostingWizardSession,
-} from './composeWizardSession';
+import { readHostingWizardSession, writeHostingWizardSession } from './composeWizardSession';
+import { normalizeComposeFlowId } from '../composeFlowIds';
 import {
   HOSTING_PUBLISH_FLOW_IDLE,
   hostingPublishFlowBlocksSessionPersist,
@@ -84,7 +80,10 @@ export const useHostingActivityFlowWizardLifecycle = (input: {
     }
 
     if (input.hostComposeKind && input.hostingFlowId) {
-      const saved = readHostingWizardSession(input.hostingFlowId, input.wizardSessionScope);
+      const flowId = normalizeComposeFlowId(input.hostingFlowId);
+      const saved = flowId
+        ? readHostingWizardSession(flowId, input.wizardSessionScope)
+        : null;
       if (saved?.draft?.kind) {
         input.setDraft(hydrateCreateActivityDraft(saved.draft));
         input.setSelectedKind(saved.selectedKind);
@@ -123,6 +122,7 @@ export const useHostingActivityFlowWizardLifecycle = (input: {
     if (!input.user) {
       input.onClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- input bag decomposed; whole input retriggers wizard reset
   }, [
     input.open,
     input.user,
@@ -147,11 +147,13 @@ export const useHostingActivityFlowWizardLifecycle = (input: {
     if (!input.open || !input.hostingFlowIdForPersist || hostingPublishFlowBlocksSessionPersist(input.publishStatus)) {
       return;
     }
+    const flowId = normalizeComposeFlowId(input.hostingFlowIdForPersist);
+    if (!flowId) return;
     const linkToParentActivityId =
       input.wizardPrefill?.linkToParentActivityId ??
-      readHostingWizardSession(input.hostingFlowIdForPersist, input.wizardSessionScope)?.linkToParentActivityId;
+      readHostingWizardSession(flowId, input.wizardSessionScope)?.linkToParentActivityId;
     writeHostingWizardSession(
-      input.hostingFlowIdForPersist,
+      flowId,
       {
         step: input.step,
         draft: input.draft,

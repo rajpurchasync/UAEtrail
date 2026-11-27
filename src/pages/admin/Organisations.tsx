@@ -52,8 +52,11 @@ export const Organisations = () => {
     error: loadError,
     refetch: refetchOrganisationsCatalog,
   } = useAdminOrganisationsCatalog();
-  const applications = organisationsCatalog?.applications ?? [];
-  const tenants = organisationsCatalog?.tenants ?? [];
+  const applications = useMemo(
+    () => organisationsCatalog?.applications ?? [],
+    [organisationsCatalog?.applications]
+  );
+  const tenants = useMemo(() => organisationsCatalog?.tenants ?? [], [organisationsCatalog?.tenants]);
   const error =
     actionError ??
     (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load data' : null);

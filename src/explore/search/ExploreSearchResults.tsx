@@ -41,6 +41,7 @@ const catalogFilters = (): BrowseListFilterState => ({
   activityDatePreset: 'anyday',
   crewBrowseLane: 'people',
   crewPeopleFacet: 'available',
+  crewProfessionalKind: 'all',
   crewPeopleSurface: 'find',
   hasTrip: false,
   facilityKinds: [],

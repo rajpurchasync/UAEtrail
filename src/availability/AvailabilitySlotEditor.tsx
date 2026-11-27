@@ -338,7 +338,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
         </fieldset>
       ) : null}
 
-      {(availableAsGuide || (!showCapacityChooser && capacity === 'guide')) ? (
+      {availableAsGuide ? (
         <GuideEngagementTermsFields
           value={guideEngagementTerms}
           onChange={setGuideEngagementTerms}

@@ -13,7 +13,7 @@ export const filterCommunityDiscoverCards = (
     filtered = filtered.filter((row) => {
       const area = row.geoRef.names.area?.trim().toLowerCase() ?? '';
       const state = row.geoRef.names.state?.trim().toLowerCase() ?? '';
-      const slugArea = row.geoRef.slug?.area?.trim().toLowerCase() ?? '';
+      const slugArea = row.geoRef.areaId?.trim().toLowerCase() ?? '';
       return regions.some((r) => r === area || r === state || r === slugArea);
     });
   }

@@ -37,7 +37,7 @@ export const useMemberStatus = ({ enabled = true }: UseMemberStatusOptions = {})
     if (!user) return null;
     const result = await query.refetch();
     return result.data ?? null;
-  }, [query.refetch, user]);
+  }, [query, user]);
 
   const publish = status?.publish;
 

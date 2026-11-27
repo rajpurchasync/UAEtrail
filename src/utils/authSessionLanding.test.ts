@@ -2,8 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   isExploreSearchSessionPreservePath,
   sessionExpiredExplorePath,
-  sessionExpiredLandingPath,
-  signedOutLandingPath,
   stripSessionExpiredQuery,
   withSessionExpiredQuery,
 } from './authSessionLanding';

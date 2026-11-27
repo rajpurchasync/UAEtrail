@@ -56,7 +56,7 @@ type Props = {
   onBackToIntent?: () => void;
   onSubmitted?: (result: AddSubmitResult) => void;
   signInHref: string;
-  exploredestinationSlug?: string | null;
+  exploreDestinationSlug?: string | null;
   /** `facilityOnPlace` deep link — prefill `parentPlaceId`. */
   facilityOnPlaceId?: string | null;
 };
@@ -117,6 +117,7 @@ export const CreateAddFacilityFlow = ({
     if (!user) {
       onClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mapSession stable; avoid wizard re-init loop
   }, [open, user, navigate, signInHref, onClose, exploreDestinationSlug, publishedDestinations]);
 
   useEffect(() => {

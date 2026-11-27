@@ -126,10 +126,10 @@ export const Activities = () => {
     navigateToExploreHost(navigate, type ? activityTypeToHostComposeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);
 
-  const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
+  const openManage = useCallback((activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
     setManageInitialView(view);
     setManageActivity(activity);
-  };
+  }, []);
 
   const mapPeekHandlersFor = useCallback(
     (activity: ActivityDTO): ActivityMapPeekActionHandlers => ({
@@ -194,7 +194,7 @@ export const Activities = () => {
     nextParams.delete('checkin');
     nextParams.delete('roster');
     setSearchParams(nextParams, { replace: true });
-  }, [events, searchParams, setSearchParams, tenantId]);
+  }, [events, openManage, searchParams, setSearchParams, tenantId]);
 
   useEffect(() => {
     if (!manageActivity) return;

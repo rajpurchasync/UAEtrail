@@ -67,7 +67,6 @@ export const batchResolveMemberProfileRoleLabelsForDirectory = async (
 
   for (const user of users) {
     const role = user.role ?? UserRole.PARTICIPANT;
-    const profileComplete = isSignupProfileComplete(user.profile);
     const guideProfileComplete = isGuideProfileComplete(user.profile);
     const ownedTenants = mergeActiveTenantsForHostStatus(
       ownedByOwnerId.get(user._id) ?? [],

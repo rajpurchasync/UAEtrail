@@ -806,7 +806,9 @@ export const UserDetailPanel = ({
                   tenant={tenantDetail}
                   loading={drillLoading}
                   onOpenUser={onOpenUser}
-                  onReload={() => void tenantDetailQuery.refetch()}
+                  onReload={async () => {
+                    await tenantDetailQuery.refetch();
+                  }}
                 />
               )}
               {drillDown.type === 'group' && <GroupDrillDown detail={groupDetail} loading={drillLoading} />}

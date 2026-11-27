@@ -37,8 +37,10 @@ export const Communities = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [joinFilter, setJoinFilter] = useState('');
   const [hostFilter, setHostFilter] = useState('');
+  const [actionError, setError] = useState<string | null>(null);
   const error =
-    loadError instanceof Error ? loadError.message : loadError ? 'Failed to load communities' : null;
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load communities' : null);
   const [detail, setDetail] = useState<AdminCommunityDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<AdminCommunityListItem | null>(null);

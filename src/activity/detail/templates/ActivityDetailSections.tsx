@@ -107,6 +107,20 @@ export const ActivityDetailSections = ({
 }: ActivityDetailSectionsProps) => {
   const { user } = useAuth();
   const location = useLocation();
+  const activityGeoHero = useMemo(
+    () => resolveActivityDetailGeoHero(model.activity),
+    [model.activity]
+  );
+  const geoLinks = useGeoAncestorLinks({
+    region: activityGeoHero.region,
+    geoRef: activityGeoHero.geoRef,
+  });
+  const headerChrome = resolveActivityDetailHeaderChrome(model.activity, null);
+  const areaLinkState = useMemo(() => {
+    const returnTo = `${location.pathname}${location.search}`;
+    return consumerDetailChildLinkState(returnTo, headerChrome.label);
+  }, [headerChrome.label, location.pathname, location.search]);
+
   if (!model.publicDetail) {
     return null;
   }
@@ -122,19 +136,6 @@ export const ActivityDetailSections = ({
     model.activity.location?.name?.trim() ||
     '';
   const registryPath = model.registryPlacePath ?? activityRegistryPlacePath(model.activity);
-  const activityGeoHero = useMemo(
-    () => resolveActivityDetailGeoHero(model.activity),
-    [model.activity]
-  );
-  const geoLinks = useGeoAncestorLinks({
-    region: activityGeoHero.region,
-    geoRef: activityGeoHero.geoRef,
-  });
-  const headerChrome = resolveActivityDetailHeaderChrome(model.activity, null);
-  const areaLinkState = useMemo(() => {
-    const returnTo = `${location.pathname}${location.search}`;
-    return consumerDetailChildLinkState(returnTo, headerChrome.label);
-  }, [headerChrome.label, location.pathname, location.search]);
   const activityGeoLine = (
     <ConsumerDetailHeroGeoLine
       geoLinks={geoLinks}

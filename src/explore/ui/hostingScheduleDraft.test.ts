@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
+const addCalendarDays = (iso: string, days: number): string => {
+  const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 import { emptyCreateActivityDraft } from './hostingFlowEngine';
 import {
   buildHostingEndDateOptions,
@@ -34,13 +40,18 @@ describe('hostingScheduleDraft', () => {
   });
 
   it('shifts end date with start when still same-day', () => {
-    const patch = patchHostingStartDate({ date: '2026-11-10', endDate: '2026-11-10' }, '2026-11-12');
-    expect(patch).toEqual({ date: '2026-11-12', endDate: '2026-11-12' });
+    const start = minHostingScheduleStartDate();
+    const next = addCalendarDays(start, 2);
+    const patch = patchHostingStartDate({ date: start, endDate: start }, next);
+    expect(patch).toEqual({ date: next, endDate: next });
   });
 
   it('keeps end date when multi-day', () => {
-    const patch = patchHostingStartDate({ date: '2026-11-10', endDate: '2026-11-14' }, '2026-11-11');
-    expect(patch.endDate).toBe('2026-11-14');
+    const start = minHostingScheduleStartDate();
+    const mid = addCalendarDays(start, 1);
+    const end = addCalendarDays(start, 4);
+    const patch = patchHostingStartDate({ date: start, endDate: end }, mid);
+    expect(patch.endDate).toBe(end);
   });
 
   it('builds 30 end-date chips from start', () => {

@@ -74,7 +74,7 @@ describe('list poster presentation', () => {
     expect(resolveBrowsePosterPlaceLine(card)).toBe('Trail');
   });
 
-  it('does not infer pets welcome on posters when requirements omit pets', () => {
+  it('passes through enriched policy badges including default pets welcome on hiking', () => {
     const card = buildDiscoveryCardViewModelCard({
       id: 'activity:a2',
       kind: 'hiking',
@@ -102,7 +102,7 @@ describe('list poster presentation', () => {
       },
     } as ExploreMapItemDTO);
     expect(card.requirementBadges).toContain('Pets welcome');
-    expect(resolveBrowsePosterRequirementLabels(card)).not.toContain('Pets welcome');
+    expect(resolveBrowsePosterRequirementLabels(card)).toContain('Pets welcome');
     expect(resolveBrowsePosterRequirementLabels(card)).toContain('Medium');
   });
 
@@ -168,7 +168,7 @@ describe('list poster presentation', () => {
     };
 
     const grid = resolveBrowsePosterScheduleGrid(cardWithPrice);
-    expect(grid.dateLabel).toMatch(/12 Oct 26/);
+    expect(grid.dateLabel).toMatch(/12 Oct/);
     expect(grid.timeLabel).toBe('Starts 4:00 PM');
     expect(grid.priceLabel).toBe('AED 200');
     expect(grid.spotsLabel).toBe('5 spots');
@@ -219,7 +219,11 @@ describe('resolveListFeedFooterModel', () => {
 
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary.kind).toBe('guest_gate');
-    // Pre-join Message host is entitlement-gated; guests without wire entitlements only see join.
-    expect(model.secondary).toBeNull();
+    // Guests with canOpenDetailPage still get a secondary details link.
+    expect(model.secondary).toEqual({
+      kind: 'link',
+      href: '/activity/a1',
+      label: 'View details',
+    });
   });
 });

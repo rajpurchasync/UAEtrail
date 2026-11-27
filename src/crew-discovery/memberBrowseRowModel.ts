@@ -15,7 +15,6 @@ import {
   crewBrowseAvailabilityDetailFromPerson,
   crewBrowseAvailabilityLocationLabel,
   crewBrowseAvailabilitySocialLabel,
-  sortAvailabilityPeopleNetworkFirst,
 } from './availabilityBrowseCardCopy';
 export { sortAvailabilityPeopleNetworkFirst } from './availabilityBrowseCardCopy';
 import type { CrewsAvailabilityShapeFilter } from '../discovery/discoveryPortListFindCrew';

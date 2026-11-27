@@ -58,7 +58,6 @@ describe('composeWideWizard', () => {
     ).toEqual([
       ['title', 'when', 'persons', 'audience', 'info', 'transport'],
       ['curatedDestination'],
-      ['destination'],
       ['from'],
       ['review'],
     ]);

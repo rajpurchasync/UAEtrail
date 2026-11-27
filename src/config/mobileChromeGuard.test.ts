@@ -90,9 +90,9 @@ describe('mobileChromeGuard', () => {
     expect(missing).toEqual([]);
   });
 
-  it('search results uses unified tab header chrome', () => {
+  it('search results uses self header (not layout unified chrome)', () => {
     expect(hasConsumerSelfHeader(EXPLORE_SEARCH_RESULTS_PATH)).toBe(true);
-    expect(isLayoutMobileUnifiedHeaderRoute(EXPLORE_SEARCH_RESULTS_PATH)).toBe(true);
+    expect(isLayoutMobileUnifiedHeaderRoute(EXPLORE_SEARCH_RESULTS_PATH)).toBe(false);
   });
 
   it('unified header + navbar never stacks for signed-in bottom-nav surfaces', () => {

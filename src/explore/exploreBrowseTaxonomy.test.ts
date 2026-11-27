@@ -37,9 +37,11 @@ describe('exploreBrowseTaxonomy', () => {
     expect(mapItemMatchesFilterPill(legacySeeking, 'trips')).toBe(true);
   });
 
-  it('parses leftover and new search scopes', () => {
-    expect(parseExploreSearchScope('trips')).toBe('activities');
-    expect(parseExploreSearchScope('spots')).toBe('places');
+  it('parses canonical search scopes only (GW-7)', () => {
+    expect(parseExploreSearchScope('trips')).toBeNull();
+    expect(parseExploreSearchScope('spots')).toBeNull();
+    expect(parseExploreSearchScope('activities')).toBe('activities');
+    expect(parseExploreSearchScope('places')).toBe('places');
     expect(parseExploreSearchScope('people')).toBe('people');
     expect(parseExploreSearchScope('agencies')).toBe('agencies');
   });

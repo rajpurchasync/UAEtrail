@@ -14,7 +14,7 @@ describe('resolveNotificationActorUserId', () => {
 
   it('falls back to legacy keys', () => {
     expect(resolveNotificationActorUserId({ fromUserId: 'legacy-f' })).toBe('legacy-f');
-    expect(resolveNotificationActorUserId({ buddyUserId: 'legacy-b' })).toBe('legacy-b');
+    expect(resolveNotificationActorUserId({ buddyUserId: 'legacy-b' })).toBeNull();
     expect(resolveNotificationActorUserId({ senderId: 'legacy-s' })).toBe('legacy-s');
   });
 });

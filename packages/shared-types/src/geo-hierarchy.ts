@@ -26,6 +26,8 @@ export type GeoRef = {
   stateId: string;
   areaId: string;
   venueId?: string;
+  destinationId?: string;
+  slug?: Partial<GeoRefNames>;
   path: string;
   names: GeoRefNames;
   /** Lowercased names and tokens — multikey equality search. */

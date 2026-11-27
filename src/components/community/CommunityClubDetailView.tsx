@@ -281,7 +281,7 @@ export const CommunityClubDetailView = ({ data }: CommunityClubDetailViewProps) 
         {data.viewerIsHost ? (
           <CommunityHostEditSection
             data={data}
-            onSave={(patch) => patchMutation.mutate({ communityId: data.id, patch })}
+            onSave={(input) => patchMutation.mutate(input)}
             isSaving={patchMutation.isPending}
             saveError={patchMutation.isError}
             onLinkActivity={(activityId) =>

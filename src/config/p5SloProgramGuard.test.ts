@@ -30,9 +30,6 @@ describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
     const pkg = JSON.parse(read('package.json')) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
     expect(pkg.scripts?.['p5:slo-preflight']).toMatch(/--preflight/);
-    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
-      migrations?: { id: string; status: string }[];
-    };
     const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
       migrations?: { id: string; status: string }[];
     };

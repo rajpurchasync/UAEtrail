@@ -191,7 +191,7 @@ export type CreateActivityDraft = {
   /** Curated area for a new (non-registry) trail/camp/venue. */
   customPlaceDestinationId: string | null;
   /** Proposed area name when the pin is outside published polygons. */
-  customPlaceProposeddestinationName: string;
+  customPlaceProposedDestinationName: string;
   /** Country for a new spot. Region noun follows this (emirate, province, governorate). */
   customPlaceCountry: CountryCode;
   /** Region for search/Home filters — inferred from the pin, else picked. */
@@ -538,7 +538,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   guideUserIds: [],
   customPlaceImages: [],
   customPlaceDestinationId: null,
-  customPlaceProposeddestinationName: '',
+  customPlaceProposedDestinationName: '',
   customPlaceCountry: 'AE',
   customPlaceEmirate: '',
   venueCascadeState: '',

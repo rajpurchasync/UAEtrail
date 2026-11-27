@@ -2,7 +2,7 @@ import { Star } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveVenueBrowseCardCopy, type VenueBrowseCardRating } from './venueBrowseCardCopy';
-import { BrowseItemLink } from './BrowseItemLink';
+import { BrowseItemLink, browseCardHoverPoint } from './BrowseItemLink';
 import { BROWSE_CARD_BODY, BROWSE_CARD_SHELL } from './browseCardChrome';
 import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
 import { DiscoveryBrowseCardHero } from '../../discovery/browse/DiscoveryBrowseCardHero';
@@ -29,6 +29,7 @@ const TitleRating = ({ rating }: { rating: VenueBrowseCardRating }) => (
 /** Explore venues bucket — thumbnail card for places and shops. */
 export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
   const listing = resolveVenueBrowseCardCopy(card);
+  const hoverPoint = browseCardHoverPoint(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
 
   return (
@@ -40,6 +41,7 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
       <BrowseItemLink
         to={card.path}
         exploreItemId={card.id}
+        mapPoint={hoverPoint}
         onMapHover={onMapHover}
         className="group block"
       >
@@ -49,6 +51,7 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
         <BrowseItemLink
           to={card.path}
           exploreItemId={card.id}
+          mapPoint={hoverPoint}
           onMapHover={onMapHover}
           className="group flex min-w-0 items-start gap-2"
         >
@@ -75,6 +78,7 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
         <BrowseItemLink
           to={card.path}
           exploreItemId={card.id}
+          mapPoint={hoverPoint}
           onMapHover={onMapHover}
           className="group block min-w-0"
         >

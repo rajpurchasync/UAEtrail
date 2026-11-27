@@ -18,11 +18,11 @@ const chipIcon = (icon: ActivityMapPeekStatChip['icon']): LucideIcon => {
 const toneClass = (tone: ActivityMapPeekStatChip['tone']) => {
   switch (tone) {
     case 'accent':
-      return 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-100';
+      return 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-200 dark:ring-emerald-700/40';
     case 'sky':
-      return 'bg-teal-50 text-teal-900 ring-1 ring-teal-100';
+      return 'bg-teal-50 text-teal-900 ring-1 ring-teal-100 dark:bg-teal-950/60 dark:text-teal-200 dark:ring-teal-700/50';
     default:
-      return 'bg-neutral-100 text-neutral-800';
+      return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100';
   }
 };
 

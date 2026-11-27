@@ -6,9 +6,7 @@ import {
   AVAILABILITY_SLOT_CAPACITIES,
   AVAILABILITY_TOUR_SHAPES,
   MAX_AVAILABILITY_DESTINATION_REGIONS,
-  SCHEDULE_MODALITIES,
   type AvailabilityKind,
-  type ScheduleModality,
 } from '@uaetrail/shared-types';
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
@@ -23,10 +21,6 @@ const availabilityKindEnum = z.enum(
 );
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-
-const scheduleModalityEnum = z.enum(
-  SCHEDULE_MODALITIES as unknown as [ScheduleModality, ...ScheduleModality[]]
-);
 
 const engagementTermsSchema = z
   .object({

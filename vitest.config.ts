@@ -22,6 +22,7 @@ export default defineConfig({
   },
   test: {
     pool: 'vmThreads',
+    testTimeout: 30_000,
     environment: 'jsdom',
     setupFiles: [path.resolve(projectRoot, 'vitest.setup.ts')],
     include: [

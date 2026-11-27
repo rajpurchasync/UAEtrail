@@ -22,9 +22,7 @@ import {
 } from './social-groups-store-internals.js';
 import type {
   GroupInviteRecord,
-  GroupInviteStatus,
   GroupMemberRecord,
-  GroupMemberType,
   GroupRecord,
   GroupRole,
   GroupStatus,

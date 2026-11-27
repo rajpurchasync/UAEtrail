@@ -106,7 +106,6 @@ const mapRequestDto = (
 const loadUserMapsForRequests = async (viewerId: string, docs: MongoFriendRequest[]) => {
   const userIds = [...new Set(docs.flatMap((doc) => [doc.fromUserId, doc.toUserId]))];
   const users = await findAuthUsersByIds(userIds);
-  const authById = new Map(users.map((user) => [user._id, user]));
   const map = new Map<string, NonNullable<ReturnType<typeof mapUserPreview>>>();
   await Promise.all(
     users.map(async (user) => {

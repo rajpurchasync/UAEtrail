@@ -460,7 +460,7 @@ export const EXPLORE_BOOKING_SEARCH_PICK_SHEET_Z = 5600;
  */
 export const EXPLORE_PEEK = {
   position: `absolute inset-0 overflow-hidden ${EXPLORE_Z.peekCard} pointer-events-none`,
-  scrim: 'map-peek-bubble-scrim pointer-events-auto absolute inset-0',
+  scrim: 'map-peek-bubble-scrim pointer-events-none absolute inset-0',
   inner: 'map-peek-bubble pointer-events-auto absolute flex w-[min(100%-1.5rem,23.75rem)] flex-col overflow-hidden',
   shell:
     'map-peek-bubble-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_12px_40px_rgba(15,23,42,.22)] ring-1 ring-black/8',
@@ -495,7 +495,7 @@ export const EXPLORE_PEEK = {
   tripStatChip:
     'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight',
   tripSituationalBtn:
-    'flex w-full min-h-[2.75rem] items-center gap-2 rounded-2xl bg-teal-50 px-3 py-2 text-left text-[11px] font-semibold text-teal-900 ring-1 ring-teal-100 hover:bg-teal-100/80',
+    'flex w-full min-h-[2.75rem] items-center gap-2 rounded-2xl bg-teal-50 px-3 py-2 text-left text-[11px] font-semibold text-teal-900 ring-1 ring-teal-100 hover:bg-teal-100/80 dark:bg-teal-950/60 dark:text-teal-200 dark:ring-teal-700/50 dark:hover:bg-teal-900/70',
 } as const;
 
 export const EXPLORE_LIST_FILTER_INACTIVE =
@@ -529,7 +529,15 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
   }
 };
 
-export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare' | 'area';
+export type MapPinRingKind =
+  | 'hiking'
+  | 'camping'
+  | 'event'
+  | 'shop'
+  | 'agency'
+  | 'rideshare'
+  | 'area'
+  | 'destination';
 export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'availability';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */

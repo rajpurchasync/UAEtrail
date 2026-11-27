@@ -8,7 +8,6 @@ import { newEntityId } from './entity-builders.js';
 import { withCatalogLifecycleFields } from './catalog-lifecycle-map.js';
 import { emitGeoPinChange, facilityToCountedPin } from './geo-write.js';
 import { resolveGeoRefForPin } from './geo-resolve.js';
-import { catalogDestinationIdUpdate } from '@uaetrail/shared-types';
 import { catalogOnSiteIdUpdate, resolveStoredOnSiteId } from './facility-on-site-sync.js';
 
 export type MongoFacilityDoc = Omit<Facility, 'id'> & { _id: string };

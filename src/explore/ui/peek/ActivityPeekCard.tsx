@@ -31,13 +31,7 @@ export type ActivityPeekCardProps = {
 /**
  * Activity peek facade — map pins use {@link MapTripPeekCard}; embed/list rails use legacy shell.
  */
-export const ActivityPeekCard = (props: ActivityPeekCardProps) => {
-  const { embedMode = false, ...mapProps } = props;
-
-  if (!embedMode) {
-    return <MapTripPeekCard {...mapProps} />;
-  }
-
+const ActivityPeekCardEmbed = (props: ActivityPeekCardProps) => {
   const {
     card,
     onClose,
@@ -105,4 +99,15 @@ export const ActivityPeekCard = (props: ActivityPeekCardProps) => {
       />
     </MapPeekShell>
   );
+};
+
+/**
+ * Activity peek facade — map pins use {@link MapTripPeekCard}; embed/list rails use legacy shell.
+ */
+export const ActivityPeekCard = (props: ActivityPeekCardProps) => {
+  const { embedMode = false, ...mapProps } = props;
+  if (!embedMode) {
+    return <MapTripPeekCard {...mapProps} />;
+  }
+  return <ActivityPeekCardEmbed {...props} />;
 };

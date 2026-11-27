@@ -39,7 +39,6 @@ describe('list module hygiene', () => {
 
   it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    const model = listDiscoveryModel();
     expect(experience).toMatch(/ListExplorer/);
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
     expect(explorer).toMatch(/ListGuestCatalogPreviewNotice/);
@@ -57,7 +56,7 @@ describe('list module hygiene', () => {
     expect(listDiscoveryBrowseUrlModel()).toMatch(/countBrowseListFilters/);
     expect(listDiscoveryCrewsModel()).toMatch(/browseListEntityLinkState/);
     expect(listDiscoveryBrowseUrlModel()).toMatch(/parseBrowseListBucket/);
-    expect(model).toMatch(/browseListBucketCategories/);
+    expect(listDiscoveryModel()).toMatch(/browseListBucketCategories/);
     expect(experience).not.toMatch(/ListDiscoverHome/);
     expect(experience).not.toMatch(/ListFeedPosterCard/);
     expect(experience).not.toMatch(/ListCategoryDedicatedView/);
@@ -241,7 +240,6 @@ describe('list module hygiene', () => {
 
   it('list discover people category uses member discovery roster', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    const model = listDiscoveryModel();
     expect(experience).toMatch(/CrewsBrowsePanel/);
     expect(experience).toMatch(/embedded/);
     expect(listDiscoveryBrowseActionsModel()).toMatch(/listCat: 'people'/);
@@ -258,7 +256,6 @@ describe('list module hygiene', () => {
   });
 
   it('crew Looking for uses availability catalog read hook', () => {
-    const model = listDiscoveryModel();
     const crews = listDiscoveryCrewsModel();
     const bundle = readFileSync(
       join(process.cwd(), 'src/crew-discovery/hooks/useCrewDiscoveryBrowseBundle.ts'),
@@ -278,7 +275,6 @@ describe('list module hygiene', () => {
 
   it('builds enriched cards through buildListFeedCards', () => {
     const feed = readFileSync(join(process.cwd(), 'src/list/browse/useBrowseListFeed.ts'), 'utf8');
-    const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
     expect(
       readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8')

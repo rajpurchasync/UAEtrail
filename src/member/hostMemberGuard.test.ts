@@ -67,7 +67,7 @@ const collectSourceFiles = (dir: string): string[] => {
   return files;
 };
 
-describe('hostMemberGuard', () => {
+describe('hostMemberGuard', { timeout: 30_000 }, () => {
   it('consumer UI does not link to /become-host (use PRO_MEMBERSHIP_PATH)', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) =>

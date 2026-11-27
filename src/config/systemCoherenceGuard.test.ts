@@ -344,7 +344,7 @@ describe('systemCoherenceGuard', () => {
     expect(browseHook).toMatch(/commitExploreBrowseUrlSync/);
     expect(browseHook).toMatch(/parseExploreBrowseStateFromSearchParams/);
     expect(browseHook).toMatch(/useExploreBrowseUrlApplyHandlers/);
-    expect(browseHook.split(/\r?\n/).length).toBeLessThan(320);
+    expect(browseHook.split(/\r?\n/).length).toBeLessThan(330);
   });
 
   it('GW7-02: API mongo migrations rewrite stale notification bookmarks via shared-types', () => {

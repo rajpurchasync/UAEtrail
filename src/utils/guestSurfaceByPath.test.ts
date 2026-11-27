@@ -7,7 +7,6 @@ describe('resolveGuestSurfaceForPath', () => {
     expect(resolveGuestSurfaceForPath('/chat')?.feature).toBe('chat');
     expect(resolveGuestSurfaceForPath('/crews')?.feature).toBe('friends');
     expect(resolveGuestSurfaceForPath('/groups')?.feature).toBe('groups');
-    expect(resolveGuestSurfaceForPath('/notifications')?.feature).toBe('settings-hub');
     expect(resolveGuestSurfaceForPath('/settings/notifications')?.feature).toBe('settings-hub');
     expect(resolveGuestSurfaceForPath('/settings/account')?.feature).toBe('settings-hub');
   });

@@ -76,7 +76,6 @@ export const CrewsBrowsePanel = ({
   onQuerySync,
   onClose,
   closePanelAriaLabel = 'Close Crews',
-  closeButtonVariant = 'dismiss',
   searchFocusNonce = 0,
   crewBrowseLane,
   crewPeopleFacet,
@@ -84,6 +83,7 @@ export const CrewsBrowsePanel = ({
   onCrewPeopleFacetChange,
   discoveryFriendsGoing,
   discoveryHostsGoing,
+  discoveryFollowed,
   discoveryDirectory,
   discoveryQuota,
   discoveryLoading,
@@ -100,7 +100,7 @@ export const CrewsBrowsePanel = ({
   onOfferRideshareForAvailabilityItem,
   onOpenIntentOpen,
   friendUserIds,
-  crewRecommendationsQuery,
+  crewRecommendationsQuery: _crewRecommendationsQuery,
 }: CrewsBrowsePanelProps) => {
   const mobileSheetPad = !isDesktop && mobileSheetChrome && !embedded;
   const queryInputRef = useRef<HTMLInputElement>(null);
@@ -110,8 +110,6 @@ export const CrewsBrowsePanel = ({
     queryInputRef.current?.focus();
   }, [searchFocusNonce]);
 
-  const showMobileDismiss =
-    !embedded && !mobileSheetChrome && (!isDesktop || closeButtonVariant === 'dismiss');
   const closeButton = (
     <button
       type="button"
@@ -164,7 +162,6 @@ export const CrewsBrowsePanel = ({
             activeFacet={crewPeopleFacet}
             counts={{
               available: availabilityPeople.length + availabilityCatalogItems.length,
-              everyone: discoveryDirectory.length,
             }}
             onFacetChange={onCrewPeopleFacetChange}
             onClearToDefault={() => onCrewPeopleFacetChange(DEFAULT_CREW_PEOPLE_FACET)}
@@ -199,6 +196,7 @@ export const CrewsBrowsePanel = ({
           availabilityError={availabilityError}
           friendsGoing={discoveryFriendsGoing}
           hostsGoing={discoveryHostsGoing}
+          followed={discoveryFollowed}
           directory={discoveryDirectory}
           discoveryQuota={discoveryQuota}
           discoveryLoading={discoveryLoading}

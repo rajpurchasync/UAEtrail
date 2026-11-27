@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import type { BuddyRequestDTO, BuddySummaryDTO } from '@uaetrail/shared-types';
+import type { FriendRequestDTO, FriendSummaryDTO } from '@uaetrail/shared-types';
 import { fetchMeFriends, fetchMeFriendRequests } from './activityInviteClientApi';
 import { fetchMeFollowingMembers } from './memberPeopleClientApi';
 import { meFriendsNetworkQueryKey, meFollowingMembersQueryKey } from './clientQueryKeys';
 import { useAuth } from '../context/AuthContext';
 
 export type MeFriendsNetworkData = {
-  friends: BuddySummaryDTO[];
-  incomingRequests: BuddyRequestDTO[];
-  outgoingRequests: BuddyRequestDTO[];
+  friends: FriendSummaryDTO[];
+  incomingRequests: FriendRequestDTO[];
+  outgoingRequests: FriendRequestDTO[];
 };
 
 const fetchMeFriendsNetwork = async (): Promise<MeFriendsNetworkData> => {

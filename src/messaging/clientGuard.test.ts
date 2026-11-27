@@ -53,7 +53,7 @@ describe('messaging clientGuard', () => {
     expect([...new Set(dupes)]).toEqual([]);
   });
 
-  it('app code uses messagingApi facade instead of legacy api chat/wall symbols', () => {
+  it('app code uses messagingApi facade instead of legacy api chat/wall symbols', { timeout: 30_000 }, () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) => !ALLOW_PREFIXES.some((prefix) => file.startsWith(prefix) || file === prefix)
     );

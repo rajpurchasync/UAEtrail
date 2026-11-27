@@ -245,6 +245,7 @@ export const ClusteredMarkers = ({
         // Map may already be torn down during route changes / StrictMode.
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- remount cluster layer only when pin set changes
   }, [map, pins, pinsKeyValue, refreshClusterPinEmphasis]);
 
   return null;

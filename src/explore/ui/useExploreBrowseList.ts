@@ -252,7 +252,7 @@ export const useExploreBrowseList = ({
   ]);
 
   const listItems = useMemo(() => {
-    if (browseListMode === 'people') return [];
+    if (browseListMode === 'crews') return [];
 
     const hasQuery = query.trim().length > 0;
     const matchesQuery = (item: ExploreMapItemDTO) => exploreItemMatchesQuery(item, query);
@@ -328,7 +328,6 @@ export const useExploreBrowseList = ({
     items,
     mapFilter,
     activityDatePreset,
-    venueRegions,
     othersSubtype,
     outingTopic,
     activityModeFilter,
@@ -337,6 +336,7 @@ export const useExploreBrowseList = ({
     priceFilter,
     hasTrip,
     facilityKinds,
+    effectiveVenueRegions,
   ]);
 
   const searchScopeCounts = useMemo(

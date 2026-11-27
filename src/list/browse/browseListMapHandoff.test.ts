@@ -83,7 +83,8 @@ describe('browseListMapHandoff', () => {
       [],
       { listCat: 'people' }
     );
-    expect(params.get('peopleTab')).toBe('people');
+    // Default People + Available lane omits peopleTab/peopleFacet from the URL.
+    expect(params.get('peopleTab')).toBeNull();
     expect(params.get('peopleFacet')).toBeNull();
     expect(params.get('buddies')).toBeNull();
     expect(params.get('date')).toBeNull();

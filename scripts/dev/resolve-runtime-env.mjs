@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveEmailEnv } from './lib/resolve-email-env.mjs';
+import { resolveEmailEnv } from '../lib/resolve-email-env.mjs';
 
 export const parseEnvFile = (filePath) => {
   const parsed = {};

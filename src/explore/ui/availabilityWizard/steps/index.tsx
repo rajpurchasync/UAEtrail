@@ -576,7 +576,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
                     ? 'Destination'
                     : target === 'where'
                       ? 'Where'
-                      : REVIEW_EDIT_LABELS[target] ?? target;
+                      : REVIEW_EDIT_LABELS[target as AvailabilityFixedFlowStepId] ?? String(target);
                 return (
                   <button
                     key={target}

@@ -13,6 +13,11 @@ import {
 import { resolveExploreGuestAuthReturnPath } from '../exploreGuestAuthReturn';
 import { isComposeWizardRoute } from '../compose';
 import { exploreMapItemIsAvailabilityCatalog } from '@uaetrail/shared-types';
+import {
+  buildListHoverMapPin,
+  mapPinsIncludeExploreItem,
+  resolveExploreMapItemPinCoords,
+} from '../ui/exploreMapPinModel';
 import type { useExploreExperienceModel } from './useExploreExperienceModel';
 
 type Model = ReturnType<typeof useExploreExperienceModel>;
@@ -28,6 +33,7 @@ type Props = Pick<
   | 'selection'
   | 'selectedId'
   | 'highlightedExploreItemId'
+  | 'highlightedExplorePoint'
   | 'viewport'
   | 'mapPins'
   | 'catalogListCount'
@@ -62,6 +68,7 @@ export const ExploreMapShell = ({
   selection,
   selectedId,
   highlightedExploreItemId,
+  highlightedExplorePoint,
   viewport,
   mapPins,
   catalogListCount,
@@ -142,6 +149,31 @@ export const ExploreMapShell = ({
     },
     [handleMapPinClick, mapPins]
   );
+
+  /** List hover — draw a pin when the card is in the rail but not yet in the map cluster (e.g. rideshare). */
+  const mapPinsWithListHover = useMemo(() => {
+    if (!highlightedExploreItemId) return mapPins;
+    if (mapPinsIncludeExploreItem(mapPins, highlightedExploreItemId)) return mapPins;
+    const catalogItem = mapItems.find((entry) => entry.id === highlightedExploreItemId) ?? null;
+    const fromCatalog = catalogItem ? resolveExploreMapItemPinCoords(catalogItem) : null;
+    const point =
+      highlightedExplorePoint ??
+      (fromCatalog
+        ? {
+            lat: fromCatalog.lat,
+            lng: fromCatalog.lng,
+            activityType:
+              catalogItem?.kind === 'rideshare' ||
+              catalogItem?.kind === 'hiking' ||
+              catalogItem?.kind === 'camping' ||
+              catalogItem?.kind === 'event'
+                ? catalogItem.kind
+                : undefined,
+          }
+        : null);
+    if (!point) return mapPins;
+    return [...mapPins, buildListHoverMapPin(highlightedExploreItemId, point, catalogItem)];
+  }, [mapPins, mapItems, highlightedExploreItemId, highlightedExplorePoint]);
 
   let desktopRightPanelOverlay = null;
   if (desktopGuestComposeGateOpen) {
@@ -224,7 +256,7 @@ export const ExploreMapShell = ({
       onLocateMe={viewport.handleLocateMe}
       mapPins={
         browse.crewsBrowseOpen
-          ? mapPins.filter((pin) =>
+          ? mapPinsWithListHover.filter((pin) =>
               exploreMapItemIsAvailabilityCatalog({
                 source: pin.source,
                 id: pin.id,
@@ -232,12 +264,13 @@ export const ExploreMapShell = ({
                   pin.activityMode === 'hosted' ? 'hosted' : null,
               })
             )
-          : mapPins
+          : mapPinsWithListHover
       }
       crewsBrowseMap={browse.crewsBrowseOpen}
       mapLayoutRevision={mapLayoutRevision}
       selectedId={selectedId}
       highlightedExploreItemId={highlightedExploreItemId}
+      highlightedExplorePoint={highlightedExplorePoint}
       recenterTo={viewport.recenterTo}
       exploreMapCenter={viewport.exploreMapCenter}
       deviceLocation={viewport.deviceLocationPointer}

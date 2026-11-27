@@ -39,9 +39,6 @@ describe('migDiscoRegProgramGuard (MIG-DISCO-REG ops)', () => {
     expect(existsSync(join(ROOT, 'apps/api/scripts/migrate-seeking-to-availability.ts'))).toBe(true);
     const apiPkg = JSON.parse(read('apps/api/package.json')) as { scripts?: Record<string, string> };
     expect(apiPkg.scripts?.['migrate-seeking-to-availability']).toBeTruthy();
-    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
-      migrations?: { id: string }[];
-    };
     expect(
       JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.some(
         (m: { id: string }) => m.id === 'MIG-DISCO-REG'

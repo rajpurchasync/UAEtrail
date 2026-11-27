@@ -22,7 +22,7 @@ import { resolveExplorePrice } from './explorePriceLabel';
 import { extractExploreRequirementBadges } from './exploreRequirementBadges';
 import { resolveHostPersonDisplayName } from '@uaetrail/shared-types';
 import { resolveExploreHostLabel } from '../utils/userDisplay';
-import { availabilityExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
+import { availabilityExploreMapItem } from './exploreMapItemFixtures';
 
 describe('resolveMapPinEmoji', () => {
   it('uses activity emojis', () => {

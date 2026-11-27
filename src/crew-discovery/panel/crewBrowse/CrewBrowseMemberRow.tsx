@@ -4,7 +4,6 @@ import { CalendarDays, Car, ChevronRight, MapPinned } from 'lucide-react';
 import type { DiscoverCrewRecommendationBucket } from '@uaetrail/shared-types';
 import { SecureAvatar } from '../../../components/ui';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../../config/exploreTheme';
-import { messagesToUserPath } from '../../../config/routingCatalog';
 import { CrewRecommendationBucketChip } from './CrewRecommendationBucketChip';
 import type {
   CrewBrowseAvailabilityDetail,
@@ -18,7 +17,6 @@ import {
   CREW_BROWSE_AVAILABILITY_LABEL_FOR,
   CREW_BROWSE_AVAILABILITY_SECTION_TITLE,
   CREW_BROWSE_SOCIAL_LABEL_FRIEND,
-  CREW_BROWSE_SOCIAL_LABEL_FOLLOWED,
   FIND_CREW_TRUST_BADGE_PRO,
   FIND_CREW_TRUST_BADGE_VERIFIED,
 } from '../../availabilityBrowseCardCopy';
@@ -371,7 +369,7 @@ export const CrewBrowseMemberRow = ({
   userId,
   profileHref,
   actionHref,
-  messageHref,
+  messageHref: _messageHref,
   displayName,
   avatarUrl,
   friendHighlight = false,

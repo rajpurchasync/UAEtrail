@@ -4,6 +4,7 @@ import {
   type ExploreActivityMode,
   type DiscoveryCardKind,
   type PlaceKind,
+  type RetiredSeekingActivityModeWire,
 } from '@uaetrail/shared-types';
 import type { MapPinKind, MapPinSource } from '../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
@@ -147,8 +148,8 @@ export type MapPinFaceOptions = {
   stackCount?: number;
   exploreItemId?: string;
   positionStyle?: string;
-  /** Time-bound activity pins — corner badge (hosted vs seeking). */
-  activityMode?: ExploreActivityMode | null;
+  /** Time-bound activity pins — corner badge (hosted vs legacy seeking). */
+  activityMode?: ExploreActivityMode | RetiredSeekingActivityModeWire | null;
   placeKind?: PlaceKind;
   /** Neutral map dot — no emoji inside the circle (trip pins). */
   hidePinIcon?: boolean;
@@ -258,7 +259,7 @@ export type ColocatedPinIconEntry = {
   exploreItemId: string;
   stackCount: number;
   selected?: boolean;
-  activityMode?: ExploreActivityMode | null;
+  activityMode?: ExploreActivityMode | RetiredSeekingActivityModeWire | null;
 };
 
 const buildVenueColocatedChipSlotHtml = (options: {

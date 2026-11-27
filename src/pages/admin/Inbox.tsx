@@ -17,7 +17,7 @@ import { formatAdminDate } from '../../utils/formatAdminDate';
 
 /** Admin home — real intervention queues only (no draft-outing false positives). */
 export const Inbox = () => {
-  const { data, isPending: loading, error: loadError } = useAdminInboxDashboard();
+  const { data, isPending: loading, error: loadError, refetch } = useAdminInboxDashboard();
   const metrics = data?.metrics ?? null;
   const recentApps = data?.recentApps ?? [];
   const submissions = data?.submissions ?? [];
@@ -82,7 +82,7 @@ export const Inbox = () => {
         </div>
         <button
           type="button"
-          onClick={() => void loadData()}
+          onClick={() => void refetch()}
           className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-50"
         >
           Refresh

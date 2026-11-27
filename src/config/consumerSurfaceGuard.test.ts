@@ -36,7 +36,7 @@ describe('consumer surface layout (modals / map peek)', () => {
     expect(sheet).toMatch(/panelBodyScrollClass/);
   });
 
-  it('CONSUMER-SURF-06: create/hosting surfaces avoid text-\[9px\]/10px', () => {
+  it('CONSUMER-SURF-06: create/hosting surfaces avoid text-[9px]/10px', () => {
     const paths = [
       'src/explore/ui/CreatePlacePicker.tsx',
       'src/explore/ui/HostingDestinationCascade.tsx',

@@ -111,6 +111,6 @@ describe('inferJoinUiStateFromDiscoveryCard', () => {
           mapPeekActions: [{ id: 'open_crew_chat', prominence: 'primary' }],
         },
       })
-    ).toEqual({ kind: 'confirmed', requestId: 'wire' });
+    ).toEqual({ kind: 'confirmed', requestId: 'participation' });
   });
 });

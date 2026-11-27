@@ -1,5 +1,5 @@
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
-import { parseExploreActivityDatePreset, serializeExploreActivityDatePreset } from '../routing';
+import { parseExploreActivityDatePreset, serializeExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { parseExplorePriceFilter, type ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { BrowseListFilterState, BrowseMainCategoryKey } from '../../discovery/discoverySession';
 import {
@@ -12,7 +12,6 @@ import {
 } from '../../discovery/discoverySession';
 import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { LIST_DISCOVERY_PATH } from '../../config/platform';
 
 /** Search results route — list + map under one product chrome bar. */
 export const EXPLORE_SEARCH_RESULTS_PATH = '/explore/search';
@@ -254,6 +253,7 @@ export const exploreSearchJoinListFilters = (
   activityDatePreset: state.activityDatePreset,
   crewBrowseLane: 'people',
   crewPeopleFacet: 'available',
+  crewProfessionalKind: 'all',
   crewPeopleSurface: 'find',
   hasTrip: false,
   facilityKinds: [],

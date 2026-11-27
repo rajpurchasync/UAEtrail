@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveSidecarSessionZoom, sidecarFocusCenter } from './placesMapSidecarViewport';
+import {
+  resolveListHoverMapFocus,
+  resolveSidecarSessionZoom,
+  sidecarFocusCenter,
+} from './placesMapSidecarViewport';
 import { MAP_CONFIG } from '../../config/platform';
 
 describe('placesMapSidecarViewport', () => {
@@ -16,5 +20,16 @@ describe('placesMapSidecarViewport', () => {
       lat: 25,
       lng: 55,
     });
+  });
+
+  it('resolveListHoverMapFocus prefers card point / rideshare from over from→to midpoint', () => {
+    const marina = { latitude: 25.08, longitude: 55.14, rideshareEndpoint: 'from' as const };
+    const jais = { latitude: 25.9433, longitude: 56.1422, rideshareEndpoint: 'to' as const };
+    expect(resolveListHoverMapFocus([marina, jais], { lat: 25.08, lng: 55.14 })).toEqual({
+      lat: 25.08,
+      lng: 55.14,
+    });
+    expect(resolveListHoverMapFocus([marina, jais])).toEqual({ lat: 25.08, lng: 55.14 });
+    expect(resolveListHoverMapFocus([jais, marina])).toEqual({ lat: 25.08, lng: 55.14 });
   });
 });

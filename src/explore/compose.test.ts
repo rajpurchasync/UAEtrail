@@ -98,25 +98,11 @@ describe('explore compose routing', () => {
     expect(formatComposeQuery(intentOpenCompose())).toBe('intent:open');
   });
 
-  it('legacy host/availability/add/seek wire normalizes on parse', () => {
-    expect(parseExploreCompose(new URLSearchParams('compose=host:hiking'))).toEqual({
-      composeKind: 'activity',
-      kind: 'hiking',
-    });
-    expect(parseExploreCompose(new URLSearchParams('compose=seek:fixed:camping'))).toEqual({
-      composeKind: 'intent',
-      mode: 'fixed',
-      kind: 'camping',
-    });
-    expect(parseExploreCompose(new URLSearchParams('compose=seek:flexible'))).toEqual({
-      composeKind: 'intent',
-      mode: 'open',
-    });
-    expect(parseExploreCompose(new URLSearchParams('compose=add:place:hiking'))).toEqual({
-      composeKind: 'place',
-      target: 'place',
-      kind: 'hiking',
-    });
+  it('rejects retired host/availability/add/seek compose wire on parse', () => {
+    expect(parseExploreCompose(new URLSearchParams('compose=host:hiking'))).toBeNull();
+    expect(parseExploreCompose(new URLSearchParams('compose=seek:fixed:camping'))).toBeNull();
+    expect(parseExploreCompose(new URLSearchParams('compose=seek:flexible'))).toBeNull();
+    expect(parseExploreCompose(new URLSearchParams('compose=add:place:hiking'))).toBeNull();
   });
 
   it('isComposeWizardRoute covers activity, place, and intent wizards', () => {

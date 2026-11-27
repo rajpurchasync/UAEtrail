@@ -581,11 +581,6 @@ export type AvailabilityFixedSubmitResult = {
   activityId?: string | null;
 };
 
-const fixedWizardKindToAvailabilityKind = (kind: AvailabilityFixedKind): AvailabilityKind => {
-  if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') return kind;
-  return 'other';
-};
-
 export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft): Promise<AvailabilityFixedSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
   if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {

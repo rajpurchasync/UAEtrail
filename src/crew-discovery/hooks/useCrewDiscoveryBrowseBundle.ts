@@ -60,6 +60,7 @@ export const useCrewDiscoveryBrowseBundle = ({
   const crewState: CrewBrowseState = {
     lane: browse.crewBrowseLane,
     facet: browse.crewPeopleFacet,
+    proKind: browse.crewProfessionalKind,
   };
   const networkPreview = useCrewDiscoveryNetworkPreview(Boolean(user) && crewsBrowsePanelOpen);
   const friendUserIds = useMemo(

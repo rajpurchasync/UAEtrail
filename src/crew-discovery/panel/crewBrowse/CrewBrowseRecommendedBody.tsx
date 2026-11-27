@@ -51,8 +51,9 @@ type Props = {
 };
 
 const RecommendedCommunitiesSection = () => {
-  if (!FEATURE_FLAGS.communityDiscover) return null;
-  const { data, isPending, error } = useCommunityDiscoverList(true);
+  const enabled = FEATURE_FLAGS.communityDiscover;
+  const { data, isPending, error } = useCommunityDiscoverList(enabled);
+  if (!enabled) return null;
   if (isPending) {
     return (
       <section className="space-y-2">
@@ -98,7 +99,7 @@ export const CrewBrowseRecommendedBody = ({
   if (!isSignedIn) {
     const availableRows = filterAvailabilityByCapacity(availabilityPeople, availabilityGuideFilter)
       .slice(0, 12)
-      .map(buildMemberBrowseRowFromAvailability);
+      .map((person) => buildMemberBrowseRowFromAvailability(person));
     const guideCards = filterCrewsGuideDirectoryCards(directory);
 
     return (

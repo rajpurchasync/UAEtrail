@@ -1,4 +1,4 @@
-import { MapPin, Route, Users } from 'lucide-react';
+import { MapPin, Route, Users, UsersRound } from 'lucide-react';
 import type { ExploreSearchScope } from './exploreSearchRouting';
 import { EXPLORE_SEARCH_SCOPE_TAB, EXPLORE_SEARCH_SCOPE_TAB_ROWS } from './exploreSearchScopeTabs';
 
@@ -6,6 +6,7 @@ const SCOPE_ICONS = {
   join: Route,
   places: MapPin,
   crew: Users,
+  groups: UsersRound,
 } as const satisfies Record<ExploreSearchScope, typeof Route>;
 
 type ExploreSearchScopePillsProps = {

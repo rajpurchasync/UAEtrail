@@ -19,7 +19,7 @@ const ALLOWLIST = new Set([
 ]);
 
 const RETIRED_COMPOSE_EMIT: Array<{ pattern: RegExp; hint: string }> = [
-  { pattern: /compose=host(?:[:\&]|$)/, hint: 'use activity:* compose wire' },
+  { pattern: /compose=host(?:[:&]|$)/, hint: 'use activity:* compose wire' },
   { pattern: /compose=seek/, hint: 'use intent:* compose wire' },
   { pattern: /compose=add/, hint: 'use place:* compose wire' },
   { pattern: /compose=availability/, hint: 'use intent:* compose wire' },

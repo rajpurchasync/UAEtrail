@@ -280,7 +280,7 @@ export const HostingDestinationField = ({
               {HOSTING_DESTINATION_CATALOG_LEAF_VIEW}
             </Link>
           </p>
-          {!selectedplace.destinationId?.trim() && !draft.registryPlaceDestinationId ? (
+          {!selectedPlace.destinationId?.trim() && !draft.registryPlaceDestinationId ? (
             <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
               This trail isn’t linked to a map area yet. Pick another listed trail, or add a new one.
             </p>

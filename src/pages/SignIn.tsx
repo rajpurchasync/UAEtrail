@@ -12,7 +12,6 @@ import { fetchMemberStatus } from '../hooks/memberStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { defaultRouteByRole } from '../utils/authRouting';
-import { isPlatformAdmin } from '../utils/roles';
 import {
   AUTH_UNAVAILABLE_COPY,
   isRejectedAuthRedirectParam,

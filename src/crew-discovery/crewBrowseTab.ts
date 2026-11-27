@@ -8,7 +8,6 @@ import {
   type CrewProfessionalKind,
   type CrewBrowseState,
   type CrewPeopleFacet,
-  parseCrewBrowseState,
   serializeCrewBrowseLane,
 } from './crewBrowseState';
 
@@ -25,15 +24,14 @@ export {
   DEFAULT_CREW_PROFESSIONAL_KIND,
   PEOPLE_FACET_URL_PARAM,
   PRO_KIND_URL_PARAM,
+  parseCrewBrowseState,
   parseCrewProfessionalKind,
   serializeCrewProfessionalKind,
   crewBrowseNeedsAvailability,
   crewBrowseNeedsRoster,
   crewBrowseOmitDirectory,
   crewDataLaneFromState,
-  crewsCategoryMapFeedEnabled,
-  parseCrewBrowseState,
-  parseCrewPeopleFacet,
+  crewsCategoryMapFeedEnabled,  parseCrewPeopleFacet,
   serializeCrewBrowseLane,
   serializeCrewPeopleFacet,
 } from './crewBrowseState';

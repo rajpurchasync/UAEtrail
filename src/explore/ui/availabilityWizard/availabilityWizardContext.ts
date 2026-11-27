@@ -3,7 +3,6 @@ import type { AvailabilityFixedComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
 import type {
   AvailabilityFixedDraft,
-  AvailabilityFixedFlowStepId,
   AvailabilityFixedKind,
   IntentFixedWizardStepId,
 } from '../intentFixedFlowEngine';

@@ -106,6 +106,7 @@ export const VerifyOTP = () => {
     if (autoVerifyOtpRef.current === otp) return;
     autoVerifyOtpRef.current = otp;
     void runVerify(otp);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runVerify identity stable; avoid double-submit loop
   }, [otp, busyStatus, secondsLeft]);
 
   const handleResend = async () => {

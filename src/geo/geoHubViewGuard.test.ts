@@ -35,8 +35,8 @@ describe('geo hub tabs', () => {
       /flex h-0 min-h-0 min-w-0 flex-1 flex-row overflow-hidden/
     );
     const explorer = read('src/list/explorer/ListExplorer.tsx');
-    expect(explorer).toMatch(/list-explorer-scroll/);
-    expect(explorer).toMatch(/h-0 min-h-0[\s\S]{0,48}flex-1 overflow-y-auto/);
+    expect(explorer).toMatch(/APP_SCROLL_BODY_CLASS/);
+    expect(explorer).toMatch(/min-h-0[\s\S]{0,64}flex-1 overflow-y-auto/);
     expect(explorer).not.toMatch(/scrollbar-hide/);
     const css = read('src/index.css');
     expect(css).toMatch(/\.list-explorer-scroll\s*\{/);
@@ -46,7 +46,9 @@ describe('geo hub tabs', () => {
 
   it('Places tab is child-geo links only — Browse stays on Explore', () => {
     const hub = read('src/geo/GeoHubView.tsx');
-    const placesBlock = hub.slice(hub.indexOf("tab === 'places'"), hub.indexOf("tab === 'facilities'"));
+    const placesStart = hub.indexOf("{tab === 'places'");
+    const facilitiesStart = hub.indexOf("{tab === 'facilities'");
+    const placesBlock = hub.slice(placesStart, facilitiesStart);
     expect(placesBlock).toMatch(/GeoChildCards/);
     expect(placesBlock).not.toMatch(/GeoBrowsePane/);
     const exploreBlock = hub.slice(hub.indexOf("tab === 'explore'"));

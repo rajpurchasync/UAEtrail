@@ -29,8 +29,8 @@ describe('demand carpool offer', () => {
     expect(canOfferRideshareForAvailabilityItem(availabilityItem({ kind: 'rideshare' }))).toBe(false);
   });
 
-  it('still allows carpool offer for legacy seeking activity pins', () => {
-    expect(canOfferRideshareForAvailabilityItem(legacySeekingItem())).toBe(true);
+  it('does not allow carpool offer for legacy seeking activity pins', () => {
+    expect(canOfferRideshareForAvailabilityItem(legacySeekingItem())).toBe(false);
   });
 
   it('requires wire canOfferTransport for demand link rideshare CTA', () => {

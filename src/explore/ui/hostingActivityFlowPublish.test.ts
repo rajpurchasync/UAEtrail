@@ -93,7 +93,7 @@ describe('runHostingActivityFlowPublish (R6 contract)', () => {
     const input = baseInput();
     const result = await runHostingActivityFlowPublish({
       ...input,
-      hostingFlowId: 'flow-1',
+      hostingFlowId: 'activity.hiking',
       wizardSessionScope: 'scope-a',
     });
 
@@ -112,7 +112,7 @@ describe('runHostingActivityFlowPublish (R6 contract)', () => {
       activityId: 'act-new',
       userId: 'user-1',
     });
-    expect(clearHostingWizardSession).toHaveBeenCalledWith('flow-1', 'scope-a');
+    expect(clearHostingWizardSession).toHaveBeenCalledWith('activity.hiking', 'scope-a');
   });
 
   it('updates an existing activity when editActivity is set', async () => {

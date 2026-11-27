@@ -8,12 +8,20 @@ import {
   type ReactNode,
 } from 'react';
 
-type ListHoverHandler = (id: string | null) => void;
+export type ExploreMapHoverPoint = {
+  lat: number;
+  lng: number;
+  /** Used when injecting a temporary hover pin not yet in the map cluster. */
+  activityType?: import('../components/ui/mapPinTypes').MapPinKind;
+};
+
+/** `point` is the hovered card's map coordinate, so the map can pan before that pin is loaded. */
+type ListHoverHandler = (id: string | null, point?: ExploreMapHoverPoint | null) => void;
 
 type ExploreMapChromeContextValue = {
   requestClosePeek: () => void;
   bindClosePeek: (handler: (() => void) | null) => void;
-  setListHoverExploreItemId: (id: string | null) => void;
+  setListHoverExploreItemId: (id: string | null, point?: ExploreMapHoverPoint | null) => void;
   /** Subscribe to list hover; returned cleanup removes only this listener. */
   subscribeListHover: (handler: ListHoverHandler) => () => void;
 };
@@ -36,9 +44,9 @@ export const ExploreMapChromeProvider = ({ children }: { children: ReactNode }) 
       listHoverHandlersRef.current.delete(handler);
     };
   }, []);
-  const setListHoverExploreItemId = useCallback((id: string | null) => {
+  const setListHoverExploreItemId = useCallback((id: string | null, point?: ExploreMapHoverPoint | null) => {
     for (const handler of listHoverHandlersRef.current) {
-      handler(id);
+      handler(id, point ?? null);
     }
   }, []);
   const value = useMemo(

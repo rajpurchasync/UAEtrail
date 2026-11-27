@@ -496,10 +496,10 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
             parentPlaceHubOptions={parentPlaceHubOptions}
             regionOptions={regionOptions}
             adminAreas={adminAreas}
+            segmentPlaces={segmentPlaces}
             error={error}
           />
         </AdminCatalogWizard>
-      ) : null}
       ) : null}
     </DashboardLayout>
   );

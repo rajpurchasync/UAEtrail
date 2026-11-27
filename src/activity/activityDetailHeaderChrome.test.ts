@@ -16,11 +16,20 @@ const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
   }) as ActivityDetailDTO;
 
 describe('resolveActivityDetailHeaderChrome', () => {
-  it('uses scheduled activity kind on hero chrome, not linked place pin', () => {
+  it('uses linked place kind on hero chrome when venue is set', () => {
     const chrome = resolveActivityDetailHeaderChrome(base(), null);
+    expect(chrome.label).toBe('Venue');
+    expect(chrome.mark).toBeUndefined();
+    expect(chrome.emoji).not.toBe('📍');
+  });
+
+  it('uses scheduled activity kind when no linked place name', () => {
+    const chrome = resolveActivityDetailHeaderChrome(
+      base({ location: { name: '', activityType: 'event' } }),
+      null
+    );
     expect(chrome.label).toBe('Hiking');
     expect(chrome.mark).toBe('hiking');
-    expect(chrome.emoji).not.toBe('📍');
   });
 
   it('maps rideshare to car mark', () => {

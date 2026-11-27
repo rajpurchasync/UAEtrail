@@ -55,6 +55,7 @@ export const useComposeRoute = ({
   setSearchParams,
 }: UseComposeRouteArgs) => {
   const composeWire = searchParams.get(COMPOSE_QUERY_KEY);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- composeWire mirrors COMPOSE_QUERY_KEY on searchParams
   const composeRoute = useMemo(() => parseExploreCompose(searchParams), [searchParams, composeWire]);
   const [guestComposeSignInGate, setGuestComposeSignInGate] = useState<GuestComposeSignInGate>(
     GUEST_COMPOSE_SIGN_IN_GATE_CLOSED

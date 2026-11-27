@@ -100,6 +100,7 @@ export const useDiscoveryExperienceComposeBridge = (input: DiscoveryExperienceCo
 
   useExploreCreateFlowBridge({
     ...bridgeArgs,
+    refreshHostGate,
     handleActivityPublished,
     handleAvailabilityFixedSubmitted:
       handleAvailabilityFixedSubmittedOverride ?? handleSideEffectSubmitted,

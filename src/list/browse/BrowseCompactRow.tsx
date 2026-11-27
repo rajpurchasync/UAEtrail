@@ -5,7 +5,7 @@ import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { DiscoveryCardTypeIcon } from '../../discovery/discoveryPortExploreCardChrome';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveBrowsePosterCoverUrl } from './browsePosterCover';
-import { BrowseItemLink } from './BrowseItemLink';
+import { BrowseItemLink, browseCardHoverPoint } from './BrowseItemLink';
 import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
 import { DiscoveryCardHostProfileNav } from '../../discovery/DiscoveryCardHostProfileNav';
 
@@ -24,6 +24,7 @@ export const BrowseCompactRow = ({ card, onMapHover }: BrowseCompactRowProps) =>
     <BrowseItemLink
       to={card.path}
       exploreItemId={card.id}
+      mapPoint={browseCardHoverPoint(card)}
       onMapHover={onMapHover}
       className={`${EXPLORE_LIST_ROW.shell} flex items-stretch gap-2 p-2 active:scale-[0.995] sm:gap-2.5 sm:p-2.5 md:gap-1.5 md:p-1.5 md:pr-2`}
     >

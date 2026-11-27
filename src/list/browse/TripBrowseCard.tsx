@@ -1,7 +1,7 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
-import { BrowseItemLink } from './BrowseItemLink';
+import { BrowseItemLink, browseCardHoverPoint } from './BrowseItemLink';
 import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
 import { DiscoveryCardHostedByRow } from '../../discovery/DiscoveryCardHostedByRow';
 import { BrowseActivityStatusChips } from './BrowseActivityStatusChips';
@@ -22,6 +22,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
   const listing = resolveTripBrowseCardCopy(card);
   const listActions = useListFeedActionsOptional();
   const joinUiState = listActions?.joinUiStateForCard(card);
+  const hoverPoint = browseCardHoverPoint(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
 
   return (
@@ -33,6 +34,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
       <BrowseItemLink
         to={card.path}
         exploreItemId={card.id}
+        mapPoint={hoverPoint}
         onMapHover={onMapHover}
         className="group block"
       >
@@ -42,6 +44,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
         <BrowseItemLink
           to={card.path}
           exploreItemId={card.id}
+          mapPoint={hoverPoint}
           onMapHover={onMapHover}
           className="group block min-w-0"
         >
@@ -59,6 +62,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
         <BrowseItemLink
           to={card.path}
           exploreItemId={card.id}
+          mapPoint={hoverPoint}
           onMapHover={onMapHover}
           className="group block min-w-0"
         >
@@ -84,6 +88,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
           <BrowseItemLink
             to={card.path}
             exploreItemId={card.id}
+            mapPoint={hoverPoint}
             onMapHover={onMapHover}
             className="group block min-w-0"
           >

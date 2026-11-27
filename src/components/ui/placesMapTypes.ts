@@ -62,6 +62,8 @@ export interface PlacesMapProps {
   selectedExploreItemId?: string;
   /** List hover preview — same pin emphasis as selection, without fly-to. */
   highlightedExploreItemId?: string;
+  /** List card coordinate when that pin is outside the loaded map window. */
+  highlightFocus?: { lat: number; lng: number } | null;
   onPinClick?: (pin: PlaceMapPin) => void;
   showLegend?: boolean;
   tileUrl?: string;

@@ -8,7 +8,6 @@ import {
   GROUPS_PATH,
   communityClubPath,
   groupsPath,
-  MESSAGES_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,

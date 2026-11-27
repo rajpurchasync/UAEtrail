@@ -23,10 +23,10 @@ export const ExploreBookingRecentSearches = ({ onPick, refreshKey = 0 }: Explore
   const { user } = useAuth();
   const storageScope = exploreSearchStorageScope(user?.id);
   const regionPillOptions = useExploreRegionPillOptions('AE');
-  const recent = useMemo(
-    () => readExploreRecentSearches(3, storageScope),
-    [refreshKey, storageScope]
-  );
+  const recent = useMemo(() => {
+    void refreshKey;
+    return readExploreRecentSearches(3, storageScope);
+  }, [refreshKey, storageScope]);
 
   if (recent.length === 0) return null;
 

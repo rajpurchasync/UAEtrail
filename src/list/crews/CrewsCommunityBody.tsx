@@ -13,11 +13,12 @@ const CommunityDirectoryPlaceholder = () => (
 );
 
 export const CrewsCommunityBody = () => {
-  if (!FEATURE_FLAGS.communityDiscover) {
+  const enabled = FEATURE_FLAGS.communityDiscover;
+  const { data, isPending, error } = useCommunityDiscoverList(enabled);
+
+  if (!enabled) {
     return <CommunityDirectoryPlaceholder />;
   }
-
-  const { data, isPending, error } = useCommunityDiscoverList(true);
 
   if (isPending) {
     return (

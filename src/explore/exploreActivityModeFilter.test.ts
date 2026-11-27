@@ -13,7 +13,7 @@ import {
 describe('exploreActivityModeFilter', () => {
   it('parses and serializes URL values', () => {
     expect(parseExploreActivityModeFilter('availability')).toBe('availability');
-    expect(parseExploreActivityModeFilter('seeking')).toBe('availability');
+    expect(parseExploreActivityModeFilter('seeking')).toBe('all');
     expect(parseExploreActivityModeFilter('hosted')).toBe('hosted');
     expect(parseExploreActivityModeFilter('nope')).toBe('all');
     expect(serializeExploreActivityModeFilter('all')).toBeNull();

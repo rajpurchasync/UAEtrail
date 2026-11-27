@@ -6,12 +6,7 @@ import {
   useAdminModerationActivitiesCatalog,
 } from '../../hooks/useAdminConsoleQueries';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
-import {
-  fetchAdminActivityEngagement,
-  fetchAdminModerationActivities,
-  moderateAdminActivity,
-  toggleAdminActivityFeatured,
-} from '../../hooks/adminConsoleApi';
+import { fetchAdminActivityEngagement, moderateAdminActivity, toggleAdminActivityFeatured } from '../../hooks/adminConsoleApi';
 import {
   cancelActivity as apiCancelActivity,
   duplicateActivity as apiDuplicateActivity,
@@ -565,9 +560,7 @@ export const Activities = () => {
                         <AdminActivityRidesLinkPanel
                           activity={event}
                           onUpdated={() => {
-                            void fetchAdminModerationActivities(page, pageSize).then((res) => {
-                              setEvents(res.items);
-                            });
+                            void refetchEvents();
                           }}
                         />
                         <div className="mt-4 border-t border-gray-200 pt-4">

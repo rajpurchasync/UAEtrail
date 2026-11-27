@@ -164,7 +164,7 @@ export const HostingDestinationCascade = ({
   const trailsInGroup = useMemo(() => {
     if (!placeGroup) return [];
     return filterPlaceCatalogTrailRowsInGroup(placesInArea, placeGroup, catalog.places);
-  }, [placesInArea, placeGroup]);
+  }, [placesInArea, placeGroup, catalog.places]);
 
   const trailCopy = trailStepCopy(placeType);
 

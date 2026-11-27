@@ -47,6 +47,7 @@ import { exploreAddFacilityOnPlacePath } from '@/discovery/discoveryPortExploreR
 import { capitalize } from '../../../utils';
 import type { DiscoveryCardTone } from '../../../discovery/discoveryCardModel';
 import { PLACE_DETAIL_TAB_LABELS } from '../../../place/placeDetailTab';
+import { CONSUMER_DETAIL_KEY_FACTS_LABEL } from '../../../content/consumerDetailSectionLabels';
 import { resolvePlaceDetailHeaderChrome } from '../resolvePlaceDetailHeaderChrome';
 import { PlacePremiumGuidePanel } from '../../../components/place/PlacePremiumGuidePanel';
 import { PlaceDetailGuestGate } from '../../../components/place/detail/PlaceDetailGuestGate';
@@ -232,7 +233,7 @@ export const PlaceDetailSections = ({
               <PlaceDetailGuestGate placeId={placeId} placeName={displayName} className="mb-1" />
             ) : null}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
-            <section className="min-w-0 flex-1" aria-label="At a glance">
+            <section className="min-w-0 flex-1" aria-label={CONSUMER_DETAIL_KEY_FACTS_LABEL}>
               <PlaceDetailKindFacts kind={kind} place={place} />
             </section>
 

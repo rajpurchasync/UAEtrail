@@ -46,7 +46,7 @@ const listFiles = (): string[] => {
 };
 
 describe('exploreMapItemWireGuard (M0)', () => {
-  it('map/list code does not branch on legacy item.source === demand', () => {
+  it('map/list code does not branch on legacy item.source === demand', { timeout: 30_000 }, () => {
     const violations: string[] = [];
     for (const file of listFiles()) {
       const content = readFileSync(file, 'utf8');

@@ -1,6 +1,5 @@
 import { RequestStatus } from '../domain/enums.js';
 import type { ActivityParticipant, ActivityRequest } from '../domain/types.js';
-import { ApiError } from './api-error.js';
 import {
   activityParticipantsCollection,
   activityRequestsCollection,

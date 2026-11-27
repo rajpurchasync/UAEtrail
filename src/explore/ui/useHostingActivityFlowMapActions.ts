@@ -5,9 +5,10 @@ import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import type { CountryCode } from '../../config/regions';
 import { enrichHostingCatalogPlacePick, patchPickHostingCatalogPlace } from './hostingDestinationDraft';
 import type { CreateActivityDraft } from './hostingFlowEngine';
+import type { HostingMapIntent } from './hostingActivityFlowTypes';
 
 type ComposeMapSession = {
-  openMap: (intent: string) => void;
+  openMap: (intent: HostingMapIntent) => void;
   closeMap: () => void;
 };
 

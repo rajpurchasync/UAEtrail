@@ -11,10 +11,7 @@ import {
   readExploreMapStalePayload,
   writeExploreMapMemoryCache,
 } from './explore-map-cache.js';
-import {
-  buildDiscoveryCatalogMapPayload,
-  buildDiscoveryCatalogMapPayload as buildExploreMapBasePayload,
-} from './discovery-catalog-builder.js';
+import { buildDiscoveryCatalogMapPayload as buildExploreMapBasePayload } from './discovery-catalog-builder.js';
 
 export { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 export { buildExploreMapBasePayload };

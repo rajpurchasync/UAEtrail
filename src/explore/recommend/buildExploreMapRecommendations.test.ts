@@ -20,7 +20,14 @@ describe('buildExploreMapRecommendations', () => {
     const items = [
       hosted('soon', '2026-11-24T08:00:00.000Z'),
       hosted('later', '2026-12-20T08:00:00.000Z'),
-      { id: 'place-1', source: 'place', title: 'Trail', lat: 25, lng: 55 } as ExploreMapItemDTO,
+      {
+        id: 'place-1',
+        source: 'place',
+        title: 'Trail',
+        lat: 25,
+        lng: 55,
+        discoverFeatured: true,
+      } as ExploreMapItemDTO,
     ];
     const ranked = buildExploreMapRecommendations(items, { nowMs: now, limit: 3 });
     expect(ranked[0]?.id).toBe('soon');

@@ -30,13 +30,11 @@ describe('resolveExploreEntityFollowTarget', () => {
     ).toEqual({ locationId: 'loc-from-activity' });
   });
 
-  it('returns null for demand pins', () => {
+  it('returns null for availability catalog pins', () => {
     expect(
       resolveExploreEntityFollowTarget(
         card({
-          source: 'activity',
-          activityMode: 'seeking',
-          composeIntent: 'seek',
+          source: 'availability',
           locationId: 'loc-1',
         })
       )

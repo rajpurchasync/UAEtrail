@@ -18,7 +18,7 @@ export const resolveDiscoveryBrowseGeoHubPath = (card: DiscoveryCardModel): stri
 };
 
 export const discoveryCardCarriesGeoRef = (geoRef: GeoRef | null | undefined): boolean =>
-  Boolean(geoRef?.venueId?.trim() || geoRef?.destinationId?.trim());
+  Boolean(geoRef?.venueId?.trim() || geoRef?.areaId?.trim());
 
 const geoDrillPathFromRef = (geoRef: GeoRef): string[] => {
   const chain = geoRef.chain?.map((id) => id.trim()).filter(Boolean) ?? [];
@@ -28,7 +28,7 @@ const geoDrillPathFromRef = (geoRef: GeoRef): string[] => {
   }
   const leaf =
     geoRef.venueId?.trim() ||
-    geoRef.destinationId?.trim() ||
+    geoRef.areaId?.trim() ||
     geoRef.stateId?.trim() ||
     null;
   return leaf ? [leaf] : [];

@@ -4,7 +4,6 @@ import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
 const matrixPath = join(ROOT, 'scripts/governance/authority-matrix.json');
-const manifestPath = join(ROOT, 'scripts/governance/bounded-context-manifest.json');
 
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
@@ -67,7 +66,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
           /`seek:fixed:/.test(source) ||
           /`seek:flexible`/.test(source) ||
           /`host:\$\{/.test(source) ||
-          /compose=host(?:[:\&]|$)/.test(source)
+          /compose=host(?:[:&]|$)/.test(source)
         ) {
           violations.push(`${file}: outbound legacy compose literal`);
         }
@@ -120,7 +119,6 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(byId.get('social.group_create')?.note).toMatch(/Team/);
     expect(byId.get('social.friend_request')?.note).toMatch(/Friends/);
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
-    const program = JSON.parse(read('scripts/governance/platform-governance.json'));
     expect(
       JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.find(
         (m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER'

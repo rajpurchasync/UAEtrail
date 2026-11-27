@@ -54,8 +54,35 @@ export const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
 export const isOnlineShopItem = (item: ExploreMapItemDTO): boolean =>
   isShopListItem(item) && (item.shopPresence === 'online' || item.latitude == null || item.longitude == null);
 
+/**
+ * Pin coords for map + list hover.
+ * Rideshares often only have meeting/start/`to*` — fall through until one pair exists.
+ */
+export const resolveExploreMapItemPinCoords = (
+  item: ExploreMapItemDTO
+): { lat: number; lng: number } | null => {
+  const lat =
+    item.latitude ??
+    item.activity?.displayLatitude ??
+    item.activity?.meetingLat ??
+    item.activity?.startLat ??
+    item.activity?.locationLatitude ??
+    item.toLatitude ??
+    null;
+  const lng =
+    item.longitude ??
+    item.activity?.displayLongitude ??
+    item.activity?.meetingLng ??
+    item.activity?.startLng ??
+    item.activity?.locationLongitude ??
+    item.toLongitude ??
+    null;
+  if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+};
+
 const isMapPin = (item: ExploreMapItemDTO): boolean => {
-  if (item.latitude == null || item.longitude == null) return false;
+  if (!resolveExploreMapItemPinCoords(item)) return false;
   if (!isShopListItem(item) && item.source === 'shop' && item.id.startsWith('product:')) return false;
   if (item.kind === 'destination') return true;
   return true;
@@ -237,11 +264,43 @@ const resolvePlaceCatalogLocationId = (item: ExploreMapItemDTO): string | null =
   return null;
 };
 
+/** Temporary pin while the list hover target is not yet in the loaded map cluster. */
+export const buildListHoverMapPin = (
+  exploreItemId: string,
+  point: { lat: number; lng: number; activityType?: MapPinKind },
+  catalogItem?: ExploreMapItemDTO | null
+): PlaceMapPin => {
+  const resolvedMode = catalogItem ? resolveExploreMapActivityMode(catalogItem) : null;
+  return {
+    id: exploreItemId,
+    exploreItemId,
+    name: catalogItem?.title ?? 'Preview',
+    latitude: point.lat,
+    longitude: point.lng,
+    activityType: catalogItem ? mapPinKind(catalogItem) : (point.activityType ?? 'event'),
+    path: catalogItem?.path ?? '',
+    hostAvatar: catalogItem?.featuredPerson?.avatarUrl ?? null,
+    source: catalogItem ? resolveMapPinItemSource(catalogItem) : 'activity',
+    activityMode: resolvedMode ?? undefined,
+    scheduleDate: catalogItem ? resolveExploreItemScheduleDate(catalogItem) : null,
+  };
+};
+
+export const mapPinsIncludeExploreItem = (pins: PlaceMapPin[], exploreItemId: string): boolean =>
+  pins.some(
+    (pin) =>
+      pin.id === exploreItemId ||
+      pin.exploreItemId === exploreItemId ||
+      pin.stackExploreItemIds?.includes(exploreItemId)
+  );
+
 export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
   const pins: PlaceMapPin[] = [];
   const hostedTripsByPlace = hostedOutingSummariesByPlaceId(items);
 
   for (const item of items.filter(isMapPin)) {
+    const coords = resolveExploreMapItemPinCoords(item);
+    if (!coords) continue;
     const resolvedMode = resolveExploreMapActivityMode(item);
     const source = resolveMapPinItemSource(item);
     const placeLocationId = isGeographyMapSource(source) ? resolvePlaceCatalogLocationId(item) : null;
@@ -251,8 +310,8 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
     const hasDistinctTo =
       item.toLatitude != null &&
       item.toLongitude != null &&
-      (Math.abs(item.toLatitude - item.latitude!) > 0.00001 ||
-        Math.abs(item.toLongitude - item.longitude!) > 0.00001);
+      (Math.abs(item.toLatitude - coords.lat) > 0.00001 ||
+        Math.abs(item.toLongitude - coords.lng) > 0.00001);
 
     const pinCoverImage = isGeographyMapSource(source) ? resolveExploreMapPinCoverImage(item) : undefined;
 
@@ -260,8 +319,8 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       id: item.id,
       exploreItemId: item.id,
       name: item.title,
-      latitude: item.latitude as number,
-      longitude: item.longitude as number,
+      latitude: coords.lat,
+      longitude: coords.lng,
       activityType: mapPinKind(item),
       path: item.path,
       hostAvatar: item.featuredPerson?.avatarUrl ?? null,

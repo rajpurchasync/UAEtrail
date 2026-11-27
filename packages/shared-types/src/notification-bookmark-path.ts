@@ -125,7 +125,7 @@ export const rewriteStaleNotificationBookmarkPath = (raw: string): string | null
 
 /** `/trips` / `/activities` query shapes → canonical plan or history paths. */
 const resolveStalePlanHubNotificationPath = (raw: string): string | null => {
-  const { pathname, search, hash } = splitPathSearchHash(raw);
+  const { pathname, search, hash: _hash } = splitPathSearchHash(raw);
   if (pathname === '/trips/map' || pathname.endsWith('/trips/map')) {
     const qs = search.replace(/^\?/, '');
     return qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH;

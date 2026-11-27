@@ -299,6 +299,7 @@ export const useExploreBrowseUrlState = ({
     topicPills,
     crewBrowseLane,
     crewPeopleFacet,
+    crewProfessionalKind,
     listMode,
     crewsBrowseOpen,
     tripMapTopics,

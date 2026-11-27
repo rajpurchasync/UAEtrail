@@ -1,4 +1,3 @@
-import type { Collection } from 'mongodb';
 import {
   ActivityStatus,
   RequestStatus,

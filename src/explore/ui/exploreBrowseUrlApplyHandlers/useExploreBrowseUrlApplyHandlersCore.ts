@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import type { NavigateFunction } from 'react-router-dom';
 import { listDiscoveryPath } from '../../../discovery/discoverySession';
 import { exploreMapMobileBackState } from '../../../utils/mobileBackNav';
 import {
@@ -12,10 +11,10 @@ import {
   type ExplorePanel,
   type MapFilterKey,
   type VenueListFilterKey,
-} from '../routing';
-import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
-import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
-import { MAP_FILTERS_BY_BROWSE_TAB, parseDesktopBrowseTab, type DesktopBrowseTab } from './exploreBrowsePanelCopy';
+} from '../../routing';
+import type { ExploreOthersSubtypeKey } from '../../exploreOthersSubtype';
+import type { ExploreOutingTopicKey } from '../../exploreOutingTopic';
+import { MAP_FILTERS_BY_BROWSE_TAB, parseDesktopBrowseTab, type DesktopBrowseTab } from '../exploreBrowsePanelCopy';
 import {
   desktopBrowseTabForSearchScope,
   explorePanelForSearchScope,
@@ -23,16 +22,14 @@ import {
   toggleExploreMapFilterPill,
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
-} from '../exploreBrowseTaxonomy';
+} from '../../exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../../../discovery/discoverySession';
-import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
 import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import { DEFAULT_CREW_BROWSE_LANE, DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
-import type { ExplorePinKindFilter } from '../explorePinKindFilter';
-import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
-import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
+import type { ExplorePinKindFilter } from '../../explorePinKindFilter';
+import type { ExploreActivityModeFilter } from '../../exploreActivityModeFilter';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { ExplorePriceFilter, ExploreVenueFilterPatch } from '../exploreOptionalFilters';
+import type { ExplorePriceFilter, ExploreVenueFilterPatch } from '../../exploreOptionalFilters';
 import {
   effectivePlaceMapTopics,
   effectiveTripMapTopics,
@@ -40,7 +37,7 @@ import {
   toggleTripMapTopic as toggleTripMapTopicInList,
   type PlaceMapTopicKey,
   type TripMapTopicKey,
-} from '../exploreMapQuickTopicFilters';
+} from '../../exploreMapQuickTopicFilters';
 import type { UseExploreBrowseUrlApplyHandlersArgs } from './types';
 import { placeTopicToVenueFilter, tripTopicToActivityFilter } from './topicMaps';
 
@@ -50,7 +47,7 @@ export type { UseExploreBrowseUrlApplyHandlersArgs } from './types';
 export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyHandlersArgs) => {
   const {
     isDesktop,
-    isSignedIn,
+    isSignedIn: _isSignedIn,
     navigate,
     clearSelection,
     syncExploreUrl,

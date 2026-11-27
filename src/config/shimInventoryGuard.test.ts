@@ -14,8 +14,6 @@ const HUB_IMPORT_FORBIDDEN = [
   'src/list/BrowseListPage.tsx',
 ];
 
-const LIST_MODULE_ROOTS = ['src/list/', 'src/discovery/', 'src/activity-discovery/'];
-
 const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/explorer/DiscoveryBrowsePosterBanner.tsx',
   'src/list/explorer/DiscoveryPosterOverlayNav.tsx',

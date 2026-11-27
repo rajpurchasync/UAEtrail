@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { activityIsConsumerDiscoverable, type ActivityDTO } from '@uaetrail/shared-types';
-import { useShareSheet } from '../../context/ShareSheetContext';
+import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { shareSurfaceFromDiscoveryCard } from '../../content/shareSheetCopy';
 import type { DiscoveryCardViewModel } from '../../discovery/discoveryCardViewModel';
 
@@ -25,7 +25,8 @@ export function useExplorePeekShareAction({
   onShareHostedActivity,
   onGuestShareActivity,
 }: Args) {
-  const shareSheet = useShareSheet();
+  /** Optional — HMR can desync ShareSheetContext; hard throw took down the whole explore map. */
+  const shareSheet = useActivityInviteShareSheet();
 
   return useCallback(() => {
     if (activity && activityIsConsumerDiscoverable(activity.status)) {

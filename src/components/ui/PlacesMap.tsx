@@ -64,6 +64,7 @@ export const PlacesMap = ({
   selectedPinId,
   selectedExploreItemId,
   highlightedExploreItemId,
+  highlightFocus = null,
   onPinClick,
   showLegend = true,
   tileUrl,
@@ -229,6 +230,7 @@ export const PlacesMap = ({
             <MapHoverViewportSync
               pins={pins}
               highlightedExploreItemId={highlightedExploreItemId}
+              highlightFocus={highlightFocus}
             />
           </>
         )}

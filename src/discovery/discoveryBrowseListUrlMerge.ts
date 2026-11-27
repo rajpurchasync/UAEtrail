@@ -71,7 +71,7 @@ export const mergeDiscoveryBrowseListUrlParams = (
     ...session.filters,
     ...patch,
   };
-  let regions = patch.regions ?? session.venueRegions;
+  const regions = patch.regions ?? session.venueRegions;
   const nextGeo = patch.geoPath ?? session.geoPath;
   if (!mapOverlay && (patchedListCat === 'activities' || patchedListCat === 'venues')) {
     next = scopeBrowseListStateForListCat(next, patchedListCat);

@@ -154,35 +154,6 @@ export const CrewBrowseTabContent = ({
         />
       ) : null;
 
-    let peopleBlock: ReactNode = null;
-    if (availabilityLoading) {
-      peopleBlock = <CrewBrowseListLoading label={EXPLORE_CREWS_LOADING} />;
-    } else if (availabilityError) {
-      if (crewBrowseAuthError(availabilityError)) {
-        peopleBlock = <ExploreGuestSignInCard intent="explore-people-browse" compact />;
-      } else {
-        peopleBlock = <CrewBrowseListError message={availabilityError} />;
-      }
-    } else if (markedRows.length === 0) {
-      peopleBlock =
-        showFixedCatalog && availabilityCatalogItems.length > 0 ? null : (
-          <CrewBrowseListEmpty>
-            <p>{emptyCopy}</p>
-            {!memberAvailabilityRowsOnly && onOpenAvailability ? (
-              <button
-                type="button"
-                className="mt-3 inline-block font-semibold text-emerald-700"
-                onClick={onOpenAvailability}
-              >
-                Add or edit your dates
-              </button>
-            ) : null}
-          </CrewBrowseListEmpty>
-        );
-    } else {
-      peopleBlock = <MemberBrowseRowList rows={markedRows} isSignedIn={isSignedIn} />;
-    }
-
     const hasMap = showFixedCatalog && availabilityCatalogItems.length > 0;
     const hasPeople =
       !availabilityLoading && !availabilityError && markedRows.length > 0;
@@ -202,6 +173,19 @@ export const CrewBrowseTabContent = ({
           ) : null}
         </CrewBrowseListEmpty>
       );
+    }
+
+    let peopleBlock: ReactNode = null;
+    if (availabilityLoading) {
+      peopleBlock = <CrewBrowseListLoading label={EXPLORE_CREWS_LOADING} />;
+    } else if (availabilityError) {
+      if (crewBrowseAuthError(availabilityError)) {
+        peopleBlock = <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+      } else {
+        peopleBlock = <CrewBrowseListError message={availabilityError} />;
+      }
+    } else if (markedRows.length > 0) {
+      peopleBlock = <MemberBrowseRowList rows={markedRows} isSignedIn={isSignedIn} />;
     }
 
     return (

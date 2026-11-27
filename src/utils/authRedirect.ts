@@ -40,6 +40,7 @@ const AUTH_GATED_PREFIXES = [
   APP_SETTINGS_NOTIFICATIONS_PATH,
   GROUPS_PATH,
   OPERATOR_CONSOLE_PREFIX,
+  ...INBOUND_STALE_CONSOLE_PREFIXES,
   '/admin',
   '/merchant',
   '/organisation/manage',

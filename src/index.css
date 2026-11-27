@@ -2978,9 +2978,27 @@ html[data-theme='dark'] .text-sky-900 {
 }
 
 html[data-theme='dark'] .text-rose-800,
-html[data-theme='dark'] .text-teal-800,
 html[data-theme='dark'] .text-indigo-800 {
   color: #e8e4ff;
+}
+
+/* Teal chips/rows (map peek carpool) — bg-teal-50 remaps dark; text must lighten too. */
+html[data-theme='dark'] .text-teal-950,
+html[data-theme='dark'] .text-teal-900,
+html[data-theme='dark'] .text-teal-800,
+html[data-theme='dark'] .text-teal-700 {
+  color: #99f6e4;
+}
+
+html[data-theme='dark'] .hover\:bg-teal-100\/80:hover,
+html[data-theme='dark'] .hover\:bg-teal-100:hover,
+html[data-theme='dark'] .bg-teal-100 {
+  background-color: #243542;
+}
+
+html[data-theme='dark'] .ring-teal-100,
+html[data-theme='dark'] .ring-teal-200 {
+  --tw-ring-color: rgb(45 212 191 / 0.35);
 }
 
 html[data-theme='dark'] .text-neutral-400,

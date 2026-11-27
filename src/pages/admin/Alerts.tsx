@@ -5,7 +5,7 @@ import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS, AppSelect } from '../../components/ui/AppSelect';
 import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
-import type { AdminPlatformAlertDTO, AmenityState } from '@uaetrail/shared-types';
+import type { AdminPlatformAlertDTO } from '@uaetrail/shared-types';
 import {
   confirmAdminAmenityReport,
   createAdminPlatformAlert,
@@ -55,9 +55,12 @@ export const Alerts = () => {
     error: loadError,
     refetch,
   } = useAdminAlertsSafetyData();
-  const rows = safetyData?.alerts ?? [];
-  const reports = safetyData?.amenityReports ?? [];
-  const verification = safetyData?.verificationDocuments ?? [];
+  const rows = useMemo(() => safetyData?.alerts ?? [], [safetyData?.alerts]);
+  const reports = useMemo(() => safetyData?.amenityReports ?? [], [safetyData?.amenityReports]);
+  const verification = useMemo(
+    () => safetyData?.verificationDocuments ?? [],
+    [safetyData?.verificationDocuments]
+  );
   const [mutationError, setMutationError] = useState<string | null>(null);
   const error =
     mutationError ??

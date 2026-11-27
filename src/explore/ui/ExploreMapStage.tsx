@@ -95,6 +95,7 @@ export type ExploreMapStageProps = {
   mapPins: PlaceMapPin[];
   selectedId: string | null;
   highlightedExploreItemId?: string | null;
+  highlightedExplorePoint?: { lat: number; lng: number } | null;
   recenterTo: MapRecenterTarget | null;
   exploreMapCenter: { lat: number; lng: number };
   deviceLocation?: { lat: number; lng: number } | null;
@@ -193,6 +194,7 @@ export const ExploreMapStage = ({
   mapPins,
   selectedId,
   highlightedExploreItemId = null,
+  highlightedExplorePoint = null,
   recenterTo,
   exploreMapCenter,
   deviceLocation = null,
@@ -300,6 +302,7 @@ export const ExploreMapStage = ({
           showLegend={false}
           selectedExploreItemId={selectedId ?? undefined}
           highlightedExploreItemId={highlightedExploreItemId ?? undefined}
+          highlightFocus={highlightedExplorePoint}
           tileUrl={exploreMapTiles.tileUrl}
           tileAttribution={exploreMapTiles.attribution}
           labelTileUrl={exploreMapTiles.labelTileUrl}

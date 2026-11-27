@@ -38,7 +38,7 @@ export const Notifications = () => {
     isPending: loading,
     error: loadError,
   } = useAdminNotificationsConsole(page, pageSize);
-  const notifications = inbox?.notifications ?? [];
+  const notifications = useMemo(() => inbox?.notifications ?? [], [inbox?.notifications]);
   const total = inbox?.total ?? 0;
   const unreadCount = inbox?.unreadCount ?? 0;
   const error =

@@ -114,7 +114,16 @@ export const useListDiscoveryBrowseActionsModel = ({
         : emptyBase;
     syncUrl({ ...scoped, listCat: cat, regions: [], geoPath: [] });
     setDraftQuery('');
-  }, [explorerBucket, filters.crewBrowseLane, filters.crewPeopleFacet, listCat, setDraftQuery, syncUrl]);
+  }, [
+    explorerBucket,
+    filters.crewBrowseLane,
+    filters.crewPeopleFacet,
+    filters.crewPeopleSurface,
+    filters.crewProfessionalKind,
+    listCat,
+    setDraftQuery,
+    syncUrl,
+  ]);
 
   const handleActivityDatePresetChange = useCallback(
     (preset: ExploreActivityDatePreset) => syncUrl({ activityDatePreset: preset }),

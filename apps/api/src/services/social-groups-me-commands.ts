@@ -30,7 +30,6 @@ import {
 import {
   normalizeKidProfileInput,
   type CreateKidBodyInput,
-  type CreateKidInput,
   type PatchKidInput,
 } from '../domain/family-kid-profile.js';
 import type {

@@ -4,7 +4,6 @@ import {
   RideshareRiderReputationDTO,
   SocialGroupChatPreviewDTO,
   TenantListDTO,
-  TenantPublicDTO,
   TenantType,
 } from '@uaetrail/shared-types';
 

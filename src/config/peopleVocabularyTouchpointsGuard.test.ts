@@ -104,7 +104,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
   it('PVOC-04: messages + notifications route social graph to /crews or /chat (not buddies product paths)', () => {
     const routing = read('src/utils/notificationRouting.ts');
     expect(routing).toMatch(/MY_CREWS_PATH/);
-    expect(routing).toMatch(/MESSAGES_PATH/);
+    expect(routing).toMatch(/messagesToUserPath|messagesGroupPath/);
     expect(read('src/config/surfacePaths.ts')).toMatch(/MY_CREWS_PATH = '\/crews'/);
   });
 

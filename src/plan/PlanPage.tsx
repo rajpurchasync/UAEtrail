@@ -91,7 +91,7 @@ export const PlanPage = () => {
       }
       draft.forEach((value, key) => params.set(key, value));
     });
-  }, [canHost, navigate, pathname, planSearchKey, setSearchParams, user]);
+  }, [canHost, navigate, pathname, planSearchKey, searchParams, setSearchParams, user]);
 
   const mainTab = parsePlanMainTab(searchParams.get('tab'));
   const commitmentFilter = parsePlanCommitmentFilter(searchParams.get('filter'), canHost);
@@ -179,7 +179,7 @@ export const PlanPage = () => {
 
       scrollToPlanSummaryFocus(focus);
     },
-    [canHost, commitmentFilter, mainTab, navigate, setCommitmentFilter, setMainTab]
+    [canHost, commitmentFilter, mainTab, setCommitmentFilter, setMainTab]
   );
 
   useEffect(() => {

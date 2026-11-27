@@ -91,9 +91,7 @@ export const ProfileGuide = () => {
   return (
     <ConsumerShell
       title="Guide profile"
-      showBack
-      onBack={backChrome.onBack}
-      backLabel={backChrome.backLabel}
+      back={{ fallbackTo: PROFILE_PATH, label: backChrome.label ?? 'Profile' }}
     >
       <PageMeta title="Guide profile" noIndex />
       <form onSubmit={onSubmit} className="px-4 pb-8 pt-2 space-y-5 max-w-lg mx-auto w-full">

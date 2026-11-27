@@ -113,7 +113,10 @@ export const groupThreadFromSocialGroup = (group: SocialGroupView): InboxThread 
     id: group.id,
     title: group.name,
     avatarUrl: group.photoUrl ?? undefined,
-    groupType: resolveMemberGroupShape(group).inboundType,
+    groupType: (() => {
+      const inbound = resolveMemberGroupShape(group).inboundType;
+      return inbound === 'activity' ? 'outing_crew' : inbound;
+    })(),
     lastMessage,
     lastMessageAt,
     unreadCount,

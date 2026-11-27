@@ -58,7 +58,7 @@ interface CreateAddFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: AddSubmitResult) => void;
   signInHref: string;
-  exploredestinationSlug?: string | null;
+  exploreDestinationSlug?: string | null;
 }
 
 export const CreateAddFlow = ({
@@ -135,6 +135,7 @@ export const CreateAddFlow = ({
     if (!user) {
       onClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mapSession stable; avoid wizard re-init loop
   }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreDestinationSlug, publishedDestinations]);
 
   useEffect(() => {

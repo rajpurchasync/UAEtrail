@@ -13,20 +13,19 @@ const emirateId = (label: string) =>
     .replace(/^-+|-+$/g, '');
 
 const buildGeoRefForEmirateLabel = (label: string): GeoRef => {
-  const destinationId = emirateId(label);
-  const stateId = destinationId;
+  const areaId = emirateId(label);
   return {
     chain: [],
     countryId: 'ae',
-    stateId,
-    destinationId,
+    stateId: areaId,
+    areaId,
     path: `United Arab Emirates/${label}`,
     names: {
       country: 'United Arab Emirates',
       state: label,
       area: label,
     },
-    searchTokens: ['uae', destinationId, label.toLowerCase()],
+    searchTokens: ['uae', areaId, label.toLowerCase()],
   };
 };
 

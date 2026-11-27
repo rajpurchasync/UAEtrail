@@ -63,7 +63,7 @@ const emptyPayload = () => ({
 });
 
 const fetchHomeLandingActivities = async () => {
-  let listings: ActivityDTO[] = [];
+  let listings: ActivityDTO[];
   try {
     const featured = await activitiesApi.getFeaturedActivities(HOME_LANDING_ACTIVITY_FETCH_SIZE);
     listings = featured.data ?? [];

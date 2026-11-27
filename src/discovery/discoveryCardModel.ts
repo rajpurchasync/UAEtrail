@@ -302,9 +302,21 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
       }),
     ],
     mapLatitude:
-      item.latitude ?? activity?.displayLatitude ?? activity?.locationLatitude ?? null,
+      item.latitude ??
+      activity?.displayLatitude ??
+      activity?.meetingLat ??
+      activity?.startLat ??
+      activity?.locationLatitude ??
+      item.toLatitude ??
+      null,
     mapLongitude:
-      item.longitude ?? activity?.displayLongitude ?? activity?.locationLongitude ?? null,
+      item.longitude ??
+      activity?.displayLongitude ??
+      activity?.meetingLng ??
+      activity?.startLng ??
+      activity?.locationLongitude ??
+      item.toLongitude ??
+      null,
     destinationId: item.destinationId ?? null,
     destinationSlug: item.destinationSlug ?? null,
     destinationName: item.destinationName ?? null,

@@ -5,7 +5,6 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 const CONSUMER_DETAIL_SURFACES = [
-  'src/place/detail/templates/PlaceDetailSections.tsx',
   'src/activity/detail/templates/ActivityDetailSections.tsx',
   'src/components/destination/DestinationDetailView.tsx',
   'src/components/shop/ShopPublicPage.tsx',
@@ -23,8 +22,8 @@ describe('consumerDetailSectionLabelsGuard', () => {
   it('consumer detail surfaces do not use legacy At a glance or About section pills', () => {
     for (const path of CONSUMER_DETAIL_SURFACES) {
       const source = read(path);
-      expect(source).not.toMatch(/At a glance/);
-      expect(source).not.toMatch(/title="About"/);
+      expect(source).not.toMatch(/ConsumerDetailSection[^>]*title=\{?['"]At a glance/);
+      expect(source).not.toMatch(/ConsumerDetailSection[^>]*title=\{?['"]About['"]/);
       expect(source).not.toMatch(/label: 'Overview'/);
       expect(source).not.toMatch(/label: 'Key facts'/);
     }

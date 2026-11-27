@@ -11,6 +11,7 @@ import {
   clearHostingWizardSession,
   readHostingWizardSession,
 } from './composeWizardSession';
+import { normalizeComposeFlowId } from '../composeFlowIds';
 import { validateDraftStep, type CreateActivityDraft, type CreateActivityKind } from './hostingFlowEngine';
 import type { HostingWizardPrefill } from './hostingWizardPrefill';
 
@@ -71,6 +72,9 @@ export const runHostingActivityFlowPublish = async (
       return { outcome: 'updated', activity: updated };
     }
 
+    const hostingFlowId = input.hostingFlowId
+      ? normalizeComposeFlowId(input.hostingFlowId)
+      : null;
     const activity = await publishHostingActivity({
       draft: normalizedDraft,
       tenantId: input.tenantId,
@@ -78,8 +82,8 @@ export const runHostingActivityFlowPublish = async (
       sourceActivityId: input.wizardPrefill?.sourceActivityId ?? null,
       linkToParentActivityId:
         input.wizardPrefill?.linkToParentActivityId ??
-        (input.hostingFlowId
-          ? readHostingWizardSession(input.hostingFlowId, input.wizardSessionScope)?.linkToParentActivityId
+        (hostingFlowId
+          ? readHostingWizardSession(hostingFlowId, input.wizardSessionScope)?.linkToParentActivityId
           : null) ??
         null,
     });
@@ -87,8 +91,8 @@ export const runHostingActivityFlowPublish = async (
       activityId: activity.id,
       userId: input.userId,
     });
-    if (input.hostingFlowId) {
-      clearHostingWizardSession(input.hostingFlowId, input.wizardSessionScope);
+    if (hostingFlowId) {
+      clearHostingWizardSession(hostingFlowId, input.wizardSessionScope);
     }
     return { outcome: 'created', activity };
   } catch (err) {

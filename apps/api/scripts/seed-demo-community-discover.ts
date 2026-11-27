@@ -44,7 +44,7 @@ const demoGeoRef = (emirate: string, destinationId: string): GeoRef => ({
   chain: [],
   countryId: 'ae',
   stateId: emirate.toLowerCase().replace(/\s+/g, '-'),
-  areaId,
+  areaId: destinationId,
   path: `United Arab Emirates/${emirate}`,
   names: {
     country: 'United Arab Emirates',

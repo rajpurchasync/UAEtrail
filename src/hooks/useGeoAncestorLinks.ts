@@ -13,7 +13,9 @@ export const useGeoAncestorLinks = (input: {
   const [links, setLinks] = useState<GeoAncestorLink[]>([]);
   const region = input.region?.trim() ?? '';
   const countryCode = input.countryCode?.trim() ?? '';
-  const geoRefPath = input.geoRef?.path?.trim() ?? '';
+  const geoRef = input.geoRef;
+  const geoRefPath = geoRef?.path?.trim() ?? '';
+  const geoRefChainKey = geoRef?.chain?.join('/') ?? '';
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +23,7 @@ export const useGeoAncestorLinks = (input: {
       .then(() => {
         if (cancelled) return;
         const nodes = geoStore.byId.values();
-        const fromRef = pickGeoRefAncestorLinks(nodes, input.geoRef);
+        const fromRef = pickGeoRefAncestorLinks(nodes, geoRef);
         setLinks(
           fromRef.length > 0
             ? fromRef
@@ -34,7 +36,7 @@ export const useGeoAncestorLinks = (input: {
     return () => {
       cancelled = true;
     };
-  }, [region, countryCode, geoRefPath, input.geoRef?.chain?.join('/')]);
+  }, [region, countryCode, geoRefPath, geoRef, geoRefChainKey]);
 
   return links;
 };

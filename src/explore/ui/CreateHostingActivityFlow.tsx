@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   allowedActivityPricingModes,
-  defaultHikingPackingItems,
   withHikingKitExtras,
   type ActivityDTO,
 } from '@uaetrail/shared-types';
@@ -37,7 +36,6 @@ import { useExplorePublishedDestinations } from '../useExplorePublishedDestinati
 import {
   areaRowInCatalogCountry,
   DEFAULT_PLACE_CATALOG_COUNTRY,
-  nearestPlaceCatalogHostingLeaf,
 } from '../../places/placeCatalogDestinationIndex';
 import {
   buildDateOptions,
@@ -50,6 +48,7 @@ import {
   isRideshareHostingFlow,
   isStructuredHostingFlow,
   usesGoingFromHostingStep,
+  emptyCreateActivityDraft,
   type CreateFlowStepId,
   type CreateActivityDraft,
   type CreateActivityKind,
@@ -104,7 +103,7 @@ export const CreateHostingActivityFlow = ({
   onPublished,
   onOpenHostApplication,
   onBackToIntent,
-  signInHref,
+  signInHref: _signInHref,
   hostComposeKind = null,
   hostingKindFlow = null,
   seekingPrefill = null,
@@ -156,7 +155,7 @@ export const CreateHostingActivityFlow = ({
   const memberDisplayName = user?.displayName ?? null;
 
   const [step, setStep] = useState<HostingActivityFlowStep>('type');
-  const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
+  const [draft, setDraft] = useState<CreateActivityDraft>(() => emptyCreateActivityDraft());
   const [selectedKind, setSelectedKind] = useState<CreateActivityKind | null>(null);
   const [publishStatus, setPublishStatus] = useState<HostingPublishFlowStatus>(
     HOSTING_PUBLISH_FLOW_IDLE
@@ -164,7 +163,8 @@ export const CreateHostingActivityFlow = ({
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const mapSession = useComposeMapSession<HostingMapIntent>();
-  const { openMap, closeMap } = mapSession;
+  const { closeMap, openMap } = mapSession;
+  void openMap;
   const [meetingPickerIntent, setMeetingPickerIntent] = useState<MeetingPointPickerIntent>('search');
   const publishedActivity = hostingPublishFlowPublishedActivity(publishStatus);
   const submitting = hostingPublishFlowIsPublishing(publishStatus);

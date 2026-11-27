@@ -80,7 +80,7 @@ describe('validateHostingPlaceDestination', () => {
       validateHostingPlaceDestination(
         {
           ...draft,
-          customPlaceProposeddestinationName: 'Wadi Naqab',
+          customPlaceProposedDestinationName: 'Wadi Naqab',
           trailLatitude: 24.8,
           trailLongitude: 56.1,
         },

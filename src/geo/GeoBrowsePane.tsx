@@ -89,7 +89,7 @@ export const GeoBrowsePane = ({
   const [draftQuery, setDraftQuery] = useState('');
   const [filters, setFilters] = useState<BrowseListFilterState>(EMPTY_FILTERS);
   const [regions, setRegions] = useState<string[]>([]);
-  const lockGeoIds = lockGeoId ? [lockGeoId] : [];
+  const lockGeoIds = useMemo(() => (lockGeoId ? [lockGeoId] : []), [lockGeoId]);
   const [geoIds, setGeoIds] = useState<string[]>(lockGeoIds);
 
   useEffect(() => {

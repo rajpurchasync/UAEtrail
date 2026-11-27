@@ -4,7 +4,6 @@ import type {
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
 import type { MemberDiscoveryQuotaDTO } from './member-discovery-quota.js';
-import type { SocialPersonRowDTO } from './social-people.js';
 
 export const CREW_DISCOVER_FEED_SCHEMA_VERSION = 1 as const;
 

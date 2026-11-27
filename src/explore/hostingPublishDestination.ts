@@ -104,7 +104,7 @@ export const resolveRequiredEmirate = (
 
 /** New spot name doubles as the proposed destination name when the pin is outside listed hubs. */
 export const resolveCustomproposedDestinationName = (draft: CreateActivityDraft): string =>
-  draft.customPlaceproposedDestinationName.trim() || draft.trailName.trim();
+  draft.customPlaceProposedDestinationName.trim() || draft.trailName.trim();
 
 const EMIRATE_REQUIRED =
   'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.';
@@ -126,7 +126,7 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
       draft.trailLatitude,
       draft.trailLongitude,
       [],
-      `${draft.trailName} ${draft.customPlaceproposedDestinationName}`
+      `${draft.trailName} ${draft.customPlaceProposedDestinationName}`
     ) ||
     '';
   if (!emirate) return EMIRATE_REQUIRED;

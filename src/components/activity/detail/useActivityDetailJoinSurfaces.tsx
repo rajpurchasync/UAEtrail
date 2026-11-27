@@ -107,7 +107,7 @@ export const useActivityDetailJoinSurfaces = ({
         activityId={activity.id}
         showParticipantShortcuts={showParticipantShortcuts}
         showMessageHost={showFooterMessageHost}
-        memberUserId={hostUserId}
+        hostUserId={hostUserId}
       >
         {content}
       </ActivityDetailMobileFooter>

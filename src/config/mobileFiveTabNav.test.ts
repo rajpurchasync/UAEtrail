@@ -4,7 +4,6 @@ import {
   MOBILE_FIVE_TAB_UI_LABELS,
   crewsHomePath,
   mobileFiveTabHomePath,
-  resolveMobileBottomTab,
   resolveMobileFiveTab,
   tripsListHomePath,
   tripsMapHomePath,

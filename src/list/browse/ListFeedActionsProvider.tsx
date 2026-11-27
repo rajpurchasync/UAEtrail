@@ -363,8 +363,6 @@ export const ListFeedActionsProvider = ({
     }),
     [
       isGuest,
-      joinActivityId,
-      joinStateLoading,
       joinStateLoadingForCard,
       joinUiStateForCard,
       onPrimaryFooter,

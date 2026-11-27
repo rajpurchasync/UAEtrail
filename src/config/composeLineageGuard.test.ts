@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const ROOT = process.cwd();
 
@@ -13,28 +13,6 @@ const FORBIDDEN_COMPOSE_SHIMS = [
   'src/explore/ui/hostingFlow.ts',
   'src/explore/exploreSeekingCatalog.ts',
 ];
-
-const collectAppTs = (dirRel: string): string[] => {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      const full = join(dir, entry);
-      const st = statSync(full);
-      if (st.isDirectory()) {
-        if (entry === 'node_modules') continue;
-        walk(full);
-      } else if (
-        (entry.endsWith('.ts') || entry.endsWith('.tsx')) &&
-        !entry.endsWith('.test.ts') &&
-        !entry.endsWith('.test.tsx')
-      ) {
-        out.push(relative(ROOT, full).replace(/\\/g, '/'));
-      }
-    }
-  };
-  walk(join(ROOT, dirRel));
-  return out;
-};
 
 describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
   it('COMPOSE-LINE-01: retired flow shims stay deleted', () => {

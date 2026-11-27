@@ -30,7 +30,7 @@ export type IntentOpenComposeSheetProps = {
   open: boolean;
   onClose: () => void;
   /** Map `?destination=` slug — optional destination prefill in the editor. */
-  exploredestinationSlug?: string | null;
+  exploreDestinationSlug?: string | null;
   /** Compose URL `capacity=guide` prefill for open slots. */
   intentOpenCapacityParam?: string | null;
   onComposeRouteChange?: (route: ExploreCompose) => void;
@@ -134,7 +134,9 @@ export const IntentOpenComposeSheet = ({
           ? 'Select your days'
           : step === 'form-details'
             ? UPL_INTENT_OPEN_ACTION
-            : undefined;
+            : step === 'lane'
+              ? 'Available to go as'
+              : UPL_INTENT_OPEN_ACTION;
 
   const proceedFromSchedule = () => {
     if (!scheduleMode) {

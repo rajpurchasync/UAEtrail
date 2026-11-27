@@ -1,9 +1,4 @@
-import type {
-  ExploreAvailablePersonDTO,
-  MemberBrowseCardDTO,
-  MemberDiscoveryQuotaDTO,
-  SocialPersonRowDTO,
-} from '@uaetrail/shared-types';
+import type { SocialPersonRowDTO } from '@uaetrail/shared-types';
 import {
   buildRecommendedCrewFeedRefs,
   DEFAULT_RECOMMENDED_CREW_FEED_CAPS,
@@ -30,7 +25,6 @@ export const buildRecommendedCrewFeed = (input: BuildRecommendedCrewFeedInput): 
   for (const person of input.hostsGoing) friendMap.set(person.userId, person);
 
   const availabilityMap = new Map(input.availabilityPeople.map((person) => [person.userId, person]));
-  const directoryMap = new Map(input.directory.map((card) => [card.id, card]));
 
   const directoryRows = buildMemberBrowseRowsFromDirectory({
     directory: input.directory,
