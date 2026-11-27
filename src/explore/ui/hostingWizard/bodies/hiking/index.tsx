@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { ensureHikingJoinKitText } from '../../../hikingJoinKitDefaults';
 import {
   BadgeCheck,
   Baby,
@@ -462,6 +463,15 @@ export const HikingJoinKitStepBody = ({
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
 }) => {
+  const seededJoinKit = useRef(false);
+  useEffect(() => {
+    if (draft.kind !== 'hiking' || seededJoinKit.current) return;
+    if (!draft.joinKit.trim()) {
+      patchDraft({ joinKit: ensureHikingJoinKitText('') });
+      seededJoinKit.current = true;
+    }
+  }, [draft.joinKit, draft.kind, patchDraft]);
+
   useEffect(() => {
     if (draft.kind !== 'hiking') return;
     if ((draft.packingItems?.length ?? 0) === 0) {

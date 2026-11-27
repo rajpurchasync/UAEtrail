@@ -38,6 +38,12 @@ describe('buildActivityDetailPageModel', () => {
     expect(visible).toContain('transport');
   });
 
+  it('rideshare keeps transport tab visible for reach-by and linked rides', () => {
+    const activity = baseActivity({ activityType: 'rideshare', rideshareEnabled: true });
+    const model = buildActivityDetailPageModel(activity, { detailKind: 'rideshare' });
+    expect(resolveActivityDetailShowTransportTab(activity, model.kind)).toBe(true);
+  });
+
   it('hiking hides transport tab without linked ride content', () => {
     const model = buildActivityDetailPageModel(baseActivity());
     expect(

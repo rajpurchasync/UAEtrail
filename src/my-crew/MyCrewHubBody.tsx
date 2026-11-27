@@ -37,7 +37,8 @@ import {
 import { setMemberFollow } from '@/hooks/memberFollowApi';
 import { fetchMeGroups } from '@/hooks/groupClientApi';
 import { memberProfileLink } from '@/member/memberProfileLink';
-import { CREWS_ORIGIN_QUERY, groupsManagePath, groupsPath } from '@/config/surfacePaths';
+import { groupsManagePath } from '@/config/surfacePaths';
+import { groupsPathFromCrews } from '@/crew/crewSurfaceNav';
 import { navigateToGroupChatFromSocial } from '@/utils/activityGroupChatNav';
 import { useNavigate } from 'react-router-dom';
 import { MESSAGES_CHAT_RETURN_TO_KEY } from '@/utils/activityGroupChatNav';
@@ -400,7 +401,7 @@ export const MyCrewHubBody = ({ mainTab, peoplePill, groupPill }: MyCrewHubBodyP
           emptyCtas={[
             {
               label: 'Add a team',
-              to: groupsPath({ create: true, from: CREWS_ORIGIN_QUERY }),
+              to: groupsPathFromCrews({ create: true }),
             },
           ]}
         />

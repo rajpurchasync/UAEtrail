@@ -39,7 +39,11 @@ import { resolvePlaceDetailGeoHero } from '../resolvePlaceDetailGeoHero';
 import { placeCoverFallbackClass, resolvePlaceCoverFromPlace } from '../../peek/resolvePlaceRegistryCoverImage';
 import { PlaceDetailKindFacts } from '../PlaceDetailKindFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
-import { PLACE_PEEK_FOOTER_PLAN_TRIP, PLACE_PEEK_RATE_LABEL } from '../../../content/placePeekCopy';
+import {
+  PLACE_PEEK_FOOTER_PLAN_TRIP,
+  PLACE_PEEK_RATE_LABEL,
+  PLACE_PEEK_SCHEDULED,
+} from '../../../content/placePeekCopy';
 import { navigateHostFromPlace } from '../../peek/navigateHostFromPlaceCard';
 import { useAuth } from '../../../context/AuthContext';
 import { joinAuthPath } from '../../../config/routingCatalog';
@@ -51,6 +55,8 @@ import { CONSUMER_DETAIL_KEY_FACTS_LABEL } from '../../../content/consumerDetail
 import { resolvePlaceDetailHeaderChrome } from '../resolvePlaceDetailHeaderChrome';
 import { PlacePremiumGuidePanel } from '../../../components/place/PlacePremiumGuidePanel';
 import { PlaceDetailGuestGate } from '../../../components/place/detail/PlaceDetailGuestGate';
+import { ConsumerDetailSectionJumpNav } from '../../../detail/shell/ConsumerDetailSectionJumpNav';
+import { buildPlaceConsumerDetailJumpLinks } from '../buildPlaceConsumerDetailJumpLinks';
 
 const toneForKind = (kind: PlaceDetailKind): DiscoveryCardTone => {
   if (kind === 'camp') return 'camping';
@@ -121,6 +127,26 @@ export const PlaceDetailSections = ({
     nearbyFacilities.length > 0 ||
     practical.facilities.length > 0 ||
     practical.nearby.length > 0;
+  const jumpLinks = useMemo(
+    () =>
+      buildPlaceConsumerDetailJumpLinks({
+        guestPreview,
+        hasAbout: Boolean(place.description?.trim()),
+        showSeason: pageModel.showSeason,
+        showTransport,
+        showNearby: showNearbySection,
+        showScheduled: activities.length > 0,
+        showGuide: true,
+      }),
+    [
+      activities.length,
+      guestPreview,
+      pageModel.showSeason,
+      place.description,
+      showNearbySection,
+      showTransport,
+    ]
+  );
 
   useEffect(() => {
     if (unlockNotice?.toLowerCase().includes('unlocked')) {
@@ -228,12 +254,20 @@ export const PlaceDetailSections = ({
             </div>
           </div>
 
+          {jumpLinks.length > 0 ? (
+            <ConsumerDetailSectionJumpNav links={jumpLinks} className="mb-2 md:mb-3" />
+          ) : null}
+
           <div className="flex flex-col gap-6 lg:gap-3">
             {guestPreview && !user ? (
               <PlaceDetailGuestGate placeId={placeId} placeName={displayName} className="mb-1" />
             ) : null}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
-            <section className="min-w-0 flex-1" aria-label={CONSUMER_DETAIL_KEY_FACTS_LABEL}>
+            <section
+              id="place-detail-at-a-glance"
+              className="min-w-0 flex-1"
+              aria-label={CONSUMER_DETAIL_KEY_FACTS_LABEL}
+            >
               <PlaceDetailKindFacts kind={kind} place={place} />
             </section>
 
@@ -260,14 +294,14 @@ export const PlaceDetailSections = ({
             </div>
 
             {place.description?.trim() ? (
-              <section aria-label="About">
+              <section id="place-detail-about" aria-label="About">
                 <h2 className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>About</h2>
                 <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-neutral-800 md:text-base md:leading-7 lg:text-[13px] lg:leading-5">{place.description}</p>
               </section>
             ) : null}
 
             {pageModel.showSeason && place.season && place.season.length > 0 ? (
-              <section aria-label="Best season">
+              <section id="place-detail-season" aria-label="Best season">
                 <h2 className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>Best season</h2>
                 <div className="flex flex-wrap gap-2">
                   {place.season.map((season) => (
@@ -323,7 +357,7 @@ export const PlaceDetailSections = ({
             ) : null}
 
             {showNearbySection ? (
-              <section aria-label="Nearby facilities">
+              <section id="place-detail-nearby" aria-label="Nearby facilities">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <h2 className={DETAIL_SCROLL_SECTION_TITLE}>Along this route</h2>
                   {showAmenitiesAlongRoute ? (
@@ -387,7 +421,12 @@ export const PlaceDetailSections = ({
             ) : null}
             </div>
 
-            <PlacePlanList activities={activities} />
+            <section
+              id={activities.length > 0 ? 'place-detail-scheduled' : undefined}
+              aria-label={PLACE_PEEK_SCHEDULED}
+            >
+              <PlacePlanList activities={activities} />
+            </section>
 
             <section id="place-guide" aria-label={PLACE_DETAIL_TAB_LABELS.guide}>
                 <h2 className={`mb-3 ${DETAIL_SCROLL_SECTION_TITLE}`}>{PLACE_DETAIL_TAB_LABELS.guide}</h2>

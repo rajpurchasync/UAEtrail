@@ -1,6 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
 import {
-  PRODUCT_CREWS_TAB_LABEL,
   PRODUCT_GROUPS_SURFACE_LABEL,
   PRODUCT_PLAN_SURFACE_TITLE,
   PRODUCT_MY_CREW_SURFACE_TITLE,
@@ -13,6 +12,7 @@ import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { isTransientBackPath, navigateBack } from './backStack';
 import { exploreMapPathAfterPeopleFullScreen } from '../discovery/discoveryPortExploreRouting';
 import { crewsHomePath } from '../config/mobileFiveTabNav';
+import { crewsListFallbackLabel, groupsPathFromCrews } from '../crew/crewOriginPaths';
 import { isMobileBottomNavTabPath } from '../config/platform';
 import {
   MY_CREWS_PATH,
@@ -36,22 +36,16 @@ import {
   PROFILE_VEHICLES_PATH,
 } from '../config/surfacePaths';
 
-/** Router location state for contextual mobile back chrome. */
-export type MobileBackNavState = {
-  from: string;
-  backLabel?: string;
-};
+import { mobileBackNavState, type MobileBackNavState } from './mobileBackNavState';
+
+export type { MobileBackNavState };
+export { mobileBackNavState };
 
 export type MobileBackChrome = {
   fallbackTo: string;
   label: string;
   backBehavior: 'history' | 'fallback';
 };
-
-export const mobileBackNavState = (from: string, backLabel = 'Back'): MobileBackNavState => ({
-  from,
-  backLabel,
-});
 
 /** Opened from the signed-in profile hub (`/profile`). */
 export const profileHubMobileBackState = (): MobileBackNavState =>
@@ -201,7 +195,7 @@ export const resolveMobileTabHeaderLeadingBack = (
       return flowBack(MY_CREWS_PATH, PRODUCT_MY_CREW_SURFACE_TITLE);
     }
     if (crewsOrigin) {
-      return flowBack(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);
+      return flowBack(crewsHomePath(), crewsListFallbackLabel);
     }
     return null;
   }
@@ -210,9 +204,7 @@ export const resolveMobileTabHeaderLeadingBack = (
     const params = searchParamsOf(search);
     const groupId = params.get('group');
     const crewsOrigin = isCrewsOriginQuery(params.get('from'));
-    const teamsListPath = crewsOrigin
-      ? `${GROUPS_PATH}?${new URLSearchParams({ from: CREWS_ORIGIN_QUERY })}`
-      : GROUPS_PATH;
+    const teamsListPath = crewsOrigin ? groupsPathFromCrews() : GROUPS_PATH;
     if (groupId) {
       const section = params.get('section');
       const manageFrom = crewsOrigin ? { from: CREWS_ORIGIN_QUERY } : undefined;
@@ -228,7 +220,7 @@ export const resolveMobileTabHeaderLeadingBack = (
       return flowBack(teamsListPath, PRODUCT_GROUPS_SURFACE_LABEL);
     }
     if (crewsOrigin) {
-      return flowBack(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);
+      return flowBack(crewsHomePath(), crewsListFallbackLabel);
     }
     return null;
   }

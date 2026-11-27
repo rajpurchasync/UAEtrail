@@ -72,8 +72,9 @@ describe('explore search results', () => {
     expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/ExploreSearchRecommendedSection/);
     expect(read('src/explore/shell/ExploreMapShell.tsx')).not.toMatch(/ExploreBookingSearchModal/);
     expect(read('src/list/BrowseListPage.tsx')).toMatch(/ExploreSearchInboundRedirectHost/);
-    expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_SEARCH_SECTION_TRIPS/);
-    expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_SEARCH_SECTION_CREW/);
+    expect(existsSync(join(process.cwd(), 'src/explore/search/ExploreBookingSearchMapMatches.tsx'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/explore/search/exploreSearchScopeTabs.ts'))).toBe(false);
+    expect(read('src/explore/search/exploreSearchRouting.ts')).toMatch(/exploreBookingScopeFromMatchKey/);
     expect(isExploreSearchHomeState(EXPLORE_SEARCH_RESULTS_PATH, new URLSearchParams(`${EXPLORE_SEARCH_COMPOSE_PARAM}=1`))).toBe(
       true
     );

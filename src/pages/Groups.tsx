@@ -43,8 +43,8 @@ import {
   type GroupManageSection,
   type GroupMembersFocus,
 } from '../config/surfacePaths';
+import { crewsListFallbackLabel, groupsPathFromCrews } from '../crew/crewSurfaceNav';
 import {
-  PRODUCT_CREWS_TAB_LABEL,
   PRODUCT_GROUPS_SURFACE_LABEL,
   PRODUCT_MY_CREW_SURFACE_TITLE,
   PRODUCT_TEAM_CHAT_SUBTITLE,
@@ -163,15 +163,13 @@ export const Groups = () => {
     return MANAGE_SECTION_TITLES[activeSection];
   }, [activeSection, detail?.group.name, showingGroupDetail]);
 
-  const teamsListPath = crewsOrigin
-    ? `${GROUPS_PATH}?${new URLSearchParams({ from: CREWS_ORIGIN_QUERY })}`
-    : GROUPS_PATH;
+  const teamsListPath = crewsOrigin ? groupsPathFromCrews() : GROUPS_PATH;
 
   const backChrome = useMemo((): MobileBackChrome => {
     if (!showingGroupDetail) {
       return {
         fallbackTo: crewsOrigin ? crewsHomePath() : MY_CREWS_PATH,
-        label: crewsOrigin ? PRODUCT_CREWS_TAB_LABEL : PRODUCT_MY_CREW_SURFACE_TITLE,
+        label: crewsOrigin ? crewsListFallbackLabel : PRODUCT_MY_CREW_SURFACE_TITLE,
         backBehavior: 'fallback',
       };
     }

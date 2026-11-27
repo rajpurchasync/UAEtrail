@@ -12,6 +12,7 @@ import {
 } from '../../discovery/discoverySession';
 import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 
 /** Search results route — list + map under one product chrome bar. */
 export const EXPLORE_SEARCH_RESULTS_PATH = '/explore/search';
@@ -263,3 +264,10 @@ export const exploreSearchJoinListFilters = (
 /** Search results use standard product chrome (not hub identity header). */
 export const isExploreSearchResultsPath = (pathname: string): boolean =>
   pathname === EXPLORE_SEARCH_RESULTS_PATH;
+
+/** Map match count buckets → search scope (booking hero / results chrome). */
+export const exploreBookingScopeFromMatchKey = (key: ExploreSearchScopeKey): ExploreSearchScope => {
+  if (key === 'places') return 'places';
+  if (key === 'people') return 'crew';
+  return 'join';
+};

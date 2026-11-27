@@ -1,12 +1,14 @@
 ---
-description: Locked activity consumer detail hero — confirm with Husnain before layout changes (place/area heroes not locked)
-globs: src/activity/detail/templates/ActivityDetailSections.tsx,src/detail/shared/detailHeroMobileTopChrome.ts,src/activity/detail/ActivityDetailLeadDateChip.tsx,src/detail/shared/collectActivityDetailHeroPhotos.ts
+description: Locked activity consumer detail hero — confirm with Husnain before layout changes (place/area photo strips not locked)
+globs: src/activity/detail/templates/ActivityDetailSections.tsx,src/activity/detail/ActivityDetailLeadDateChip.tsx,src/detail/shared/ConsumerDetailHeroGeoLine.tsx,src/activity/detail/resolveActivityDetailGeoHero.ts,src/components/activity/ActivityDetailView.tsx
 alwaysApply: false
 ---
 
 # Activity consumer detail hero (LOCKED — activity only)
 
-**Owner:** Husnain. **Scope:** `/activity/:id` consumer photo hero (`ConsumerDetailHeroBanner`). **Not locked:** place, area, shop, and other surfaces using `DetailHeroPhotoStrip` on their own.
+**Owner:** Husnain. **Scope:** `/activity/:id` consumer scroll hero — **geo line + title block, no photo gallery** (`ActivityDetailSections`). **Not locked:** place, area, shop, facility `DetailHeroPhotoStrip` surfaces.
+
+**Image URL helper:** `resolveActivityDetailHeroImage` (preview / embed banner paths only) — not a multi-slide photo hero on consumer scroll.
 
 ## Before editing (required for activity hero layout)
 
@@ -14,28 +16,27 @@ alwaysApply: false
 2. **Warn** — say which files and what would change on mobile vs `lg+`.
 3. **Confirm** — proceed only after Husnain explicitly approves **that** change.
 
-If you must edit **`DetailHeroPhotoStrip.tsx`** (shared with place/area): **warn and get confirmation** when the diff would alter activity hero behavior (centered row, trail bottom-right, mobile height, date placement). Place-only strip tweaks may proceed without activity lock approval **only if** activity props/overlay stay unchanged — still call out the shared-file risk in chat.
+Reintroducing **`DetailHeroPhotoStrip`** on activity consumer detail is a **product change** — requires Husnain approval (even if place/area strips change independently).
 
-Copy-only / non-layout on activity hero (e.g. chip labels) is OK without unlock.
+Copy-only / non-layout on activity hero (e.g. chip labels, geo link labels) is OK without unlock.
 
-## Locked baseline — activity photo hero (confirmed Nov 2026)
+## Locked baseline — activity geo hero (confirmed Nov 2026)
 
 | Area | Behavior |
 |------|----------|
-| Strip props | `mobileOverlayLayout="centered"`, `bottomEndOverlay` = lead date chip, `topEndAction` = share |
-| Mobile height | Strip uses `h-[min(31dvh,252px)]`, `max-md:min-h-[14.75rem]` while activity uses centered layout |
-| Mobile row | `justify-between`: left copy block intrinsic width, date right, vertical center |
-| Overlay | Badge row + title + time (`items-stretch` on copy column); **no** guest-only preview badge |
-| Trail chip | **Off** on activity (`showLinkedPhotoSourceLink={false}`) — venue is in hero + Where |
-| Guest vs member | **Same hero** — guest gate lives below hero (`ActivityDetailGuestGate`), not on the strip |
-| Detail modal header | `showMenu` → close (X) `max-lg:hidden` (back + notifications + menu on mobile) |
+| Consumer scroll | `ConsumerDetailHeroGeoLine` + title; **no** swipeable photo strip on `ActivityDetailSections` |
+| Date chip | `ActivityDetailLeadDateChip` placement in hero typography block |
+| Guest vs member | **Same hero** — guest gate below hero (`ActivityDetailGuestGate`) |
+| Embed / legacy shell | `ActivityDetailView` may show `MobileDetailShell` banner using `resolveActivityDetailHeroImage` — do not conflate with public scroll layout |
 
 ## Primary files
 
-- `ActivityConsumerDetailPage.tsx` → `ConsumerDetailHeroBanner`
-- Activity wiring: `detailHeroMobileTopChrome.ts`, `ConsumerDetailLeadDateChip.tsx`, `collectActivityDetailHeroPhotos.ts`
+- `ActivityDetailSections.tsx` — scroll hero + sections
+- `resolveActivityDetailGeoHero.ts`, `ConsumerDetailHeroGeoLine.tsx`
+- `ActivityDetailLeadDateChip.tsx`, `activityDetailHeroStatus.ts`
+- `ActivityDetailView.tsx` — modal / embed chrome
 
 ## Not in this lock
 
-- `PlaceConsumerDetailPage.tsx`, `AreaDetailView.tsx`, and other non-activity `DetailHeroPhotoStrip` call sites
+- `PlaceDetailSections.tsx`, `DestinationDetailView.tsx`, `DetailHeroPhotoStrip.tsx` (non-activity call sites)
 - Guest preview gate, sections below the hero

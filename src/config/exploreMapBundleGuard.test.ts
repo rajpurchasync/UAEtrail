@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
@@ -30,7 +30,7 @@ describe('explore map bundle split (P3)', () => {
     expect(cluster).toMatch(/ClusteredMarkers/);
     expect(placesMap).not.toMatch(/ExploreMapGeoBubbleLayer/);
     expect(placesMap).not.toMatch(/exploreGeoBubblesForZoom/);
-    expect(read('src/explore/ui/exploreMapGeoBubbles.ts')).not.toMatch(/from ['"]leaflet['"]/);
+    expect(existsSync(join(process.cwd(), 'src/explore/ui/exploreMapGeoBubbles.ts'))).toBe(false);
   });
 });
 

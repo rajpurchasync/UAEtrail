@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { useMeWishlist } from '../../hooks/useMeWishlist';
 import { AppButton } from '../mobile/AppButton';
 import { planWishlistSavedFocusId } from '../../plan/planWishlistReturnCapture';
-import { isPlanWantToGoVenue } from '../../plan/planHubSummaryCounts';
+import { wishlistItemMatchesPlanWishlistLayer } from '../../member-plan/wishlistFilters';
 import { PLAN_WANT_TO_GO_LABEL } from '../../plan/planAdd';
 import {
   resolveWishlistItemPath,
@@ -26,7 +26,10 @@ export const PlanSavedSection = ({
   onAdd,
 }: PlanSavedSectionProps) => {
   const { items, loading, error, refetch } = useMeWishlist();
-  const venues = useMemo(() => items.filter(isPlanWantToGoVenue), [items]);
+  const venues = useMemo(
+    () => items.filter((item) => wishlistItemMatchesPlanWishlistLayer(item, 'places')),
+    [items]
+  );
 
   useEffect(() => {
     if (!summaryScrollRequest || !onSummaryScrollReady) return;

@@ -118,6 +118,42 @@ describe('engineeringHygiene guard (R1–R6 closure)', () => {
     expect(existsSync(join(ROOT, 'src/config/orphanModuleGuard.test.ts'))).toBe(true);
   });
 
+  it('AUDIT-12: crews-origin nav barrel wired; FE memberDiscoveryExplore duplicate retired', () => {
+    expect(read('src/pages/Groups.tsx')).toMatch(/groupsPathFromCrews/);
+    expect(read('src/my-crew/MyCrewHubBody.tsx')).toMatch(/groupsPathFromCrews/);
+    expect(existsSync(join(ROOT, 'src/explore/memberDiscoveryExplore.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'packages/shared-types/src/entity-path.ts'))).toBe(true);
+  });
+
+  it('AUDIT-14: audit backlog modules retired or consolidated', () => {
+  for (const rel of [
+      'src/explore/ui/exploreMapGeoBubbles.ts',
+      'src/explore/ui/exploreMapMobileMenus.ts',
+      'src/explore/viewerInvitableActivities.ts',
+      'src/access/mapProfileViewerAccessToUi.ts',
+      'src/activity/activityDetailTransport.ts',
+      'src/detail/weather/activityForecastDates.ts',
+      'src/detail/shared/collectActivityDetailHeroPhotos.ts',
+    ]) {
+      expect(existsSync(join(ROOT, rel)), rel).toBe(false);
+    }
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
+      /no hero image, no photo gallery/
+    );
+    expect(existsSync(join(ROOT, 'src/activity/resolveActivityDetailHeroImage.ts'))).toBe(true);
+    expect(read('src/access/mapViewerAccessToUi.ts')).toMatch(/mapProfileViewerAccessToMemberLink/);
+    expect(read('src/place/detail/templates/PlaceDetailSections.tsx')).toMatch(
+      /ConsumerDetailSectionJumpNav/
+    );
+  });
+
+  it('AUDIT-13: plan wishlist layer filter is single module; mobile back uses crewSurfaceNav', () => {
+    expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/wishlistItemMatchesPlanWishlistLayer/);
+    expect(read('src/plan/planHubSummaryCounts.ts')).toMatch(/wishlistItemMatchesPlanWishlistLayer/);
+    expect(read('src/utils/mobileBackNav.ts')).toMatch(/crewOriginPaths/);
+    expect(existsSync(join(ROOT, 'src/crew/crewOriginPaths.ts'))).toBe(true);
+  });
+
   it('AUDIT-10: R6 optional closure — policy contract + activity detail split tests registered', () => {
     expect(existsSync(join(ROOT, 'src/discovery/discoveryPortExplorePolicy.contract.test.ts'))).toBe(
       true

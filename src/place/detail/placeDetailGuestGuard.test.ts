@@ -9,27 +9,20 @@ describe('placeDetailGuestGuard', () => {
   it('guest jump chips stay on preview sections', () => {
     const guestInput = {
       guestPreview: true,
-      kind: 'trail' as const,
       hasAbout: true,
-      showMapElevation: true,
       showSeason: true,
       showTransport: true,
       showNearby: true,
-      showAmenities: false,
-      showWeather: true,
       showScheduled: true,
-      showRides: true,
       showGuide: true,
     };
-    // "Rides to this place" is a public preview section (rendered above the member-only block).
     expect(buildPlaceConsumerDetailJumpLinks(guestInput).map((l) => l.label)).toEqual([
       'Key facts',
       'Overview',
-      'Rides',
     ]);
     expect(
-      buildPlaceConsumerDetailJumpLinks({ ...guestInput, showRides: false }).map((l) => l.label)
-    ).toEqual(['Key facts', 'Overview']);
+      buildPlaceConsumerDetailJumpLinks({ ...guestInput, hasAbout: false }).map((l) => l.label)
+    ).toEqual(['Key facts']);
   });
 
   it('place L3 passes guestPreview from route loader', () => {
@@ -37,6 +30,12 @@ describe('placeDetailGuestGuard', () => {
     expect(template).toMatch(/guestPreview/);
     expect(template).toMatch(/PlaceDetailGuestGate/);
     expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/guestPreview=\{!user\}/);
+  });
+
+  it('place consumer detail mounts section jump chips', () => {
+    const template = read('src/place/detail/templates/PlaceDetailSections.tsx');
+    expect(template).toMatch(/ConsumerDetailSectionJumpNav/);
+    expect(template).toMatch(/buildPlaceConsumerDetailJumpLinks/);
   });
 
   it('place consumer scroll owns a bounded flex chain (not document scroll)', () => {

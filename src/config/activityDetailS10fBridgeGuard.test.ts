@@ -37,7 +37,7 @@ const ACTIVITY_S10F_BRIDGE: Array<{
   },
   {
     manualSurface: 'Activity (rideshare)',
-    guardPath: 'src/activity/activityDetailTransport.test.ts',
+    guardPath: 'src/activity/detail/buildActivityDetailPageModel.test.ts',
     mustMatch: /transport|rideshare/i,
   },
   {

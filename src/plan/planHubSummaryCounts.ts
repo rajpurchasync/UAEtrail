@@ -9,6 +9,7 @@ import { isFixedAvailabilitySlot, isRetiredSeekingActivityModeValue } from '@uae
 import type { ActivityRequestView } from '../api/types';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
 import { aggregateMemberGoals } from '../utils/memberGoalsAggregate';
+import { wishlistItemMatchesPlanWishlistLayer } from '../member-plan/wishlistFilters';
 
 const todayStart = () => new Date(new Date().toDateString());
 
@@ -45,8 +46,9 @@ export const countPlanJoinedUpcoming = (
 export const countPlanActiveGoals = (goals: MemberGoalDTO[]): number =>
   aggregateMemberGoals(goals).activeGoals.length;
 
-/** Catalog venue rows on Plan Want to go (`locationId` only). */
-export const isPlanWantToGoVenue = (item: WishlistItemDTO): boolean => Boolean(item.locationId);
+/** Catalog place/destination rows on Plan Want to go — single filter (`member-plan/wishlistFilters`). */
+export const isPlanWantToGoVenue = (item: WishlistItemDTO): boolean =>
+  wishlistItemMatchesPlanWishlistLayer(item, 'places');
 
 export const countPlanSavedPlaces = (items: WishlistItemDTO[]): number =>
-  items.filter(isPlanWantToGoVenue).length;
+  items.filter((item) => wishlistItemMatchesPlanWishlistLayer(item, 'places')).length;
