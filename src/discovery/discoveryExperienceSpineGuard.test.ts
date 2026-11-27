@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
@@ -54,6 +54,11 @@ describe('discoveryExperienceSpineGuard (B-UNIFY Phase B)', () => {
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useDiscoveryListExperienceModel/);
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useDiscoveryExperienceComposeBridge/);
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).not.toMatch(/useExploreCreateFlowBridge\(/);
+  });
+
+  it('B-UNIFY-09: experience orchestration stays in explore/list shells (no duplicate discovery/*Model copies)', () => {
+    expect(existsSync(join(process.cwd(), 'src/discovery/discoveryExperienceMapModel.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/discovery/discoveryExperienceListModel.ts'))).toBe(false);
   });
 
   it('B-UNIFY-04: list browse URL session read + merge live in discovery spine', () => {

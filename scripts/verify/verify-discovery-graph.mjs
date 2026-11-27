@@ -20,7 +20,7 @@ try {
   run('import audit (regenerate + budget)', 'npm run discovery:import-audit');
   run(
     'guards',
-    'npx vitest run src/config/discoveryGraphGuard.test.ts src/discovery/discoveryPortNamingGuard.test.ts src/discovery/discoveryExperienceSpineGuard.test.ts src/discovery/discoveryBrowseListSessionRead.test.ts src/list/listModuleHygiene.test.ts src/config/crossContextFoundationsGuard.test.ts'
+    'npx vitest run src/config/discoveryGraphGuard.test.ts src/discovery/discoveryPortNamingGuard.test.ts src/discovery/discoveryExperienceSpineGuard.test.ts src/discovery/discoveryBrowseListSessionRead.test.ts src/config/participantSeekingOpsGuard.test.ts src/list/listModuleHygiene.test.ts src/config/crossContextFoundationsGuard.test.ts'
   );
   console.log('\n[verify:discovery-graph] OK');
 } catch (error) {

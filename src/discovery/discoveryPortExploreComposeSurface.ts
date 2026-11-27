@@ -4,7 +4,6 @@ export {
   ComposeImmersiveChromeProvider,
   useComposeImmersiveChrome,
 } from '../explore/create/ComposeImmersiveChromeContext';
-export { useExploreCreateFlowBridge } from '../explore/shell/useExploreCreateFlowBridge';
 export {
   useDiscoveryComposePublishReload,
   useDiscoveryCreateFabActions,
