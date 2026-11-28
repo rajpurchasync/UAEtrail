@@ -68,9 +68,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: participant stale console bookmarks redirect off host console', () => {
-    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/profile');
-    // Participants bookmarking `/publishing/*` land on consumer surfaces — not `/operator/*` or compose.
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toMatch(
+    expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/profile');
+    // Participants bookmarking `/operator/*` land on consumer surfaces — not the tenant desk or compose.
+    expect(participantHostBookmarkRedirect('/operator/activities')).toMatch(
       /^\/plan\?.*filter=hosting/
     );
     expect(participantHostBookmarkRedirect('/host/overview')).toBe('/profile/pro-membership');
@@ -79,16 +79,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-dmcp-1: member status hook gates workspace from publish slice only', () => {
     const hook = read('src/hooks/useMemberStatus.ts');
-    expect(hook).toMatch(/publish\?\.canAccessPublishingWorkspace/);
+    expect(hook).toMatch(/publish\?\.canAccessOperatorWorkspace/);
     expect(hook).toMatch(/publish\?\.isPlatformStaff/);
     expect(hook).not.toMatch(/\bisHostRole\b/);
-    const workspace = read('apps/api/src/services/member-publishing-workspace-access.ts');
-    expect(workspace).toMatch(/resolvePublishingWorkspaceAccess/);
+    const workspace = read('apps/api/src/services/member-operator-workspace-access.ts');
+    expect(workspace).toMatch(/resolveOperatorWorkspaceAccess/);
   });
 
   it('G-arch: operator console path helper matches /operator workspace only', () => {
     expect(isOperatorConsolePath('/operator/overview')).toBe(true);
-    expect(isOperatorConsolePath('/publishing/overview')).toBe(false);
+    expect(isOperatorConsolePath('/publishing/overview')).toBe(false); // not a product route
     expect(isOperatorConsolePath('/host/activities')).toBe(false);
     expect(isOperatorConsolePath('/organizer/requests')).toBe(false);
     expect(isOperatorConsolePath('/explore')).toBe(false);

@@ -159,25 +159,25 @@ describe('systemCoherenceGuard', () => {
     expect(existsSync(join(ROOT, 'src/hooks/useSafeAsyncEffect.ts'))).toBe(false);
   });
 
-  it('ProtectedRoute gates operator console on canAccessPublishingWorkspace', () => {
+  it('ProtectedRoute gates operator console on canAccessOperatorWorkspace', () => {
     const content = readFileSync(join(ROOT, 'src/components/auth/ProtectedRoute.tsx'), 'utf8');
-    expect(content).toMatch(/publishingWorkspace/);
-    expect(content).toMatch(/canAccessPublishingWorkspace/);
+    expect(content).toMatch(/operatorWorkspace/);
+    expect(content).toMatch(/canAccessOperatorWorkspace/);
     expect(content).toMatch(/participantHostBookmarkRedirect/);
     expect(content).not.toMatch(/pathname\.startsWith\(['"]\/host['"]\)/);
   });
 
   it('S10b publishing console catalog pages use TanStack Query (MIG-CLIENT-QUERY)', () => {
     const catalogPages: [string, string][] = [
-      ['src/operator/desk/Places.tsx', 'usePublishingSubmittedPlaces'],
-      ['src/operator/desk/Team.tsx', 'usePublishingTeam'],
+      ['src/operator/desk/Places.tsx', 'useWorkspaceSubmittedPlaces'],
+      ['src/operator/desk/Team.tsx', 'useWorkspaceTeam'],
       ['src/operator/desk/PublicProfileEdit.tsx', 'useMyTenantMemberships'],
     ];
     const violations: string[] = [];
     for (const [rel, hook] of catalogPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('usePublishingConsoleQueries') || !content.includes(hook)) {
-        violations.push(`${rel}: missing ${hook} from usePublishingConsoleQueries`);
+      if (!content.includes('useOperatorConsoleQueries') || !content.includes(hook)) {
+        violations.push(`${rel}: missing ${hook} from useOperatorConsoleQueries`);
       }
       if (content.includes('useSafeAsyncEffect')) {
         violations.push(`${rel}: still uses useSafeAsyncEffect`);
@@ -186,26 +186,26 @@ describe('systemCoherenceGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('S10b host console pages on TanStack Query read through publishingWorkspaceQueries (no ad-hoc mount fetch)', () => {
-    const queries = readFileSync(join(ROOT, 'src/hooks/publishingWorkspaceQueries.ts'), 'utf8');
+  it('S10b host console pages on TanStack Query read through operatorWorkspaceQueries (no ad-hoc mount fetch)', () => {
+    const queries = readFileSync(join(ROOT, 'src/hooks/operatorWorkspaceQueries.ts'), 'utf8');
     expect(queries).toMatch(/useQuery/);
     const hostQueryPages: [string, string][] = [
-      ['src/operator/desk/Activities.tsx', 'usePublishingTenantActivities'],
-      ['src/operator/desk/JoinRequests.tsx', 'usePublishingJoinQueue'],
-      ['src/operator/desk/History.tsx', 'usePublishingActivityHistory'],
+      ['src/operator/desk/Activities.tsx', 'useOperatorWorkspaceActivities'],
+      ['src/operator/desk/JoinRequests.tsx', 'useOperatorWorkspaceJoinQueue'],
+      ['src/operator/desk/History.tsx', 'useOperatorWorkspaceActivityHistory'],
     ];
     const violations: string[] = [];
     for (const [rel, hook] of hostQueryPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('publishingWorkspaceQueries') || !content.includes(hook)) {
-        violations.push(`${rel}: missing ${hook} from hooks/publishingWorkspaceQueries`);
+      if (!content.includes('operatorWorkspaceQueries') || !content.includes(hook)) {
+        violations.push(`${rel}: missing ${hook} from hooks/operatorWorkspaceQueries`);
       }
       if (content.includes('useSafeAsyncEffect')) {
         violations.push(`${rel}: still uses useSafeAsyncEffect`);
       }
       // Reads go through the cached query — the page must not also fetch the same lists on mount.
       if (/\b(listActivities|getActivityJoinRequests|getActivityHistory)\s*\(/.test(content)) {
-        violations.push(`${rel}: fetches workspace lists outside publishingWorkspaceQueries`);
+        violations.push(`${rel}: fetches workspace lists outside operatorWorkspaceQueries`);
       }
     }
     expect(violations).toEqual([]);

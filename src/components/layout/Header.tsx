@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH, joinAuthPath } from '../../config/routingCatalog';
+import { MEMBER_HOME_PATH, joinAuthPath } from '../../config/routingCatalog';
 import { Link, useLocation } from 'react-router-dom';
 import { ProductNavLink } from '../navigation/ProductNavLink';
 import { Mountain } from 'lucide-react';
@@ -16,7 +16,11 @@ export const Header = () => {
     <header className="bg-white/80 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="w-full px-4 sm:px-5 lg:px-5">
         <div className="flex justify-between items-center h-11 lg:h-12">
-          <Link to="/" className="flex items-center space-x-2 lg:min-w-[12rem]" aria-label="UAE Trail home">
+          <Link
+            to={user ? MEMBER_HOME_PATH : '/'}
+            className="flex items-center space-x-2 lg:min-w-[12rem]"
+            aria-label="UAE Trail home"
+          >
             <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-lg flex items-center justify-center lg:h-8 lg:w-8">
               <Mountain className="w-4 h-4 text-white" />
             </div>
@@ -40,7 +44,7 @@ export const Header = () => {
                   Sign in
                 </ProductNavLink>
                 <ProductNavLink
-                  to={joinAuthPath(EXPLORE_MAP_PATH)}
+                  to={joinAuthPath(MEMBER_HOME_PATH)}
                   className="hidden md:inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
                 >
                   Join free

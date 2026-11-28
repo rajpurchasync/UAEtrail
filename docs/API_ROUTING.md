@@ -12,11 +12,11 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 | Prefix | Auth | Purpose |
 |--------|------|---------|
-| **`/activities`** | Public read; tenant write via `/publishing` | Published **hosted** outings (join, RSVP, detail) |
+| **`/activities`** | Public read; tenant write via **`/workspace/*`** ( | Published **hosted** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Home map sends `sources` (default `place,activity`) and `includeRideshare=1` only for the rideshare topic. Omit `sources` for the full catalog (`/list`). Destination is a filter (`?destination=`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/publishing/*`** | Verified + **tenant** (`x-tenant-id`) | **Operator desk** HTTP (any kind): publish, roster, **activity** join queue. SPA is `/operator/*`. |
+| **`/workspace/*`** | Verified + **tenant** (`x-tenant-id`) | **Operator desk** HTTP (any kind): publish, roster, **activity** join queue. SPA is `/operator/*`. |
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
 | **`/me/discover/overlay`** | Auth | Per-viewer `viewerAccess` for public map item ids (not a second catalog) |
 | **`/discover/*`** | Mixed | **Discover layer** — federated Find crew (`GET /discover/crew`, auth) · ranked recommendations (`GET /discover/recommendations`, `surface=map` optional auth · `surface=crew` auth) |
@@ -25,7 +25,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/chat/*`** | Auth | DMs |
 | **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
-| **`/shop/*`** | Public read (`GET /shop/shops/:id`) | Shop **consumer** page payload only — `registerShopPublicRoutes`. Desk edit: **`/publishing/shop-profile`** + `x-tenant-id` (`registerPublishingShopStorefrontRoutes`). **Retired:** `/shop/merchant/*` manage (Nov 2026). **Retired (Oct 2026):** product catalog / checkout |
+| **`/shop/*`** | Public read (`GET /shop/shops/:id`) | Shop **consumer** page payload only — `registerShopPublicRoutes`. Desk edit: **`/workspace/shop-profile`** + `x-tenant-id` (`registerPublishingShopStorefrontRoutes`). **Retired:** `/shop/merchant/*` manage (Nov 2026). **Retired (Oct 2026):** product catalog / checkout |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
@@ -47,8 +47,8 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 |------|-------------------|
 | **Create request** | `POST /activities/:activityId/requests` |
 | **My status** | In activity detail `myRequest` |
-| **Host lists** | `GET /publishing/requests` (tenant) |
-| **Approve / reject** | `PATCH /publishing/requests/:id` |
+| **Host lists** | `GET /workspace/requests` (tenant) |
+| **Approve / reject** | `PATCH /workspace/requests/:id` |
 | **Member list (outgoing)** | `GET /me/requests` |
 
 Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/requests`.
@@ -102,14 +102,14 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/me/profile-stats` | Profile counters (`followerCount`, `joinedCount`, `hostedCount`, `activeParticipantIntentCount`, `isCommunityHost`) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
-| * | `/publishing/activities/*` | CRUD, publish, history — FE: `tenantActivityClientApi` (`activities.ts` → `/publishing/…`) |
-| POST | `/publishing/activities/:id/suspend` | Host soft-hide: `published` → `suspended` (off visitor map/search/browse; keep in workspace) |
-| POST | `/publishing/activities/:id/resume` | Host restore: `suspended` → `published` |
-| GET | `/publishing/activities/:id/participants` | Approved roster + flags (`registerPublishingActivityParticipantRoutes`) |
-| POST/DELETE | `/publishing/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
-| POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification) |
-| POST | `/publishing/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
-| GET/PATCH | `/publishing/requests` | Activity join queue (`hostNote` on decide) |
+| * | `/workspace/activities/*` | CRUD, publish, history — FE: `tenantActivityClientApi` (`activities.ts` → `/workspace/…`) |
+| POST | `/workspace/activities/:id/suspend` | Host soft-hide: `published` → `suspended` (off visitor map/search/browse; keep in workspace) |
+| POST | `/workspace/activities/:id/resume` | Host restore: `suspended` → `published` |
+| GET | `/workspace/activities/:id/participants` | Approved roster + flags (`registerPublishingActivityParticipantRoutes`) |
+| POST/DELETE | `/workspace/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
+| POST | `/workspace/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification) |
+| POST | `/workspace/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
+| GET/PATCH | `/workspace/requests` | Activity join queue (`hostNote` on decide) |
 | GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested; `medicalSafetyProfileComplete`) |
 | GET/PUT | `/me/profile` | Own profile. Safety fields: `bloodGroup`, `medicalConditions`, `emergencyContactName`, `emergencyContactPhone`. `PATCH /me/profile/medical-safety` replaces that block. |
 | GET/POST | `/me/vehicles` | Owner garage (`member_vehicles`). `PATCH/DELETE /me/vehicles/:id`. Public rideshare detail embeds `rideshareVehicle` without `plateNumber`. |
@@ -313,7 +313,7 @@ Signed-in **member capabilities** — profile gates, **publish** workspace eligi
 | `profileComplete` | Host/publish after `/welcome` (`signupProfileComplete` on `GET /me/profile` only) |
 | `medicalSafetyProfileComplete` | Join/RSVP gate — blood group, conditions (or `N/A`), emergency contact. Incomplete profiles return `medical_safety_profile_required`. |
 | `publish.canPublish` | May create/publish tenant activities |
-| `publish.canAccessPublishingWorkspace` | May open operator desk (SPA `/operator/*`; HTTP `/publishing/*`); sole resolver `resolvePublishingWorkspaceAccess` |
+| `publish.canAccessOperatorWorkspace` | May open operator desk (SPA `/operator/*`; HTTP `/workspace/*`); sole resolver `resolveOperatorWorkspaceAccess` |
 | `publish.isPlatformStaff` | Platform operator shell — not community host tier |
 | `publish.ownedProfiles` | Tenants member may publish as |
 | `profileRoleLabel` | Display key for profile chrome |
@@ -360,7 +360,7 @@ SPA tables: `AdminTablePager` + `adminConsoleApi` list helpers — load pages, n
 
 ## Platform admin tenants (`/admin/tenants/*`)
 
-Registered in `registerAdminTenantRoutes.ts` — paginated list, detail, moderation, discover flags, publishing team (same team schemas as `/publishing/*`).
+Registered in `registerAdminTenantRoutes.ts` — paginated list, detail, moderation, discover flags, publishing team (same team schemas as `/workspace/*`).
 
 | Method | Path | Who |
 |--------|------|-----|
@@ -411,8 +411,8 @@ SPA: `/admin/hosts` → `pages/admin/Operators` (see [`NAVIGATION.md`](./NAVIGAT
 |---------------|--------|
 | `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
-| `activities.ts` | `/activities`, `/me/requests`, `/publishing/activities`, `/publishing/requests` |
-| `shop.ts` | `GET /shop/shops/:id` (public read). Shop desk manage: `registerPublishingShopStorefrontRoutes` on `/publishing/shop-profile` |
+| `activities.ts` | `/activities`, `/me/requests`, `/workspace/activities`, `/workspace/requests` |
+| `shop.ts` | `GET /shop/shops/:id` (public read). Shop desk manage: `registerPublishingShopStorefrontRoutes` on `/workspace/shop-profile` |
 | `explore.ts` | `/explore/map` |
 | `availability.ts` | **`/me/availability`** (+ match-preview) |
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |
@@ -427,6 +427,6 @@ SPA: `/admin/hosts` → `pages/admin/Operators` (see [`NAVIGATION.md`](./NAVIGAT
 
 ## UI component naming (related)
 
-Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`NAVIGATION.md`](./NAVIGATION.md) § `/plan` and [`COMMUNICATION.md`](./COMMUNICATION.md). **`src/components/activity/*`** is for **`/publishing/*`** and Plan **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate).
+Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`NAVIGATION.md`](./NAVIGATION.md) § `/plan` and [`COMMUNICATION.md`](./COMMUNICATION.md). **`src/components/activity/*`** is for **`/workspace/*`** and Plan **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate).
 
 Do **not** add `OrganisationActivity*` symbols or `*OrganisationActivity` client methods — one **Activity** model for community and business hosts; **organisation** naming is tenant storefront scope only ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames). Member read-only attendance: **`ActivityParticipationStatus`** (not a host roster panel).

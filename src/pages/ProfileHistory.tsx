@@ -39,7 +39,7 @@ export const ProfileHistoryPage = () => {
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const gate = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessOperatorWorkspace);
   const { goals, reload: reloadGoals } = useMemberGoals(Boolean(user));
   const historySearchKey = searchParams.toString();
 

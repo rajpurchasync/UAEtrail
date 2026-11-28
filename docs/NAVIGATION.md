@@ -10,19 +10,21 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 | Surface | Route(s) | Job |
 |---------|----------|-----|
+| **Home** | `/home` | Signed-in intent + navigation (`src/home/`). Not guest marketing `/`. |
 | **Explore** | `/explore`, `/list` | Discovery — browse **Trips** · **Places** · **Discover crews** (not My Crews roster) |
 | **Plans** | `/plan` | **My Plans** — joined, goals, wishlist, hosted projection (`/me/*` data) |
 | **Crews** | `/crews`, `/groups` | **My Crews** — friends, teams, groups |
 | **Chat** | `/chat` | Threads |
 | **Profile** | `/profile`, `/settings` | Identity; **Operator desk** → **`/operator`** |
 
-**Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/crews`) · **Plans** · **Chat**. **Discover crews** ≠ **My Crews** (`/crews`, `/groups`). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
+**Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/crews`) · **Plans** · **Chat**. Home is **not** a bottom tab — return via hamburger / desktop sidebar. **Discover crews** ≠ **My Crews** (`/crews`, `/groups`). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
 
 ## Three surfaces
 
 | Surface | Route | Purpose |
 |---------|-------|---------|
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
+| **Member Home** | `/home` | Signed-in intent hub (`src/home/`) — greeting, tiles, suggested joins. Not marketing `/`. |
 | **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`crew-discovery`); map/list/search are projections |
 | **List discovery** | `/list` | Full-screen explorer (thumbnails · list · calendar, date-sorted; same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/settings`, `/profile/edit`, `/profile/history` | Account hub, **app settings**, edit profile, outing **history** + journey map |
@@ -42,7 +44,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Stale plan/history bookmarks rewrite via `canonicalizeNotificationBookmarkPath` (shared-types) and edge **301** (see § Stale URLs); on `/plan` load, `normalizePlanSearchParams` in `planRouting.ts`.
 - **Want to go (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Catalog venues (`locationId`) sit with **Goals** on that tab and compose onto the journey map. Stale `lens=` / `role=` on `/plan` are stripped on load (no remap). Profile shows a teaser only — not a second full list ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 · `src/plan/`).
 - **Cars & safety (profile hub):** **My cars** (`/profile/vehicles`, add/edit under that path) and **Safety & emergency** (`/settings/safety`) open from `/profile`, not the settings index. **App settings:** `/settings` → **Display** (theme, 12/24-hour time, metric/imperial — saved on this device; signed-out pages follow the guest theme, which starts as the system theme), Account, Privacy, **Notifications** (`/settings/notifications` — history, preferences, saved map alerts; legacy `/notifications*` redirects); **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt). Back returns to the screen that opened the page (profile, settings, or the rideshare host step) and restores that screen’s scroll position and the control that was used.
-- **Desktop/tablet shell (`md+`, `src/config/desktopNav.ts`):** Resizable left `DesktopSideNav` for **guests and members**. **Go:** one **Explore** (`/explore`). On desktop the browse list (thumbnails or rows) sits on the left of the map and is resizable and collapsible; outing filters live in that panel. Collapsing it leaves the applied filters visible, with **Show browse** to open it again. Signed-in **My Plans** · Chat. Guests see Explore + Chat only in Go. **People** (signed in): **Find Crew** → `list=1&listCat=people` list drawer (`exploreCrewsListDrawerPath`) — see § Browse — people & crew; **My Crews** (`/crews` + `/groups`). Full-screen discover list: `/list?listCat=people`. **Map:** Search · Post. **You:** outing history (`/profile/history`, past trips — not upcoming My Plans) and the rest of your hub links; **notification history** lives under **Settings** (`/settings/notifications`), reached from the header **bell** (popover footer) or the settings hub — not a duplicate sidebar row. Hosts get **Hosting schedule** under **Hosting**. Slim `Header` — members use the account menu; guests use **Sign in / Join free**. Gated actions open a **right-rail feature explainer** (not a centered “Oops” popup) with sign up / log in. Anonymous **`GET /explore/map`** returns a **preview catalog** (max **3 outings** and **3 places**). Map search omits **People** until signed in. Hosts/operators with `canAccessPublishingWorkspace` get **Hosting schedule** (`planHostedSchedulePath()`) under **Hosting** — not a second My Plans. Map pin summary docks left on desktop. Mobile bottom nav stays Explore · My Plans · Chat.
+- **Desktop/tablet shell (`md+`, `src/config/desktopNav.ts`):** Resizable left `DesktopSideNav` for **guests and members**. **Go:** one **Explore** (`/explore`). On desktop the browse list (thumbnails or rows) sits on the left of the map and is resizable and collapsible; outing filters live in that panel. Collapsing it leaves the applied filters visible, with **Show browse** to open it again. Signed-in **My Plans** · Chat. Guests see Explore + Chat only in Go. **People** (signed in): **Find Crew** → `list=1&listCat=people` list drawer (`exploreCrewsListDrawerPath`) — see § Browse — people & crew; **My Crews** (`/crews` + `/groups`). Full-screen discover list: `/list?listCat=people`. **Map:** Search · Post. **You:** outing history (`/profile/history`, past trips — not upcoming My Plans) and the rest of your hub links; **notification history** lives under **Settings** (`/settings/notifications`), reached from the header **bell** (popover footer) or the settings hub — not a duplicate sidebar row. Hosts get **Hosting schedule** under **Hosting**. Slim `Header` — members use the account menu; guests use **Sign in / Join free**. Gated actions open a **right-rail feature explainer** (not a centered “Oops” popup) with sign up / log in. Anonymous **`GET /explore/map`** returns a **preview catalog** (max **3 outings** and **3 places**). Map search omits **People** until signed in. Hosts/operators with `canAccessOperatorWorkspace` get **Hosting schedule** (`planHostedSchedulePath()`) under **Hosting** — not a second My Plans. Map pin summary docks left on desktop. Mobile bottom nav stays Explore · My Plans · Chat.
 - **Hamburger (header, below `lg`):** next to the notifications bell on tab chrome and tablet `Header` — Explore, **My Plans**, **Social**, Outing history, Chat, Profile/Signup, **Install app** → Android (Chrome and Edge `beforeinstallprompt` when the browser offers it; otherwise the settings steps) / iOS (deep-link to the matching settings hash). **Platform admins** (`platform_admin`) also see **Admin console** → `/admin/overview` on consumer surfaces (admin drawer on `/admin/*`). Their identity, contact, bio, units, and time format live at **`/admin/account`**. Full **`/profile`** hub (privacy, cars, history, languages, and the rest) is after **Switch to visitor**. Guests do not see My Plans, Social, or Outing history in the drawer. Notifications are the bell only, not in the drawer.
 - **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
 - **Pro membership:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner paths ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
@@ -83,8 +85,8 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Operator console (`/operator/*` routes)
 
-- **Canonical SPA `/operator/*`** — one console for community hosts and workspace tenants; inbound `/publishing/*`, `/hosting`, `/host/*`, `/organizer/*` redirect to `/operator/*`. Capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Tenant HTTP API remains **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
-- **Host mode home:** hosts land on **`/operator/overview`** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/explore`.
+- **Canonical SPA `/operator/*`** — one console for community hosts and workspace tenants; stale inbound `/hosting`, `/host/*`, and `/organizer/*` rewrite to `/operator/*` (see shared-types bookmark canonicalize). Capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Tenant HTTP API is **`/workspace/*`** only. `/operator/:slug` is **not** a public storefront.
+- **Host mode home:** hosts land on **`/operator/overview`** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/home`.
 - **Host mode chrome:** while role is `tenant_*` (not visitor), primary nav is **Hosting (`/operator/overview`) · My Plans (`/plan`) · Chat**. Hamburger leads with **Hosting** and still includes **Explore**.
 - **Shell nav:** `operatorDeskNavLinksForKind` in `ConsoleShell` + mobile operator drawer (`MobileMenu`); registry in `src/operator/desk/modules.ts`. Copy: `src/content/workspaceVocabulary.ts`.
 - **`/operator/overview`:** all publishing kinds with an active tenant see `HostingHubView` (schedule + kind-filtered host tools) inside `ConsoleShell` — no mode switcher.
@@ -92,7 +94,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Admin console (`/admin/*`)
 
-- **Audience:** `platform_admin` only (`ProtectedRoute`); signed-in members use `/explore`, not `/`.
+- **Audience:** `platform_admin` only (`ProtectedRoute`); signed-in members use `/home`, not `/`.
 - **Shell nav:** `ADMIN_LINKS` in `src/constants/index.ts` — desktop sidebar (`AdminConsoleSidebar`) + mobile admin drawer (`DashboardLayout`, `MobileMenu`). Consumer hamburger includes **Admin console** when role is `platform_admin` and the member is not already on `/admin/*`.
 - **Staff provisioning API:** `POST /admin/platform-admins`, `DELETE /admin/platform-admins/:userId` — not self-serve signup.
 - **Out of consumer methodology:** admin tables use `adminApi` + `DashboardLayout` — not discovery card VM, map peek, or entity tab footers (`SYSTEM_COHERENCE` §6.2.6). Guard: `adminSurfacesAcceptance.test.ts`.
@@ -174,9 +176,9 @@ After sign-up, sign-in, or OTP verify, **participants** and **shop members** (`m
 
 Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTHSTAR.md)**.
 
-- **Guests only** — signed-in users redirect to `/explore` (`src/pages/Home.tsx`).
-- **Not the product home** — members always land on and live on `/explore`.
-- **Goal:** convert visitors via **Open Map** (primary button) and **Join free** (underlined text link); post-auth → `/explore`.
+- **Guests only** — signed-in users redirect to `/home` (`src/pages/Home.tsx`).
+- **Not the product home** — members land on **`/home`** (intent hub); Explore stays discovery.
+- **Goal:** convert visitors via **Open Map** (primary button) and **Join free** (underlined text link); post-auth default → `/home`.
 - **Guest hero:** headline + subline + **Open Map** + **Join free** link. Desktop header: Log in pill.
 - **Scroll order** (matches `Home.tsx`, v2 sections in `src/components/home/marketing/sections/`):
   1. Hero carousel (`HomeHeroSection` — includes trust chips)

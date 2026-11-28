@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { allowedActivityPricingModes } from '@uaetrail/shared-types';
-import { resolvePublishingWorkspaceAccess } from '../src/services/member-publishing-workspace-access.js';
+import { resolveOperatorWorkspaceAccess } from '../src/services/member-operator-workspace-access.js';
 
 const API_SRC = join(process.cwd(), 'src');
 const PUBLISHING_ROUTES_DIR = join(API_SRC, 'routes', 'publishing');
@@ -39,10 +39,10 @@ describe('host-member API contracts', () => {
   it('publishing activity routes use Activity-named registrars (not TenantActivity)', () => {
     expect(existsSync(join(PUBLISHING_ROUTES_DIR, 'registerPublishingActivityRoutes.ts'))).toBe(true);
     expect(existsSync(join(PUBLISHING_ROUTES_DIR, 'registerPublishingActivityParticipantRoutes.ts'))).toBe(true);
-    const publishingMount = readFileSync(join(API_SRC, 'routes', 'publishing.ts'), 'utf8');
-    expect(publishingMount).toMatch(/registerPublishingActivityRoutes/);
-    expect(publishingMount).not.toMatch(/registerHostTenantActivityRoutes/);
-    expect(publishingMount).not.toMatch(/registerHostActivityRoutes/);
+    const workspaceMount = readFileSync(join(API_SRC, 'routes', 'workspace.ts'), 'utf8');
+    expect(workspaceMount).toMatch(/registerPublishingActivityRoutes/);
+    expect(workspaceMount).not.toMatch(/registerHostTenantActivityRoutes/);
+    expect(workspaceMount).not.toMatch(/registerHostActivityRoutes/);
   });
 
   it('notification meta uses PRO_MEMBERSHIP_PATH constant instead of raw /become-host', () => {
@@ -62,10 +62,11 @@ describe('host-member API contracts', () => {
     expect(violations).toEqual([]);
   });
 
-  it('API mounts publishing console on /publishing only', () => {
+  it('API mounts operator workspace on /workspace only', () => {
     const index = readFileSync(join(API_SRC, 'routes', 'index.ts'), 'utf8');
-    expect(index).toMatch(/apiRouter\.use\(['"]\/publishing['"]/);
-    expect(index).not.toMatch(/apiRouter\.use\(['"]\/operator['"], publishingRouter\)/);
+    expect(index).toMatch(/apiRouter\.use\(['"]\/workspace['"], workspaceRouter\)/);
+    expect(index).not.toMatch(/apiRouter\.use\(['"]\/publishing['"]/);
+    expect(index).not.toMatch(/apiRouter\.use\(['"]\/operator['"], workspaceRouter\)/);
     expect(index).not.toMatch(/apiRouter\.use\(['"]\/host['"]/);
     expect(index).not.toMatch(/legacyHostApiRewrite/);
   });
@@ -84,11 +85,11 @@ describe('host-member API contracts', () => {
 
   it('DMCP-1: publishing workspace access uses sole resolver (not UserRole)', () => {
     const status = readFileSync(join(API_SRC, 'services', 'member-status.ts'), 'utf8');
-    expect(status).toMatch(/resolvePublishingWorkspaceAccess/);
+    expect(status).toMatch(/resolveOperatorWorkspaceAccess/);
     expect(status).not.toMatch(/\|\|\s*isHostRole/);
 
     expect(
-      resolvePublishingWorkspaceAccess({
+      resolveOperatorWorkspaceAccess({
         isPlatformAdmin: false,
         canPublish: false,
         hostTiers: { community: true, professional: false, business: false },

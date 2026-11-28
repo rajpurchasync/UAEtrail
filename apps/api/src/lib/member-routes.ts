@@ -20,7 +20,7 @@ export const buddiesIncomingRequestsPath = (): string => `${BUDDIES_PATH}?tab=re
 export const exploreActivityInvitePath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}?join=1`;
 
-/** Operator console — canonical notification + email deep links (SPA only; HTTP API stays `/publishing`). */
+/** Operator console — canonical notification + email deep links (SPA `/operator/*`; HTTP API `/workspace/*`). */
 export const OPERATOR_REQUESTS_PATH = '/operator/requests';
 export const OPERATOR_ACTIVITIES_PATH = '/operator/activities';
 export const OPERATOR_OVERVIEW_PATH = '/operator/overview';

@@ -1,5 +1,5 @@
 /**
- * Host join queue (`GET/PATCH /publishing/requests`) — tenant scope + `x-tenant-id`.
+ * Host join queue (`GET/PATCH /workspace/requests`) — tenant scope + `x-tenant-id`.
  * Pair with `activityJoinClientEffects.afterHostJoinDecisionClientRefresh` after approve/reject.
  */
 import type { ActivityRequestView } from '../api/types';
@@ -11,7 +11,7 @@ export const getActivityJoinRequests = async (
   tenantId: string,
   options?: { activityId?: string }
 ): Promise<ActivityRequestView[]> => {
-  const res = await api.getPublishingActivityJoinRequests(tenantId, options);
+  const res = await api.getWorkspaceActivityJoinRequests(tenantId, options);
   return res.data;
 };
 

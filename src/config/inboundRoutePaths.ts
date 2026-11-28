@@ -9,7 +9,6 @@ export const INBOUND_BECOME_ORGANIZER_PATH = '/become-organizer' as const;
 
 /** Must match `INBOUND_STALE_CONSOLE_PREFIXES` in `packages/shared-types` (GW7-02). */
 export const INBOUND_STALE_CONSOLE_PREFIXES = [
-  '/publishing',
   '/host',
   '/organizer',
   '/hosting',

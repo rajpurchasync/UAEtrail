@@ -170,9 +170,9 @@ describe('activity detail program — wiring', () => {
     expect(view).not.toMatch(/hostMobilePlanAccessory/);
   });
 
-  it('AD-PART-SPINE-01: host Crew tab approves via publishingJoinQueueClientApi', () => {
+  it('AD-PART-SPINE-01: host Crew tab approves via operatorWorkspaceJoinQueueClientApi', () => {
     const hub = read('src/components/activity/detail/ActivityDetailHostCrewHub.tsx');
-    expect(hub).toMatch(/publishingJoinQueueClientApi/);
+    expect(hub).toMatch(/operatorWorkspaceJoinQueueClientApi/);
     expect(hub).toMatch(/afterHostJoinDecisionClientRefresh/);
     expect(hub).not.toMatch(/\bapi\./);
   });

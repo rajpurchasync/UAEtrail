@@ -17,11 +17,11 @@ import { activityManageCapabilities } from '../../activity/activityManageCapabil
 import { ActivityJoinRequestDeclineDialog } from '../../operator/desk/ActivityJoinRequestDeclineDialog';
 import { ActivityRollcallView } from './ActivityRollcallView';
 import { HostActivityManageCancelDialogs } from './HostActivityManageCancelDialogs';
-import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
+import type { ActivityRequestView } from '../../hooks/operatorWorkspaceJoinQueueClientApi';
 import {
   decideActivityJoinRequest,
   getActivityJoinRequests,
-} from '../../hooks/publishingJoinQueueClientApi';
+} from '../../hooks/operatorWorkspaceJoinQueueClientApi';
 import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';

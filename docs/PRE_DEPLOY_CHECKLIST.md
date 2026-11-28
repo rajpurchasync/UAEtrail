@@ -83,7 +83,7 @@ CI / no live API: `npm run p5:slo-preflight` (wired into `verify:domain`). Recor
   2c. **MIG-DISCO-REG:** `npm run mig-disco-reg:ops:preflight`, then `MIG_DISCO_REG_OPS_CONFIRM=1 npm run mig-disco-reg:ops:migrate` (optional `--cancel-seeking`) — see [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) § MIG-DISCO-REG
   3. Set `PARTICIPANT_INTENT_STUB_WRITE=false` in API env, restart API (`docker compose up -d --build api` or your deploy script)
   4. `npm run seeking:deploy-gate` (alias for `seeking:storage-status -- --strict`) — must exit 0 before traffic
-- [ ] **G-manage** (staging UI): second account requests join on a hosted outing → host sees **Plan → Needs you** → **Hosted** → manage sheet → approve; URL stays on `/plan` (not `/publishing/requests`). API regression: `g-manage-coordination-join-approve.test.ts` (coordination `host_join_queue` + `PATCH /publishing/requests/:id`).
+- [ ] **G-manage** (staging UI): second account requests join on a hosted outing → host sees **Plan → Needs you** → **Hosted** → manage sheet → approve; URL stays on `/plan` (not `/workspace/requests`). API regression: `g-manage-coordination-join-approve.test.ts` (coordination `host_join_queue` + `PATCH /workspace/requests/:id`).
 
 ## Smoke test (production)
 

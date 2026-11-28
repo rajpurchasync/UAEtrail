@@ -4,6 +4,6 @@ import type { MemberStatusDTO } from '@uaetrail/shared-types';
 export const canPublishFromMemberStatus = (status: MemberStatusDTO | null | undefined): boolean =>
   Boolean(status?.publish?.canPublish);
 
-export const canAccessPublishingWorkspaceFromMemberStatus = (
+export const canAccessOperatorWorkspaceFromMemberStatus = (
   status: MemberStatusDTO | null | undefined
-): boolean => Boolean(status?.publish?.canAccessPublishingWorkspace);
+): boolean => Boolean(status?.publish?.canAccessOperatorWorkspace);

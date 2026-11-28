@@ -5,17 +5,17 @@ import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { useAuth } from '../../context/AuthContext';
 import {
-  invalidatePublishingWorkspaceQueries,
-  usePublishingJoinQueue,
-  usePublishingTenantActivities,
-} from '../../hooks/publishingWorkspaceQueries';
+  invalidateOperatorWorkspaceQueries,
+  useOperatorWorkspaceJoinQueue,
+  useOperatorWorkspaceActivities,
+} from '../../hooks/operatorWorkspaceQueries';
 
 type ConsoleHubOptions = {
-  /** When false, only join queue loads (Host Hub lists use scoped `/publishing/activities` filters). */
+  /** When false, only join queue loads (Host Hub lists use scoped `/workspace/activities` filters). */
   fetchActivities?: boolean;
 };
 
-/** Publishing workspace hub: join queue (+ optional full activity list) for active tenant. */
+/** Operator workspace hub: join queue (+ optional full activity list) for active tenant. */
 export const useConsoleHubData = (enabled = true, options?: ConsoleHubOptions) => {
   const fetchActivities = options?.fetchActivities !== false;
   const { user } = useAuth();
@@ -30,8 +30,8 @@ export const useConsoleHubData = (enabled = true, options?: ConsoleHubOptions) =
     }
   }, [hostStatus.tenantId]);
 
-  const activitiesQuery = usePublishingTenantActivities(tenantId, enabled && fetchActivities);
-  const joinQueueQuery = usePublishingJoinQueue(tenantId, enabled);
+  const activitiesQuery = useOperatorWorkspaceActivities(tenantId, enabled && fetchActivities);
+  const joinQueueQuery = useOperatorWorkspaceJoinQueue(tenantId, enabled);
 
   const activities = useMemo(
     () => (fetchActivities ? activitiesQuery.data ?? [] : []),
@@ -68,7 +68,7 @@ export const useConsoleHubData = (enabled = true, options?: ConsoleHubOptions) =
   );
 
   const reload = useCallback(async () => {
-    invalidatePublishingWorkspaceQueries(queryClient, tenantId);
+    invalidateOperatorWorkspaceQueries(queryClient, tenantId);
     await Promise.all([
       joinQueueQuery.refetch(),
       fetchActivities ? activitiesQuery.refetch() : Promise.resolve(),

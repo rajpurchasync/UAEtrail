@@ -1,5 +1,5 @@
 /**
- * Tenant-scoped activity publish/manage client (`/publishing/*` + `x-tenant-id`).
+ * Tenant-scoped activity publish/manage client (`/workspace/*` + `x-tenant-id`).
  * Prefer these imports in console, plan manage, and activity detail publish actions.
  */
 import type {
@@ -145,6 +145,6 @@ export const listActivityGuides = async (
   tenantId: string,
   activityId: string
 ): Promise<ActivityGuideHostDTO[]> => {
-  const res = await api.getPublishingActivityGuides(tenantId, activityId);
+  const res = await api.getWorkspaceActivityGuides(tenantId, activityId);
   return res.data ?? [];
 };

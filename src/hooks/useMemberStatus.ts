@@ -57,7 +57,7 @@ export const useMemberStatus = ({ enabled = true }: UseMemberStatusOptions = {})
     profileRoleLabel: status?.profileRoleLabel ?? 'community_member',
     isCommunityHost: publish?.isCommunityHost ?? false,
     hostTiers: publish?.hostTiers ?? emptyHostTiers,
-    canAccessPublishingWorkspace: publish?.canAccessPublishingWorkspace ?? false,
+    canAccessOperatorWorkspace: publish?.canAccessOperatorWorkspace ?? false,
     isPlatformStaff: publish?.isPlatformStaff ?? false,
     canPublish: publish?.canPublish ?? false,
     canHostPaidActivities: publish?.canHostPaidActivities ?? false,

@@ -131,9 +131,9 @@
       "id": "participate.host_review_queue",
       "label": "Host review join queue",
       "axis": "D_PARTICIPATE",
-      "contextId": "publishing_workspace",
+      "contextId": "operator_workspace",
       "resolver": { "module": "apps/api/src/services/publishing-activity-request-read.ts", "symbol": "listTenantActivityJoinRequests" },
-      "http": { "method": "GET", "path": "/publishing/activities/:id/requests" }
+      "http": { "method": "GET", "path": "/workspace/activities/:id/requests" }
     },
     {
       "id": "participate.activity_detail_view",
@@ -161,28 +161,28 @@
     },
     {
       "id": "publish.open_workspace",
-      "label": "Open publishing workspace",
+      "label": "Open operator workspace",
       "axis": "B_PUBLISH",
-      "contextId": "publishing_workspace",
+      "contextId": "operator_workspace",
       "resolver": {
-        "module": "apps/api/src/services/member-publishing-workspace-access.ts",
-        "symbol": "resolvePublishingWorkspaceAccess"
+        "module": "apps/api/src/services/member-operator-workspace-access.ts",
+        "symbol": "resolveOperatorWorkspaceAccess"
       },
-      "gateField": "publish.canAccessPublishingWorkspace"
+      "gateField": "publish.canAccessOperatorWorkspace"
     },
     {
       "id": "publish.hosted_activity",
       "label": "Create/publish hosted activity",
       "axis": "B_PUBLISH",
-      "contextId": "publishing_workspace",
+      "contextId": "operator_workspace",
       "resolver": { "module": "apps/api/src/services/member-publish-gate.ts", "symbol": "assertMemberCanPublishActivities" },
-      "http": { "method": "POST", "path": "/publishing/activities" }
+      "http": { "method": "POST", "path": "/workspace/activities" }
     },
     {
       "id": "publish.paid_pricing",
       "label": "Publish paid-priced activity",
       "axis": "C_STOREFRONT",
-      "contextId": "publishing_workspace",
+      "contextId": "operator_workspace",
       "resolver": { "module": "apps/api/src/services/member-status.ts", "symbol": "resolveMemberStatus" },
       "gateField": "publish.canHostPaidActivities"
     },
@@ -190,7 +190,7 @@
       "id": "publish.as_tenant",
       "label": "Publish as organisation tenant",
       "axis": "C_STOREFRONT",
-      "contextId": "publishing_workspace",
+      "contextId": "operator_workspace",
       "resolver": { "module": "packages/shared-types/src/publishing-profile-kind.ts", "symbol": "resolvePublishingProfileKind" },
       "httpHeader": "x-tenant-id"
     },
@@ -318,9 +318,9 @@
       "id": "publish.shop_storefront",
       "label": "Shop operator storefront (desk)",
       "axis": "C_STOREFRONT",
-      "contextId": "publishing_workspace",
+      "contextId": "operator_workspace",
       "resolver": { "module": "apps/api/src/services/publishing-shop-storefront.ts", "symbol": "assertPublishingShopTenant" },
-      "http": { "method": "PATCH", "path": "/publishing/shop-profile" },
+      "http": { "method": "PATCH", "path": "/workspace/shop-profile" },
       "httpHeader": "x-tenant-id"
     },
     {
@@ -510,11 +510,11 @@
       "note": "No publish tier checks"
     },
     {
-      "id": "client.publishing_join_queue",
+      "id": "client.operator_workspace_join_queue",
       "label": "FE host join queue client",
       "axis": "D_PARTICIPATE",
-      "contextId": "publishing_workspace",
-      "resolver": { "module": "src/hooks/publishingJoinQueueClientApi.ts", "symbol": "getActivityJoinRequests" },
+      "contextId": "operator_workspace",
+      "resolver": { "module": "src/hooks/operatorWorkspaceJoinQueueClientApi.ts", "symbol": "getActivityJoinRequests" },
       "note": "No direct tenantActivityClientApi in console surfaces"
     },
     {

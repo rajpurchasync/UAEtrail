@@ -6,12 +6,12 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('publishing route mount shell', () => {
   it('delegates to registerPublishing* modules only', () => {
-    const operator = read('src/routes/publishing.ts');
+    const operator = read('src/routes/workspace.ts');
     expect(operator).toMatch(/registerPublishingSubmittedLocationRoutes/);
     expect(operator).toMatch(/registerPublishingActivityRoutes/);
     expect(operator).toMatch(/registerPublishingShopStorefrontRoutes/);
     expect(operator).not.toMatch(/registerHost/);
-    expect(operator).not.toMatch(/publishingRouter\.(get|post|patch|delete)\(/);
+    expect(operator).not.toMatch(/workspaceRouter\.(get|post|patch|delete)\(/);
   });
 
   it('does not ship a parallel routes/host mount shell', () => {

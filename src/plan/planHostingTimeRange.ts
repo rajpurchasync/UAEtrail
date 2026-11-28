@@ -43,7 +43,7 @@ export type PlanHostingListWindowQuery = {
   upcomingFromToday?: boolean;
 };
 
-/** Server list filters for `GET /publishing/activities` — member tenant only, not explore map. */
+/** Server list filters for `GET /workspace/activities` — member tenant only, not explore map. */
 export const planHostingListWindowQuery = (
   range: PlanHostingTimeRange | PlanHostingCountRange,
   now: Date = new Date()

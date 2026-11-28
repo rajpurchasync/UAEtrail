@@ -1,7 +1,7 @@
 import { ShopPublicDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
-/** Public shop reads only — operator manage uses {@link publishingWorkspaceApi}. */
+/** Public shop reads only — operator manage uses {@link operatorWorkspaceApi}. */
 export const shopApi = {
   getShopMerchantPublic: (id: string) =>
     apiRequest<{ data: ShopPublicDTO }>(`/shop/merchants/${id}`),

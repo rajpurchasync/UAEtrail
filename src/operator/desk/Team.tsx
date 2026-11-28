@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
-  createPublishingTeamMember,
-  removePublishingTeamMember,
-  togglePublishingTeamMemberStatus,
-  updatePublishingTeamMemberRole,
+  createWorkspaceTeamMember,
+  removeWorkspaceTeamMember,
+  toggleWorkspaceTeamMemberStatus,
+  updateWorkspaceTeamMemberRole,
 } from '../../hooks/operatorDeskClientApi';
-import { usePublishingTeam } from '../../hooks/usePublishingConsoleQueries';
+import { useWorkspaceTeam } from '../../hooks/useOperatorConsoleQueries';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from './ConsoleShell';
 import { AppSelect } from '../../components/ui/AppSelect';
@@ -23,7 +23,7 @@ export const Team = () => {
     isPending: loading,
     error: loadError,
     refetch: refetchTeam,
-  } = usePublishingTeam(tenantId);
+  } = useWorkspaceTeam(tenantId);
   const [roleDrafts, setRoleDrafts] = useState<Record<string, 'tenant_admin' | 'tenant_guide'>>({});
   const [savingMemberId, setSavingMemberId] = useState<string | null>(null);
   const [busyActionMemberId, setBusyActionMemberId] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export const Team = () => {
     if (!tenantId) return;
     setActionError(null);
     try {
-      await createPublishingTeamMember(tenantId, { email, displayName, role });
+      await createWorkspaceTeamMember(tenantId, { email, displayName, role });
       setEmail('');
       setDisplayName('');
       setRole('tenant_guide');
@@ -67,7 +67,7 @@ export const Team = () => {
     setActionError(null);
     setSavingMemberId(memberId);
     try {
-      await updatePublishingTeamMemberRole(tenantId, memberId, nextRole);
+      await updateWorkspaceTeamMemberRole(tenantId, memberId, nextRole);
       await refetchTeam();
     } catch (updateError) {
       setActionError(updateError instanceof Error ? updateError.message : 'Failed to update member role');
@@ -81,7 +81,7 @@ export const Team = () => {
     setActionError(null);
     setBusyActionMemberId(memberId);
     try {
-      await togglePublishingTeamMemberStatus(tenantId, memberId, nextActive);
+      await toggleWorkspaceTeamMemberStatus(tenantId, memberId, nextActive);
       await refetchTeam();
     } catch (updateError) {
       setActionError(updateError instanceof Error ? updateError.message : 'Failed to update member access');
@@ -95,7 +95,7 @@ export const Team = () => {
     setActionError(null);
     setBusyActionMemberId(memberId);
     try {
-      await removePublishingTeamMember(tenantId, memberId);
+      await removeWorkspaceTeamMember(tenantId, memberId);
       await refetchTeam();
     } catch (updateError) {
       setActionError(updateError instanceof Error ? updateError.message : 'Failed to remove member');

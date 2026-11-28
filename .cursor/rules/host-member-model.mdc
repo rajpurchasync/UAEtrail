@@ -17,7 +17,7 @@ alwaysApply: true
 | **Buddy Host** on map | `profileComplete` → `publish.canPublish` (`GET /me/status`) → `/welcome` if incomplete | `/become-host`, host application |
 | **Pro / agency / shop** | `/profile/pro-membership`, `host_applications` | Bare “become host” funnel in consumer UI |
 | **Join / participate** on an outing | `activity_requests`, `POST /activities/:id/requests` (signed-in only) | Profile completion, publish tier, or host onboarding |
-| **Host reviews joiners** | `GET/PATCH /publishing/requests` (**activity** queue; SPA `/operator/requests`) | `registerHost*JoinRequest*` without **Activity** in the name |
+| **Host reviews joiners** | `GET/PATCH /workspace/requests` (**activity** queue; SPA `/operator/requests`) | `registerHost*JoinRequest*` without **Activity** in the name |
 
 **UI labels:** **Host** = individual on an outing; **Operator** = any publishing identity + desk (`/operator/*`) — not `/me/*` API names. **`UserRole` (TENANT_GUIDE, …) ≠ publish tier.** Gates: **`MemberStatusDTO`** / **`status.publish`** from `api.getMemberStatus()` / `useMemberStatus`.
 
@@ -38,7 +38,7 @@ alwaysApply: true
 3. Domain types: use **`TenantPublishingPurpose`**, not `string`, for `publishingPurpose`.
 4. Grep: no new `path: '/become-host'` in `apps/api/src` (use `PRO_MEMBERSHIP_PATH`).
 5. No new consumer links to `/become-host` (redirect route only); use `PRO_MEMBERSHIP_PATH` / `proMembershipPath()`.
-6. No new `isHostRole(` for product gates in `src/` (console access → `canAccessPublishingWorkspace` from `useMemberStatus`).
+6. No new `isHostRole(` for product gates in `src/` (console access → `canAccessOperatorWorkspace` from `useMemberStatus`).
 
 ## Tests that guard this
 

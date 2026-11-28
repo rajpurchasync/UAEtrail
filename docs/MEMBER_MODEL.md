@@ -4,7 +4,7 @@
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`** (`MemberStatusDTO`; profile at root, publish/workspace under **`publish`** only).
 
-**Capabilities ≠ viewer access:** `status.publish.canPublish` / `canAccessPublishingWorkspace` answer whether this member may **host or publish** outings and open the **operator desk**. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+**Capabilities ≠ viewer access:** `status.publish.canPublish` / `canAccessOperatorWorkspace` answer whether this member may **host or publish** outings and open the **operator desk**. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
 
 **Participate ≠ publish:** Joining an outing (RSVP, request to join, looking for company) requires a **signed-in member** with a complete **safety profile** (`medicalSafetyProfileComplete` on `GET /me/status` — blood group, conditions or `N/A`, emergency contact). It does **not** require `profileComplete`. **Host / publish** requires **`profileComplete`** (member details on `/welcome`) plus **`canPublish`** (activity-capable tenant). Rideshare hosts pick a car from **`/me/vehicles`** (`/profile/vehicles`); listings show make, model, color, and year. The **number plate** is only on **`GET /activities/:id`** for **ride crew** (host + confirmed participants), not on **`/member/:userId`** upcoming-activities or other public profile reads.
 
@@ -27,7 +27,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.tenant` is the agency/partner storefront slug URL, not product copy.
 
-**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing** (joiner-facing); **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **any publishing identity** (community host, guide, shop, agency, partner) with a shared **desk** at **`/operator/*`** (kind-specific modules); **Host / publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture:** SPA **`/operator/*`**; tenant HTTP **`/publishing/*`** + `x-tenant-id`. **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
+**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing** (joiner-facing); **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **any publishing identity** (community host, guide, shop, agency, partner) with a shared **desk** at **`/operator/*`** (kind-specific modules); **Host / publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture:** SPA **`/operator/*`**; tenant HTTP **`/workspace/*`** + `x-tenant-id`. **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
 
 ### One stack (person · community · Pro · tenant)
 
@@ -36,7 +36,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 | **Member (user)** | One human account | Sign up · `/profile` |
 | **Community host** | Same user, profile complete — free **Host** on the map | No Pro; auto **community** tenant |
 | **Pro membership** | Upgrade path for **individual** (pro guide) or **business** (shop, tour agency, e-commerce, hospitality, …) | `/profile/pro-membership` |
-| **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-tenant-id`, `GET /publishing/*` when managing |
+| **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-tenant-id`, `GET /workspace/*` when managing |
 | **Business subtype** | Which Pro business flavor (location-bound shop vs remote agency vs online e-commerce, etc.) | Chosen in Pro application — maps to `PublishingProfileKind` |
 
 There is **not** a second “organisation entity” beside tenants: shops, agencies, and e-commerce brands are **tenants** with different `PublishingProfileKind` / purpose. **Organisation** in code means **tenant scope** (storefront + workspace), not a parallel user type.
@@ -70,7 +70,7 @@ flowchart TB
 
   subgraph api [API surfaces]
     ME["/me/* — member scope"]
-    PUBWS["/publishing/* — tenant scope"]
+    PUBWS["/workspace/* — tenant scope"]
     PUB["/users/:id — public person"]
   end
 
@@ -110,7 +110,7 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 
 | Layer | What it is | Examples |
 |-------|------------|----------|
-| **HTTP surface** | Which API prefix and registrar owns the call — **not** inferred from profile alone | Public `GET /places/:id` · member `POST /me/places` · admin `PATCH /admin/places` · operator `POST /publishing/activities` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1) |
+| **HTTP surface** | Which API prefix and registrar owns the call — **not** inferred from profile alone | Public `GET /places/:id` · member `POST /me/places` · admin `PATCH /admin/places` · operator `POST /workspace/activities` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1) |
 | **Person / member** | Human using the app | `users`, `/profile`, `/member/:id` |
 | **UserRole** | Legacy platform job on the user row | `PARTICIPANT`, `TENANT_GUIDE`, `PLATFORM_ADMIN` |
 | **Host publishing tier** | How they publish on the map | `community`, `professional`, `business` |
@@ -153,7 +153,7 @@ All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membershi
 
 | Pro path | Who | Required choice | Storefront / capabilities (high level) |
 |----------|-----|-----------------|----------------------------------------|
-| **Individual** | Member with Pro membership | — | Public face **`/member/:userId`**; manage in **`/publishing`**. Host **free + shared-cost** outings (not paid) |
+| **Individual** | Member with Pro membership | — | Public face **`/member/:userId`**; manage via operator desk **`/operator/*`** (HTTP **`/workspace/*`**). Host **free + shared-cost** outings (not paid) |
 | **Business** | Company / brand | **Subtype required:** Shop · Tour agency · … | **Shop** → `/shop/:id` + shop details in console; **Agency** → `/agency/:slug` + agency profile; paid commercial trips where product allows |
 | **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
 
@@ -218,7 +218,7 @@ Legacy inbound `peopleTab=hub|buddies|going|connect|available|looking` maps to l
 |------|---------|
 | `profileComplete` | Member details on `/welcome` done — **host/publish** gate (`signupProfileComplete` on `GET /me/profile` only) |
 | `publish.canPublish` | May run Host / publish (activity-capable tenant) |
-| `publish.canAccessPublishingWorkspace` | May use operator desk (SPA `/operator/*`; HTTP `/publishing/*`) |
+| `publish.canAccessOperatorWorkspace` | May use operator desk (SPA `/operator/*`; HTTP `/workspace/*`) |
 | `publish.canHostPaidActivities` | Linked **business** tenant; paid pricing when publishing as agency / shop / partner |
 | `publish.isCommunityHost` | Map footprint badge — first activity or seeking post (not the same as `profileComplete`) |
 
@@ -278,8 +278,8 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 | Community footprint | `apps/api/src/lib/community-host.ts` |
 | Buddy tenant | `apps/api/src/lib/buddy-host-tenant.ts` |
 | Client display strings | `src/member/memberProfileRoleLabel.ts` |
-| Client hook (thin) | **`useMemberStatus`** (`status.publish.*`, `canPublish`, `canAccessPublishingWorkspace`) |
-| Operator console hub data | `src/operator/desk/useHubData.ts` → `useConsoleHubData` (`/publishing/*` activities + join queue) |
+| Client hook (thin) | **`useMemberStatus`** (`status.publish.*`, `canPublish`, `canAccessOperatorWorkspace`) |
+| Operator console hub data | `src/operator/desk/useHubData.ts` → `useConsoleHubData` (`/workspace/*` activities + join queue) |
 
 ---
 
@@ -329,15 +329,15 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 |------|--------|-----------------|
 | **Host (UI)** | **Individual** leading **this outing** on the map | Copy; wire `hostUserId`; not a `/me/*` resource |
 | **Guide / Pro host (UI)** | Pro **individual** — same person card, not a second storefront product | `/member/:userId`; Pro fields on profile |
-| **Operator (UI)** | **Publishing identity** (any kind) + shared desk, always tied to ≥1 **user** | SPA **`/operator/*`**; public **agency / shop / partner** storefronts; HTTP `/publishing/*` |
+| **Operator (UI)** | **Publishing identity** (any kind) + shared desk, always tied to ≥1 **user** | SPA **`/operator/*`**; public **agency / shop / partner** storefronts; HTTP `/workspace/*` |
 | **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `operatorProfilePath` on `GET /member/:userId/profile` |
 | **Host / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
 | **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status`; `signupProfileComplete` on `/me/profile` only |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |
 | **Community tenant (friend)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
-| **Operator desk** | Tenant-scoped publish/manage UI (kind-specific modules) | SPA `/operator/*`; wire HTTP `/publishing/*`, `x-tenant-id`, `src/operator/desk/*` — shell title from `workspaceConsoleLabel(kind)` |
+| **Operator desk** | Tenant-scoped publish/manage UI (kind-specific modules) | SPA `/operator/*`; wire HTTP `/workspace/*`, `x-tenant-id`, `src/operator/desk/*` — shell title from `workspaceConsoleLabel(kind)` |
 | **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
-| **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` |
+| **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/workspace/requests` |
 | **Find crew (fixed)** | Connect before a hosted outing exists | Message + profile from map peek; **no** `activity_requests` on availability pins |
 | **Pro membership (apply)** | Pro/agency/shop onboarding | HTTP `/me/pro-application`; collection `host_applications` (target `pro_applications`) |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
@@ -348,25 +348,25 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 | `registerHostJoinRequestRoutes` | `registerHostActivityRequestRoutes` |
 | “Join request” without **activity** or **seeking** | Qualified phrase |
 | `organizerNote` | `hostNote` |
-| `isHostRole` for Host / publish gates | `publish.canPublish`, `canAccessPublishingWorkspace` from **`useMemberStatus`** |
+| `isHostRole` for Host / publish gates | `publish.canPublish`, `canAccessOperatorWorkspace` from **`useMemberStatus`** |
 | `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
 | `OrganisationHubSections` / `useHostGate` | `ConsoleHubSections` (`src/operator/desk`), **`useMemberStatus`** |
 | New `/me/host-status` or “host status” product APIs | **`GET /me/status`** only |
-| “Host” as architecture (routes, hooks, `/me/*`) | SPA **`/operator/*`**, HTTP **`/publishing/*`**, **`useMemberStatus`**, UI **Host** = person on this outing |
+| “Host” as architecture (routes, hooks, `/me/*`) | SPA **`/operator/*`**, HTTP **`/workspace/*`**, **`useMemberStatus`**, UI **Host** = person on this outing |
 | `api.listActivities` / `listOrganisationActivities` | Tenant-scoped **`listActivities(tenantId)`** (SN-3); consumer browse: `getPublicActivities` / `getMeActivities` |
 | `createOrganisationActivity` / `*OrganisationActivity*` / `*HostActivity*` / `*OperatorActivity*` (client) | Tenant-scoped **`createActivity`**, `publishActivity`, … — see §13.2.1 in `DOMAIN_CANONICALS.md` |
 | `OrganisationActivityCheckInPanel`, `OrganisationActivities` page | `ActivityParticipantsPanel`, `ActivityManageSheet`, `src/operator/desk/Activities.tsx` |
 | `actorUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
 
-Operator route registrars (legacy `registerHost*` filenames): under `routes/publishing/`. Member status: `registerMemberStatusRoutes` (`routes/user/`).
+Operator route registrars (legacy `registerHost*` filenames): under `routes/workspace/`. Member status: `registerMemberStatusRoutes` (`routes/user/`).
 
 ### Organisation in filenames (keep vs retire)
 
 | Keep `Organisation*` | Why |
 |----------------------|-----|
-| `src/api/domains/operatorPublic.ts`, `tenantScopeHeaders.ts`, `getPublishing\*` | Wire: tenant scope, `x-tenant-id` |
+| `src/api/domains/operatorPublic.ts`, `tenantScopeHeaders.ts`, `getWorkspace\*` | Wire: tenant scope, `x-tenant-id` |
 | `src/operator/public/TenantStorefrontPage.tsx` | Public storefront `/agency` · `/partner` |
-| `src/operator/desk/ShopDeskProfilePanel.tsx`, `operatorShopStorefrontClientApi` | Shop desk storefront (`/publishing/shop-profile`) |
+| `src/operator/desk/ShopDeskProfilePanel.tsx`, `operatorShopStorefrontClientApi` | Shop desk storefront (`/workspace/shop-profile`) |
 | `src/operator/apply/` + `src/operator/public/` | Tenant onboarding + public operator profile editor — **not** `/host/*` shell |
 
 | Retired (guard: `organisationNamingGuard.test.ts`) | Use instead |

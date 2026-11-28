@@ -22,7 +22,7 @@ describe('operatorDeskProjectionGuard', () => {
     const panel = read('src/operator/desk/ShopDeskProfilePanel.tsx');
     expect(panel).toMatch(/operatorShopStorefrontClientApi/);
     expect(panel).not.toMatch(/shopMerchantClientApi/);
-    expect(read('src/api/domains/publishingWorkspace.ts')).toMatch(/\/publishing\/shop-profile/);
+    expect(read('src/api/domains/operatorWorkspace.ts')).toMatch(/\/workspace\/shop-profile/);
   });
 
   it('PROJ-04: mobile operator drawer uses kind-aware desk nav (not static link list)', () => {

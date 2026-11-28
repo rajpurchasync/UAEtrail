@@ -35,7 +35,7 @@ describe('doc coherence (Tier 1)', () => {
     expect(member).toMatch(/profileComplete/);
   });
 
-  it('Tier-1 docs teach operator desk SPA /operator/* and HTTP /publishing/* (not /operator HTTP)', () => {
+  it('Tier-1 docs teach operator desk SPA /operator/* and HTTP /workspace/* (not /operator HTTP)', () => {
     const bannedHttp = [
       /alias `\/operator/i,
       /Alias `\/operator/i,
@@ -49,7 +49,7 @@ describe('doc coherence (Tier 1)', () => {
     }
     const member = readFileSync(join(DOCS, 'MEMBER_MODEL.md'), 'utf8');
     expect(member).toMatch(/SPA \*\*`\/operator\/\*`\*\*/);
-    expect(member).toMatch(/HTTP \*\*`\/publishing\/\*`\*\*/);
+    expect(member).toMatch(/HTTP \*\*`\/workspace\/\*`\*\*/);
   });
 
   it('ARCHITECTURE describes shipped HTTP (no live seeking-posts)', () => {
@@ -190,7 +190,7 @@ describe('doc coherence (Tier 1)', () => {
     const create = readFileSync(join(DOCS, 'CREATE_FLOW.md'), 'utf8');
     expect(create).toMatch(/NORTHSTAR/);
     expect(create).toMatch(/canPublish|\/me\/status|MEMBER_MODEL/i);
-    expect(create).toMatch(/\/publishing\/\*/);
+    expect(create).toMatch(/\/workspace\/\*/);
     expect(create).not.toMatch(/is [`'`]\/operator\/\*[`'`]/);
   });
 

@@ -12,7 +12,7 @@ import type { ActivityDetail, ActivityRequestView } from '../types';
 
 /**
  * Activity HTTP client — public catalog, member participation, admin moderation.
- * Tenant workspace CRUD: `publishingWorkspaceApi` + `tenantActivityClientApi`.
+ * Tenant workspace CRUD: `operatorWorkspaceApi` + `tenantActivityClientApi`.
  */
 export const activitiesApi = {
     getPublicActivities: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {

@@ -2,7 +2,7 @@ import type { OperatorHostDetailsDTO, TenantPublicDTO } from '@uaetrail/shared-t
 import { apiRequest } from '../client';
 import type { HostApplication } from '../types';
 
-/** Public operator storefront + member pro application (desk HTTP is publishingWorkspace.ts). */
+/** Public operator storefront + member pro application (desk HTTP is operatorWorkspace.ts). */
 export const operatorPublicApi = {
   getOperatorPublicProfile: (slug: string) =>
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Check, Search, Undo2 } from 'lucide-react';
 import type { ParticipantDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
+import type { ActivityRequestView } from '../../hooks/operatorWorkspaceJoinQueueClientApi';
 import { SecureAvatar } from '../ui';
 import { useActivityParticipantsRoster } from './useActivityParticipantsRoster';
 import {

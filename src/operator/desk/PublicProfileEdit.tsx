@@ -18,7 +18,7 @@ import {
   type OperatorDeskProfileKind,
 } from '../../config/routingCatalog';
 import { navigateToVisitorHome } from '../../hosting/navigateHostRoleHome';
-import { useMyTenantMemberships } from '../../hooks/usePublishingConsoleQueries';
+import { useMyTenantMemberships } from '../../hooks/useOperatorConsoleQueries';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortExploreHosting';
 import {

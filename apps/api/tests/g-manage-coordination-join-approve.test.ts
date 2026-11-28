@@ -82,7 +82,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     expect(hostQueue?.count).toBeGreaterThanOrEqual(1);
 
     const queueRes = await request(app)
-      .get('/api/publishing/requests')
+      .get('/api/workspace/requests')
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-tenant-id', fixture.tenantId)
       .query({ page: 1, pageSize: 20 });
@@ -94,7 +94,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     expect(pending?.status).toBe('pending');
 
     const approveRes = await request(app)
-      .patch(`/api/publishing/requests/${requestId}`)
+      .patch(`/api/workspace/requests/${requestId}`)
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-tenant-id', fixture.tenantId)
       .send({ status: 'approved' });

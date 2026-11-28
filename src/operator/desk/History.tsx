@@ -1,13 +1,13 @@
 import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
 import { ConsoleShell } from './ConsoleShell';
-import { usePublishingActivityHistory } from '../../hooks/publishingWorkspaceQueries';
+import { useOperatorWorkspaceActivityHistory } from '../../hooks/operatorWorkspaceQueries';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { getActiveTenantId } from '../../api/tenant';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
 
 export const History = () => {
   const tenantId = getActiveTenantId() ?? '';
-  const historyQuery = usePublishingActivityHistory(tenantId || null, Boolean(tenantId));
+  const historyQuery = useOperatorWorkspaceActivityHistory(tenantId || null, Boolean(tenantId));
   const events = historyQuery.data ?? [];
   const loading = Boolean(tenantId) && historyQuery.isLoading && !historyQuery.data;
   const error = !tenantId

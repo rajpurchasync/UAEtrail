@@ -126,7 +126,7 @@ export const DesktopSideNav = () => {
     onResizePointerUp,
     onResizeKeyDown,
   } = useDesktopSideNavExpanded();
-  const { canAccessPublishingWorkspace, ownedProfiles, hostTiers } = useMemberStatus({
+  const { canAccessOperatorWorkspace, ownedProfiles, hostTiers } = useMemberStatus({
     enabled: Boolean(user),
   });
   const unreadChat = useInboxUnreadCount();
@@ -145,7 +145,7 @@ export const DesktopSideNav = () => {
     ? 'sr-only'
     : 'block px-2.5 pb-0.5 pt-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500';
 
-  const showOrganiserPlanShortcut = Boolean(user && canAccessPublishingWorkspace);
+  const showOrganiserPlanShortcut = Boolean(user && canAccessOperatorWorkspace);
   const hostingHubPath = resolveHostingHubPath({ ownedProfiles, hostTiers });
   const primaryNav = desktopPrimaryNavForSession(Boolean(user));
 
@@ -266,11 +266,11 @@ export const DesktopSideNav = () => {
           </div>
         ))}
 
-        {user && (canAccessPublishingWorkspace || user.role === 'platform_admin') ? (
+        {user && (canAccessOperatorWorkspace || user.role === 'platform_admin') ? (
           <div role="group" aria-label={UPL_OPERATOR_BUSINESS}>
             <p className={sectionTitleClass}>{UPL_OPERATOR_BUSINESS}</p>
             <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
-              {canAccessPublishingWorkspace ? (
+              {canAccessOperatorWorkspace ? (
                 <SideNavLink
                   to={hostingHubPath}
                   label={PRODUCT_HOSTING_SCHEDULE_NAV_LABEL}

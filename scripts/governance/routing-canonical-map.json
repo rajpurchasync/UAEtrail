@@ -1,16 +1,16 @@
 {
   "version": 1,
   "enforcement": "phase4",
-  "description": "Canonical HTTP + SPA routing planes per bounded context. Publishing workspace is /publishing (MIG-COH-04).",
+  "description": "Canonical HTTP + SPA routing planes. Operator desk SPA /operator/*; supply HTTP /workspace/*.",
   "pcohTarget": {
-    "publishing_workspace_api": "/publishing",
-    "publishing_workspace_spa_prefix": "/publishing"
+    "operator_workspace_api": "/workspace",
+    "operator_workspace_spa_prefix": "/operator"
   },
   "planes": {
-    "publishing_workspace": {
-      "spa": ["/publishing/overview", "/publishing/activities", "/publishing/requests", "/publishing/team", "/publishing/profile", "/publishing/places", "/publishing/history", "/publishing/security-privacy"],
-      "api": ["/publishing"],
-      "feDomain": "publishingWorkspace.ts"
+    "operator_workspace": {
+      "spa": ["/operator/overview", "/operator/activities", "/operator/requests", "/operator/team", "/operator/profile", "/operator/places", "/operator/history"],
+      "api": ["/workspace"],
+      "feDomain": "operatorWorkspace.ts"
     },
     "member_identity": {
       "spa": ["/member/:userId"],

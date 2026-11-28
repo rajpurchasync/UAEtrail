@@ -3,6 +3,7 @@ import {
   Briefcase,
   CalendarDays,
   Compass,
+  Home,
   Route,
   History,
   LogIn,
@@ -27,6 +28,7 @@ export const NAV_ICONS = {
 } satisfies Record<string, LucideIcon>;
 
 export const MOBILE_NAV_ICON_MAP: Record<
+  | 'Home'
   | 'Explore'
   | 'Social'
   | 'Browse'
@@ -57,6 +59,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'Settings',
   LucideIcon
 > = {
+  Home,
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
   Social: Users,

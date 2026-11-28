@@ -70,7 +70,7 @@ type HostingHubViewProps = {
 };
 
 /**
- * Operator overview body — schedule + manage projections into `publishing_workspace`
+ * Operator overview body — schedule + manage projections into `operator_workspace`
  * (same modules as desk chips; quick links respect {@link operatorDeskQuickLinksForKind}).
  */
 export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps) => {

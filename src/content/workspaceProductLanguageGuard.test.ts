@@ -10,6 +10,7 @@ import { join, relative } from 'node:path';
 const SCAN_ROOTS = [
   join(process.cwd(), 'src/content'),
   join(process.cwd(), 'src/components/home'),
+  join(process.cwd(), 'src/home'),
   join(process.cwd(), 'src/components/profile'),
   join(process.cwd(), 'src/components/plan'),
   join(process.cwd(), 'src/components/layout'),
@@ -54,7 +55,7 @@ const LINE_ALLOW_SUBSTRINGS = [
   'hostTiers',
   'hostGate',
   'host-status',
-  'canAccessPublishingWorkspace',
+  'canAccessOperatorWorkspace',
   'isCommunityHost',
   'useHostStatus',
   'host_applications',

@@ -68,7 +68,7 @@ describe('participationPresentationGuard (MIG-SURFACE-ACTIVITY-DETAIL)', () => {
 
   it('PART-PRES-05: join spine guard covers publishing queue client', () => {
     expect(read('src/config/participationJoinSpineGuard.test.ts')).toMatch(/PART-SPINE-01/);
-    expect(read('src/hooks/publishingJoinQueueClientApi.ts')).toMatch(/getActivityJoinRequests/);
+    expect(read('src/hooks/operatorWorkspaceJoinQueueClientApi.ts')).toMatch(/getActivityJoinRequests/);
     expect(read('src/hooks/activityJoinClientApi.ts')).toMatch(/createJoinRequest|rsvpActivity/);
   });
 

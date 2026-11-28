@@ -5,6 +5,7 @@ import { join, relative } from 'node:path';
 const SCAN_ROOTS = [
   join(process.cwd(), 'src/pages'),
   join(process.cwd(), 'src/components/home'),
+  join(process.cwd(), 'src/home'),
   join(process.cwd(), 'src/components/profile'),
   join(process.cwd(), 'src/components/signup'),
   join(process.cwd(), 'src/components/account'),

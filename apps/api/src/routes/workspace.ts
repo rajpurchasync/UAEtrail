@@ -5,11 +5,11 @@ import { registerPublishingSubmittedLocationRoutes } from './publishing/register
 import { registerPublishingActivityRoutes } from './publishing/registerPublishingActivityRoutes.js';
 import { registerPublishingShopStorefrontRoutes } from './publishing/registerPublishingShopStorefrontRoutes.js';
 
-/** Tenant publishing console (`GET/POST /publishing/*` + `x-tenant-id`). */
-export const publishingRouter = Router();
+/** Operator workspace HTTP (`/workspace/*` + `x-tenant-id`). */
+export const workspaceRouter = Router();
 
-publishingRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
+workspaceRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);
 
-registerPublishingSubmittedLocationRoutes(publishingRouter);
-registerPublishingActivityRoutes(publishingRouter);
-registerPublishingShopStorefrontRoutes(publishingRouter);
+registerPublishingSubmittedLocationRoutes(workspaceRouter);
+registerPublishingActivityRoutes(workspaceRouter);
+registerPublishingShopStorefrontRoutes(workspaceRouter);

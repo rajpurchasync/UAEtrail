@@ -1,6 +1,6 @@
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { MEMBER_HOME_PATH } from '../config/surfacePaths';
 import { canReturnAfterAuth } from './authRedirect';
 import { stripSessionExpiredQuery } from './authSessionLanding';
 import { armViewReturn, seedViewReturnSnapshot } from './viewReturnMemory';
@@ -19,7 +19,7 @@ export const resolvePostAuthReturnPath = (
   if (!from) return undefined;
   const cleaned = stripSessionExpiredQuery(from);
   const pathname = cleaned.split('?')[0]?.split('#')[0] ?? cleaned;
-  if (pathname === '/') return EXPLORE_MAP_PATH;
+  if (pathname === '/') return MEMBER_HOME_PATH;
   if (!canReturnAfterAuth(cleaned, role)) return undefined;
   return cleaned;
 };

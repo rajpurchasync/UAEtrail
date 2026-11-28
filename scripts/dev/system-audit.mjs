@@ -108,7 +108,7 @@ const routerToFile = {
   safetyRouter: 'apps/api/src/routes/safety.ts',
   agentRouter: 'apps/api/src/routes/agent.ts',
   adminRouter: 'apps/api/src/routes/admin.ts',
-  publishingRouter: 'apps/api/src/routes/publishing.ts',
+  workspaceRouter: 'apps/api/src/routes/workspace.ts',
   userRouter: 'apps/api/src/routes/user.ts',
 };
 

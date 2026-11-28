@@ -29,7 +29,7 @@ describe('activityJoinClientApi (R8.1)', () => {
     ]) {
       const source = read(file);
       expect(source).toMatch(/afterHostJoinDecisionClientRefresh/);
-      expect(source).toMatch(/publishingJoinQueueClientApi/);
+      expect(source).toMatch(/operatorWorkspaceJoinQueueClientApi/);
       expect(source).not.toMatch(/\bapi\./);
     }
   });

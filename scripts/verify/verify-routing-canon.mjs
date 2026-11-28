@@ -33,8 +33,8 @@ if (!coherence.includes('#### 8.7 Routing alignment')) {
 }
 
 const enforcement = map.enforcement ?? 'phase0';
-if (!map.planes?.publishing_workspace?.api?.includes('/publishing')) {
-  fail('routing-canonical-map: publishing_workspace API must be /publishing');
+if (!map.planes?.operator_workspace?.api?.includes('/workspace')) {
+  fail('routing-canonical-map: operator_workspace API must be /workspace');
 }
 const atLeastPhase1 =
   enforcement === 'phase1' ||

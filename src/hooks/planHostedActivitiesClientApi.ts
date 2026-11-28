@@ -45,7 +45,7 @@ export const fetchPlanHostedActivitiesPage = async (
   const res = await apiRequest<{
     data: ActivityDTO[];
     meta?: PublishingActivitiesPageMeta;
-  }>(`/publishing/activities?${qs}`, {
+  }>(`/workspace/activities?${qs}`, {
     auth: true,
     headers: tenantScopeHeaders(tenantId),
   });

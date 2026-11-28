@@ -32,6 +32,7 @@ describe('shouldShowMobileBottomNav', () => {
     expect(shouldShowMobileBottomNav('/list', '?listCat=venues', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/plan', '?view=plans&role=joined', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/chat', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/home', '', true)).toBe(true);
   });
 
   it('shows on profile hub while signed in', () => {
@@ -47,6 +48,7 @@ describe('shouldShowMobileBottomNav', () => {
     expect(shouldShowMobileBottomNav('/list', '', false)).toBe(true);
     expect(shouldShowMobileBottomNav('/plan', '', false)).toBe(true);
     expect(shouldShowMobileBottomNav('/chat', '', false)).toBe(true);
+    expect(shouldShowMobileBottomNav('/home', '', false)).toBe(false);
     expect(shouldShowMobileBottomNav('/profile', '', false)).toBe(false);
     expect(shouldShowMobileBottomNav('/activity/abc', '', true)).toBe(false);
   });

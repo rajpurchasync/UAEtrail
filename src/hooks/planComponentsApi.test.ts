@@ -58,7 +58,7 @@ describe('componentsClientApi (R8.1)', () => {
     expect(read('src/components/activity/ActivityInviteModalBody.tsx')).toMatch(/activityInviteClientApi/);
     expectNoDirectApi('src/components/activity/ActivityInviteModalBody.tsx');
     expect(read('src/components/activity/detail/ActivityDetailHostCrewHub.tsx')).toMatch(
-      /publishingJoinQueueClientApi/
+      /operatorWorkspaceJoinQueueClientApi/
     );
     expectNoDirectApi('src/components/activity/detail/ActivityDetailHostCrewHub.tsx');
     expect(read('src/components/activity/ActivityManageSheet.tsx')).toMatch(/activityCrewPath/);

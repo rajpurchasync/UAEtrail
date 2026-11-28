@@ -1,16 +1,18 @@
 {
   "version": 1,
-  "generated": "2026-11-27",
+  "generated": "2026-11-28",
   "description": "Phase P0 repo census baseline. Regenerate: npm run repo:census",
   "boundedContextCount": 18,
   "manifestVersion": 1,
-  "spaRouteElements": 86,
+  "spaRouteElements": 87,
   "apiRegistrarFileCount": 68,
   "experimentPlanFiles": 0,
   "experimentStubbedFiles": 0,
-  "feRootsTotal": 108,
+  "feRootsTotal": 109,
   "apiRegistrarRefsInManifest": 71,
   "knip": {
-    "skipped": true
+    "issueCount": 321,
+    "generated": "2026-11-28",
+    "note": "Run npm run knip to burn down; census stores count only"
   }
 }

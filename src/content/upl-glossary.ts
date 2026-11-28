@@ -100,8 +100,8 @@ export const UPL_PRO_MEMBERSHIP = 'Pro membership';
 /** Any publishing identity (community host, guide, shop, agency, partner). Not shop/agency only. */
 export const UPL_OPERATOR_BUSINESS = 'Operator';
 
-/** Wire/capability name for tenant HTTP `/publishing/*`. UI = Operator desk (`UPL_OPERATOR_DASHBOARD`). */
-export const UPL_PUBLISHING_WORKSPACE = 'Publishing workspace';
+/** Wire/capability name for tenant HTTP `/workspace/*`. UI = Operator desk (`UPL_OPERATOR_DASHBOARD`). */
+export const UPL_OPERATOR_WORKSPACE = 'Operator workspace';
 
 export const UPL_WISHLIST = 'Wishlist';
 export const UPL_GROUPS = 'Groups';

@@ -18,18 +18,18 @@ See [`NORTHSTAR.md`](./NORTHSTAR.md) for full product concept and copy anti-patt
 | User | Route `/` |
 |------|-----------|
 | **Signed out** (guest) | Renders marketing page |
-| **Signed in** (any role) | **Immediate redirect** to `/explore` — never sees Home |
+| **Signed in** (any role) | **Immediate redirect** to `/home` — never sees marketing |
 
-Enforced in `src/pages/Home.tsx` (`Navigate` when `user` is set). Post-auth fallback is also `/explore` (`src/utils/authRedirect.ts`).
+Enforced in `src/pages/Home.tsx` (`Navigate` when `user` is set). Post-auth default is `/home` (`defaultRouteByRole`).
 
-**Home is not the product home.** The map (`/explore`) is where members live.
+**Marketing `/` is not the product home.** Signed-in members live on **Home** (`/home`); Explore (`/explore`) is discovery.
 
 ## Goal
 
 Convert anonymous visitors in one visit:
 
 1. **Primary:** Open Map (`EXPLORE_MAP_PATH`) — browse before or after signup
-2. **Secondary:** Join free (`joinAuthPath(EXPLORE_MAP_PATH)`) — underlined link → account → land on map
+2. **Secondary:** Join free (`joinAuthPath(MEMBER_HOME_PATH)`) — underlined link → account → land on Home
 
 Do **not** use Home to onboard signed-in users or document the full app.
 

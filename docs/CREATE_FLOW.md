@@ -6,7 +6,7 @@
 
 **Program:** **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) + **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** ([`platform-governance.json`](../scripts/governance/platform-governance.json)).
 
-**Compose wire (shipped emit):** `?compose=` → **`activity:*`** \| **`place:*`** \| **`intent:open`** \| **`intent:fixed:*`** only (legacy `host` / `add` / `availability` / `seek` tokens are **rejected**). Parser: [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts). **Intent** publishes via **`PUT /me/availability`**. **Wishlist** → **`POST /me/wishlist`** only ([`saveWishlistTarget`](../src/wishlist/saveWishlistTarget.ts) — not compose). **Operator** schedule + workspace → SPA **`/operator/*`** (tenant HTTP **`/publishing/*`**). Guards: `composeWireEmitGuard`, `migPlatformComposeOperatorProgramGuard`.
+**Compose wire (shipped emit):** `?compose=` → **`activity:*`** \| **`place:*`** \| **`intent:open`** \| **`intent:fixed:*`** only (legacy `host` / `add` / `availability` / `seek` tokens are **rejected**). Parser: [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts). **Intent** publishes via **`PUT /me/availability`**. **Wishlist** → **`POST /me/wishlist`** only ([`saveWishlistTarget`](../src/wishlist/saveWishlistTarget.ts) — not compose). **Operator** schedule + workspace → SPA **`/operator/*`** (tenant HTTP **`/workspace/*`**). Guards: `composeWireEmitGuard`, `migPlatformComposeOperatorProgramGuard`.
 
 **Vocabulary (UI):** Tab FABs **Create Trip** · **Add a venue** · **Find a Crew** open kind-specific compose (no stale top-level Host · Find crew · Add menu). **Compose** stays reserved for **message / email compose** later. **My Plans** (`/plan`) **Add a Plan** sheet = **Set a Goal** · **Want to go** only; publish an outing or mark availability use the same **`?compose=`** session as Explore.
 
@@ -16,7 +16,7 @@
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host (compose `activity:*`)** → hosted **Activity** only. **Find crew (compose `intent:*`)** → **`member_availability`** (fixed map pin or open calendar — **not** an Activity row). **Add on map (`place:*`)** → **Where** (Place or Facility). **Joining a trip** is **How** on a hosted **`activityId`** (RSVP / request) — separate from posting availability. **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch.
 
-**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-tenant-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator desk** (any publishing kind) is SPA **`/operator/*`** (HTTP **`/publishing/*`**) — not on the FAB.
+**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-tenant-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator desk** (any publishing kind) is SPA **`/operator/*`** (HTTP **`/workspace/*`**) — not on the FAB.
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
@@ -98,7 +98,7 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 | **Activity graph** | After publish / host tools | API updates on `activities` | `linkParentToRideshareActivity`, paste link panels, `linkedActivityId` / `linkedRideshareActivityId` |
 | **Plan / social** | Commitments, not map create | `/plan`, wishlist, goals | Want to go (`POST /me/wishlist`); mark availability → explore `intent:open` |
 
-Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep the current surface (`/list`, `/plan`, `/activity/:id`).
+Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep the current surface (`/home`, `/list`, `/plan`, `/activity/:id`).
 
 **Intent open** (`intent:open`) entry: FAB Find a Crew · `planAvailabilityPath()` · list/explore **Available** → compose. Legacy list `?availability=1` and Plan `?lens=availability` strip or redirect — no second sheet.
 
@@ -147,7 +147,7 @@ Any signed-in member — no host approval; writes **`PUT /me/availability`** (fi
 | **Place (gear shop)** | FAB **Shops** (`add.place.shop`) — name, pin, about, keywords, delivery, phone, email | `POST /me/places` with shop metadata (`catalogPlaceSubmit.ts`); wizard steps in `addFlows/shop.ts` — **no** product-catalog step |
 | **Facility** | Toilet, rest area, parking, water, viewpoint, amenity-only pins (incl. legacy `outdoor_shop`) | `POST /me/facilities` with `facilityKind`, `destinationId`, optional `onSiteId` |
 
-**Not Add on map:** **Operator shop storefront** (Pro tenant, `/publishing/*` console, `EntityKind.shop` tenant) — separate **Pro membership** onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers C).
+**Not Add on map:** **Operator shop storefront** (Pro tenant, `/workspace/*` console, `EntityKind.shop` tenant) — separate **Pro membership** onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers C).
 
 **Add on map uses place/facility pin** — not **Going from** (catalog rows are not trips).
 
@@ -254,7 +254,7 @@ participationMode: 'rsvp' | 'approval'
 
 **Not used (retired):** `activityMode: seeking`, `/me/seeking-posts`, request-to-join on Find crew pins, `link-activity` graduate flow. Legacy rows migrate via `npm run migrate-seeking-to-availability` (ops).
 
-When a member is ready to run a **dated hosted outing**, they use **Create Trip** → `POST /publishing/activities` + publish — participation is normal **`activity_requests`** on that hosted row.
+When a member is ready to run a **dated hosted outing**, they use **Create Trip** → `POST /workspace/activities` + publish — participation is normal **`activity_requests`** on that hosted row.
 
 ### Linked transport (child rideshare activity)
 

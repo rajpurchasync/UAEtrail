@@ -24,7 +24,7 @@ const searchItem = DESKTOP_MAP_NAV.find((item) => item.key === 'search');
 
 describe('desktop sidebar IA', () => {
   it('has one Explore item and no sibling Browse in Go', () => {
-    expect(DESKTOP_PRIMARY_NAV.map((item) => item.key)).toEqual(['explore', 'plan', 'chat']);
+    expect(DESKTOP_PRIMARY_NAV.map((item) => item.key)).toEqual(['home', 'explore', 'plan', 'chat']);
     expect(DESKTOP_PRIMARY_NAV.some((item) => item.key === 'browse' || item.label === 'Browse')).toBe(
       false
     );
@@ -78,11 +78,16 @@ describe('desktop sidebar IA', () => {
     const guestKeys = desktopPrimaryNavForSession(false).map((item) => item.key);
     const memberKeys = desktopPrimaryNavForSession(true).map((item) => item.key);
     expect(guestKeys).toEqual(['explore', 'chat']);
-    expect(memberKeys).toEqual(['explore', 'plan', 'chat']);
+    expect(memberKeys).toEqual(['home', 'explore', 'plan', 'chat']);
   });
 
-  it('uses the same primary nav for tenant roles as members (Explore · Plans · Chat)', () => {
-    expect(desktopPrimaryNavForSession(true).map((item) => item.key)).toEqual(['explore', 'plan', 'chat']);
+  it('uses the same primary nav for tenant roles as members (Home · Explore · Plans · Chat)', () => {
+    expect(desktopPrimaryNavForSession(true).map((item) => item.key)).toEqual([
+      'home',
+      'explore',
+      'plan',
+      'chat',
+    ]);
     expect(isDesktopHostingNavActive('/operator/overview', '')).toBe(true);
     expect(isDesktopHostingNavActive('/plan', '?filter=hosting')).toBe(true);
     expect(isDesktopHostingNavActive('/explore', '')).toBe(false);
@@ -107,8 +112,9 @@ describe('desktop sidebar IA', () => {
     expect(hamburgerLabels).not.toContain('Browse');
     expect(hamburgerLabels).not.toContain('Explore');
     expect(hamburgerLabels).not.toContain('Outing history');
+    expect(hamburgerLabels[0]).toBe('Home');
     expect(hamburgerLabels).toEqual(
-      expect.arrayContaining(['Trips', 'Places', 'Plans', 'Crews', 'Chat', 'Profile'])
+      expect.arrayContaining(['Home', 'Trips', 'Places', 'Plans', 'Crews', 'Chat', 'Profile'])
     );
     expect(hamburgerLabels).not.toContain('Social');
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Browse')).toBe(false);

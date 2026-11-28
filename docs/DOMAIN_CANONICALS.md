@@ -40,7 +40,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Add on map** | FAB (UI) | Member **place** or **facility** catalog submit | Backend `*Contribute*` module names |
 | **Plan** | Leftover compose wire | Not accepted — use **Host** / **Find crew** wire (`host:*`, `seek:*`) | New FAB UI; **My Plans** tab name |
 | **Contribute** | Leftover compose wire | Not accepted — use **Add on map** wire (`add:place:*`, `add:facility:*`) | Backend API name; use **place submit** / **facility submit** in code |
-| **Organize** | Leftover compose + console | Not accepted — **Host** wire + **host** copy; `/publishing` publish workspace | Top-level FAB label |
+| **Organize** | Leftover compose + console | Not accepted — **Host** wire + **host** copy; ``/workspace` operator workspace | Top-level FAB label |
 | **Find** | Leftover compose | Not accepted — **Find crew** wire (`seek:fixed:*`, `seek:flexible`) | Top-level FAB label |
 | **Add** | Wire token (v3) | `add:place:*` \| `add:facility:*` on `?compose=` (FAB **Add on map**) | Confusing with casual “add a friend” copy |
 | **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
@@ -80,12 +80,14 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 |------|---------|----------|-------------------|-------------------|
 | `community` | Buddy host (no brand page) | Via activities/seeking only | Host on map | `/member/:userId` only |
 | `pro_guide` | Pro individual — same person as community, plus Pro membership | **No** person pin | Activity join / request | **`/member/:userId`** |
-| `agency` | Tour **operator** (company profile) | **No** agency pin | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
-| `shop` | Shop **operator** | **Yes** (shop pin) | Directions, **opt-in** phone / in-app chat, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
-| `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
-| `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
+| `agency` | Tour **operator** (company profile) | **Optional** site pin (office, trailhead hub, meet point) | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
+| `shop` | Shop **operator** | **Optional** site pin (storefront) | Directions, contact, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
+| `hospitality` | Hotels, lodges, stay + hike packages | **Optional** site pin (property on map) | Stays + linked Activities (future) | TBD |
+| `partner` | Campaign / brand partner | **Optional** site pin (property, campaign venue) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
-**Shops ≠ agencies ≠ partners** — separate Pro applications and map rules. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
+**Invariant (all business kinds):** **Storefront** = tenant + public brand page + **one shared desk** (SPA **`/operator/*`**, HTTP **`/workspace/*`**). **Site anchor** = optional linked **Place** and/or **Facility** row with coords + `destinationId` — same mechanism for shop, agency trailhead office, hotel at trail, partner venue. Pin absence does not remove operator status (remote agencies); pin presence does not make the row a “shop-only” concept.
+
+**Shops ≠ agencies ≠ partners** — separate Pro applications and **public URL shape** (`EntityKind` / lens). **Not** separate supply stacks. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
 
 ---
 
@@ -97,7 +99,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | **Claimed** | Business via **Pro Membership** | Ownership verified; moves toward managed tenant |
 | **Managed** | Pro shop tenant | Owner console, team, profile edit |
 
-**Agencies** and **Pro guides** are **Who**-led (no agency/guide map pins). **Shops** are **Where + Who** (pin + profile). **Partners** may combine pin + campaign surfaces (§1.2). **Pro guides** use the **member profile** as the public individual surface; **shop/agency** use **operator profiles**, discoverable from member cards when the user is linked.
+**Pro guides** use the **member profile** as the public individual surface (no separate brand pin). **Business operators** use **operator storefronts**; any may add a **site anchor** for map/directions (§1.3 invariant). **Discovery emphasis:** shops and hospitality skew **Where**; agencies often skew **Who** (activities first) — product copy, not a hard platform rule.
 
 ---
 
@@ -130,7 +132,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `activities` | **Activity** | **Host** \| **Find crew** (fixed map post) | Not catalog |
 | `member_availability` | **Availability** | **Find crew** → flexible | No map pin; **Find crew → Available** lists members with future slots (`GET /explore/people/availability`); day+type **notify** + FAB hosted preview only |
 | `areas` | **Area** | — | Hub |
-| `tenants` + merchant | **Shop storefront** (`EntityKind.shop`) | — | **Operator desk** SPA `/operator/*` (HTTP `/publishing/*`) — not FAB |
+| `tenants` + merchant | **Shop storefront** (`EntityKind.shop`) | — | **Operator desk** SPA `/operator/*` (HTTP `/workspace/*`) — not FAB |
 | — | **Operator desk** | — | Person + tenant header; every publishing kind |
 
 **Register** = provenance + moderation/publication — field `registeredByUserId` (alias `submittedById` during migration). **No** `Contribute` API resource.
@@ -230,7 +232,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 | Layer | Use for | Examples |
 |-------|---------|----------|
 | **Product / UI** | Copy, nav labels | Place, Activity, **Host** (FAB + individual on this outing), **Operator desk** (any publishing kind, `/operator/*`), Friends, Pro Membership — not **Compose** for FAB |
-| **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/publishing/*` — see **§13** |
+| **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/workspace/*` — see **§13** |
 | **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-tenant-id` |
 
 **Rule:** Product says **Place**; API may still say `/locations` and `LocationDTO` until a deliberate migration. Do **not** introduce new `Location*` **product** names in UI.
@@ -264,7 +266,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Legacy community feed | `/community` | `COMMUNITY_PATH` → `/explore` redirect only (feed removed) |
 | Legacy membership marketing | `/membership` | `MEMBERSHIP_MARKETING_PATH` → explore redirect |
 | Pro / business | `/profile/pro-membership` | `PRO_MEMBERSHIP_PATH`, `proMembershipPath()` |
-| Operator desk | SPA `/operator/*` · HTTP `/publishing/*` | `OPERATOR_*_PATH` in `src/config/surfacePaths.ts` |
+| Operator desk | SPA `/operator/*` · HTTP `/workspace/*` | `OPERATOR_*_PATH` in `src/config/surfacePaths.ts` |
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
@@ -368,7 +370,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 
 **When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
 
-**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` (consumer), `GET /me/journey-map` + `POST/PATCH/DELETE /me/map-pins`; (3) **Operator desk** — tenant tools SPA `/operator/*` (HTTP `/publishing/*`). See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` (consumer), `GET /me/journey-map` + `POST/PATCH/DELETE /me/map-pins`; (3) **Operator desk** — tenant tools SPA `/operator/*` (HTTP `/workspace/*`). See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
 
 IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 
@@ -380,7 +382,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 |-------|--------|--------|----------|
 | Public read | `/activities`, `/explore/map` (`sources=availability` for Looking for), `/places` | — | Browse; crew map slice = `availability-fixed-map-items.ts` |
 | Member | `/me/*` | Bearer | `availability`, `status`, profile |
-| Operator desk (tenant HTTP) | `/publishing/*` | Bearer + `x-tenant-id` | `activities`, **`/publishing/requests`** (activity join queue); SPA `/operator/*` |
+| Operator desk (tenant HTTP) | `/workspace/*` | Bearer + `x-tenant-id` | `activities`, **`/workspace/requests`** (activity join queue); SPA `/operator/*` |
 | Person public | `/users/:id` | optional | Public profile |
 
 **Kebab-case plurals** on URLs: `availability` (crew registry), not `intents` or `demand`.
@@ -406,7 +408,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
 | `getOperatorPublicProfile`, `ShopOrganisation*`, `src/operator/apply/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § wire fossils |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiClientSurfaceGuard`, `organisationNamingGuard` |
-| `operatorDeskNavLinksForKind`, `src/operator/desk/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Operator desk SPA `/operator/*`; HTTP `/publishing/*` |
+| `operatorDeskNavLinksForKind`, `src/operator/desk/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Operator desk SPA `/operator/*`; HTTP `/workspace/*` |
 | `getMemberStatus` | `getMemberHostStatus`, `getMyOrganisationStatus` | Tier + nested `publish` |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
@@ -445,7 +447,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 1. **No consumer links** to `/become-host` — use `PRO_MEMBERSHIP_PATH` (`hostMemberGuard.test.ts`).
 2. **No new links** to `/activities` or bare `/trips` — use `PLAN_PATH` or `PROFILE_HISTORY_PATH` (`routingHygiene.test.ts`).
 3. **No raw `/explore?…`** outside explore routing module + small allowlist (`routingHygiene.test.ts`).
-4. **No `isHostRole(`** for product gates — `canPublish` / `publish.canAccessPublishingWorkspace` (`hostMemberGuard.test.ts`).
+4. **No `isHostRole(`** for product gates — `canPublish` / `publish.canAccessOperatorWorkspace` (`hostMemberGuard.test.ts`).
 5. **No banned `api.*` retired** calls in app code (`apiClientSurfaceGuard.test.ts`).
 
 ---
@@ -492,7 +494,7 @@ When renaming or adding routes:
 | Map / Find | `exploreApi`, `availabilityApi` | explore map; `/me/availability` |
 | Buddies / groups / follow | `buddiesApi`, `groupsApi` | `/me/friends`, `/me/groups`, `/me/following` |
 | Wishlist / entity follow / reviews | `wishlistApi`, `entityFollowApi`, `reviewsApi` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
-| Operator desk (tenant) | `operatorPublicApi`, `publishingWorkspaceApi` | public profile, team, join queue, shop storefront |
+| Operator desk (tenant) | `operatorPublicApi`, `operatorWorkspaceApi` | public profile, team, join queue, shop storefront |
 | Badges | `badgesApi` | `getMemberBadges()` |
 
 **API client:** `api` merges `src/api/domains/*` only (legacy alias layer removed Oct 2026). **Base URL:** `VITE_API_BASE_URL` → `/api` (unversioned). **Notification deep links:** `apps/api/src/lib/member-routes.ts` ↔ `src/config/surfacePaths.ts` (`member-routes-alignment.test.ts`). **Resolvers** (`resolve*`) belong in `apps/api/src/services/*` only.
@@ -534,7 +536,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Destination** (curated **name**, not a pin) | `GET /destinations`, `GET /destinations/:slug` | `destinations-store`, `hostingPublishDestination.ts`, `/destination/:slug`, explore `?destination=` | `source: area` map pin; `placeHubLabel` confused with destination name; assigning destination from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `actorUserId`, “buddy entity” |
-| **Operator desk** | SPA `/operator/*`; HTTP `/publishing/*` | `src/operator/desk/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-tenant-id`) |
+| **Operator desk** | SPA `/operator/*`; HTTP `/workspace/*` | `src/operator/desk/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-tenant-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Destination** is a name (`?destination=` / `/destination/:slug`), not a map.
 
@@ -670,7 +672,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 |-------|----------|------------------------|
 | Entity | What is this outing? | **Activity** — DTOs, `src/activity/*`, `components/activity/*` |
 | Member-wide gates | May this user publish / open the operator desk? | **`useMemberStatus`** · **`GET /me/status`** (`publish` nested) — not `/me/publish-*` or “operator status” in UI |
-| Tenant-scoped HTTP | List/publish/manage for **this tenant** | **`GET /publishing/activities`** (mount prefix only until SN-4); client **`listActivities(tenantId)`**, **`getActivityJoinRequests(tenantId)`** — not `*OperatorActivity*` / `*HostActivity*` on every symbol |
+| Tenant-scoped HTTP | List/publish/manage for **this tenant** | **`GET /workspace/activities`** (mount prefix only until SN-4); client **`listActivities(tenantId)`**, **`getActivityJoinRequests(tenantId)`** — not `*OperatorActivity*` / `*HostActivity*` on every symbol |
 | This activity, this viewer | May they see Buddies / approve joiners? | **`viewerAccess`**, entitlements on activity detail wire |
 
 **Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/operator/desk/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **SN-3**.
@@ -681,7 +683,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 |---------|---------|------------|
 | **Synonym rename** | `HostMessageButton` → `OrganizerMessageButton` | `MessageMemberButton` in `src/components/chat/` |
 | **Surface prefix on shared UI** | `ExploreFooButton` used outside explore | `FooButton` in the owning context, or `explore/*` only |
-| **Role in filename when route/header already scopes** | `cancelHostActivityById`, `listOperatorActivities` | `cancelActivity(tenantId, id)` in **tenant activity client**; scope = `tenantId` + `/publishing/*` |
+| **Role in filename when route/header already scopes** | `cancelHostActivityById`, `listOperatorActivities` | `cancelActivity(tenantId, id)` in **tenant activity client**; scope = `tenantId` + `/workspace/*` |
 | **Fake persona in API names** | `useOperatorStatus`, `/me/operator-status` as canonical | **`useMemberStatus`** + **`GET /me/status`**; publish under **`status.publish`** |
 | **Marketing word as global prefix** | `Plan*` hooks in `src/utils` | `src/member-plan/*`, `src/components/plan/*` |
 | **Second inbox route** | `/host/messages` | `/messages` only (`COMMUNICATION.md`) |
@@ -690,7 +692,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 
 | Prefix / name | OK because |
 |---------------|------------|
-| **`/publishing/*` HTTP mount** (canonical) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 SN-4 drops `/host` mount). |
+| **`/workspace/*` HTTP mount** (canonical) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 SN-4 drops `/host` mount). |
 | **`src/operator/desk/*`** | Console **surface** route folder; pages inside still operate on **activities**. Object names (`Overview.tsx`), not `OperatorOverview.tsx`. |
 | **`src/pages/admin/*`** | Ops **surface** route folder (`/admin`). Object names (`Organisations.tsx`, `Members.tsx`); do **not** prefix every file `Admin*`. |
 | **Legacy shims** | `useOperatorStatus`, `usePublishingAccess`, `/me/host-status`, `/me/operator-status`, flat-only `HostStatusDTO` — **deprecated**; no new call sites. |
@@ -705,13 +707,13 @@ One facade (e.g. `src/hooks/tenantActivityClientApi.ts` — name TBD at implemen
 
 | Concern | Target (tenant-scoped) | Wire (unchanged) |
 |---------|------------------------|------------------|
-| List tenant outings | `listActivities(tenantId)` | `GET /publishing/activities` |
-| Join queue | `getActivityJoinRequests(tenantId, { activityId? })` | `GET /publishing/requests` |
-| Decide request | `decideActivityJoinRequest(tenantId, requestId, status, hostNote?)` | `PATCH /publishing/requests/:id` (`hostNote`) |
-| Roster | `getActivityParticipants(tenantId, activityId)` | `GET /publishing/activities/:id/participants` |
-| Lifecycle | `publishActivity`, `cancelActivity`, `updateActivity`, `duplicateActivity` | `/publishing/activities/:id` … |
+| List tenant outings | `listActivities(tenantId)` | `GET /workspace/activities` |
+| Join queue | `getActivityJoinRequests(tenantId, { activityId? })` | `GET /workspace/requests` |
+| Decide request | `decideActivityJoinRequest(tenantId, requestId, status, hostNote?)` | `PATCH /workspace/requests/:id` (`hostNote`) |
+| Roster | `getActivityParticipants(tenantId, activityId)` | `GET /workspace/activities/:id/participants` |
+| Lifecycle | `publishActivity`, `cancelActivity`, `updateActivity`, `duplicateActivity` | `/workspace/activities/:id` … |
 
-**Member capabilities** (not activity-scoped): **`useMemberStatus`** → `GET /me/status` with **`profileComplete`** + **`publish`** (`canPublish`, `canAccessPublishingWorkspace`, `ownedProfiles`, …) — no duplicate flat publish fields on the wire.
+**Member capabilities** (not activity-scoped): **`useMemberStatus`** → `GET /me/status` with **`profileComplete`** + **`publish`** (`canPublish`, `canAccessOperatorWorkspace`, `ownedProfiles`, …) — no duplicate flat publish fields on the wire.
 
 ### 13.3 Communication slice (canonical)
 
@@ -737,7 +739,7 @@ Tracked in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **P5** and [`SYS
 | NC-E | Optional dot-style notification `kind` migration |
 | NC-F | `outdoorMap*` → `journeyMap*` **done**; explore helpers under `src/explore/` **done**; shrink `src/utils/` domain files (§12) |
 | NC-G | Demand vs wishlist — **done** |
-| NC-H | **Structural naming P5** — activity-centric client + **`useMemberStatus`**; `/publishing` HTTP; optional `Organisation*` file renames (storage `tenantId` unchanged) |
+| NC-H | **Structural naming P5** — activity-centric client + **`useMemberStatus`**; `/workspace` HTTP; optional `Organisation*` file renames (storage `tenantId` unchanged) |
 
 **Verify:** `npm run verify:system` · `moduleNamingGuard.test.ts` · `apps/api/tests/naming-coherence.test.ts`
 
@@ -806,7 +808,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 type ActivityAccessSurface =
   | 'explore_map'      // peek card projection
   | 'activity_route'   // /activity/:id (share link, notification)
-  | 'publishing_workspace'
+  | 'operator_workspace'
   | 'notification_link';
 ```
 
@@ -984,7 +986,7 @@ ViewerRequestContext
 | `viewerUserId` | `null` = guest |
 | `platformRole` | Coarse JWT role (`UserRole`) — shell routes, admin |
 | `hostStatus` | Optional snapshot from **`GET /me/status`** — **capabilities only**, loaded server-side for mutations; avoid shipping whole DTO on every public read |
-| `surface` | `explore_map`, `activity_route`, `publishing_workspace`, … |
+| `surface` | `explore_map`, `activity_route`, `operator_workspace`, … |
 | `tenantScope` | `x-tenant-id` when acting as business host |
 
 **Where each concern lives:**

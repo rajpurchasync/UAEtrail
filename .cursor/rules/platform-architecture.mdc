@@ -14,20 +14,21 @@ Canonical detail: **`docs/DOCS_INDEX.md`** · **`docs/SYSTEM_COHERENCE.md`** · 
 | Surface | Route | Who | Purpose |
 |---------|-------|-----|---------|
 | **Marketing** | `/` | **Guests only** | Emotional promise + trust + proof → Explore / Join free |
-| **Explore (product home)** | `/explore` | Everyone | Map-first discovery; **List** pill = filter-synced rows (`list=1`) |
+| **Home** | `/home` | Signed in | Intent + navigation into Trips / Places / Crews / Plans / Chat / Profile |
+| **Explore** | `/explore` | Everyone | Map-first discovery; **List** pill = filter-synced rows (`list=1`) |
 | **Discover browse** | `/explore?browse=1`, `/list` | Everyone | Visual categories/rails/posters — not the map list panel |
 | **Personal hub** | `/profile`, `/settings` | Signed in | Your crew, up next, app settings |
 | **Entity detail** | `/activity`, `/trail`, `/camp`, `/shop`, `/operator`, … | Public / signed in | Understand the plan → connect → join |
 | **Operator desk** | `/operator/*` | Approved operators (any kind) | Enable others to go together (secondary audience) |
 | **Admin** | `/admin/*` | Platform admins | Moderation, approvals |
 
-**Do not conflate Marketing (`/`) with Browse (`/explore`).** Members never use `/` as home.
+**Do not conflate Marketing (`/`) with member Home (`/home`) or Browse (`/explore`).** Members never use `/` as home.
 
 ## Redirects
 
-- Signed-in user hits `/` → `/explore` (`Home.tsx`)  
+- Signed-in user hits `/` → `/home` (`Home.tsx`)  
 - Legacy `/map`, `/discovery`, … → `/explore` (`App.tsx`)  
-- Post-auth default → `/explore` (`authRedirect.ts`)  
+- Post-auth default → `/home` (`defaultRouteByRole`)  
 - Use `explorePath()` / `EXPLORE_MAP_PATH` — not ad-hoc `/explore?…` strings outside `exploreRouting.ts` and `platform.ts`
 
 ## Core entity

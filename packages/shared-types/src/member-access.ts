@@ -53,7 +53,7 @@ export type MemberEntitlementId =
   | 'complete_profile'
   | 'complete_guide_profile'
   | 'host_publish'
-  | 'publishing_workspace'
+  | 'operator_workspace'
   | 'paid_consumer_detail'
   | 'paid_host_commercial'
   /** Pro rideshare / transport tab on activity detail (layer 7 — not crew surfaces). */

@@ -11,7 +11,7 @@ import {
 import { launchLinkedRideshareFromParentActivity } from '../create/launchLinkedRideshareFromParentActivity';
 import { navigateToHostFromExistingActivity } from '@/discovery/discoveryPortExploreHosting';
 import { openPublishedActivityPreview } from '../components/activities';
-import { useInvalidatePublishingWorkspace } from './publishingWorkspaceQueries';
+import { useInvalidateOperatorWorkspace } from './operatorWorkspaceQueries';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
 import {
@@ -19,14 +19,14 @@ import {
   type HostActivityManageConfirm,
 } from './hostActivityManageConfirm';
 
-/** Tenant activity manage actions (`DELETE /publishing/activities/:id`, publish, duplicate, …). */
+/** Tenant activity manage actions (`DELETE /workspace/activities/:id`, publish, duplicate, …). */
 export function useHostActivityManageActions(
   tenantId: string | null,
   onActivitiesChanged?: () => void | Promise<void>
 ) {
   const navigate = useNavigate();
   const reloadExploreMap = useReloadExploreMap();
-  const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
+  const invalidateWorkspace = useInvalidateOperatorWorkspace(tenantId);
   const [confirm, setConfirm] = useState<HostActivityManageConfirm>(HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
   const confirmCancel =
     confirm.kind === 'cancel' ? confirm.activity : null;

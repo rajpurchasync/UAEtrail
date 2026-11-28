@@ -47,7 +47,7 @@ describe('host-note canonical guard (COH-06)', () => {
   });
 
   it('FE writes hostNote JSON; UPL is comment for the host', () => {
-    const workspace = read('src/api/domains/publishingWorkspace.ts');
+    const workspace = read('src/api/domains/operatorWorkspace.ts');
     expect(workspace).toMatch(/JSON\.stringify\(\{ status, hostNote \}\)/);
     expect(workspace).toMatch(/JSON\.stringify\(\{ hostNote \}\)/);
     expect(workspace).not.toMatch(/organizerNote/);

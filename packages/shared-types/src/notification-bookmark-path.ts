@@ -1,15 +1,13 @@
 const MESSAGE_PATH_PREFIXES = [
   '/messages',
   '/operator/messages',
-  '/publishing/messages',
   '/host/messages',
   '/hosting/messages',
   '/organizer/messages',
 ] as const;
 
-/** Stale host/operator console path prefixes (notifications, auth return, consumer chrome). */
+/** Stale console path prefixes (notifications, auth return) — not product routes. */
 export const INBOUND_STALE_CONSOLE_PREFIXES = [
-  '/publishing',
   '/host',
   '/organizer',
   '/hosting',

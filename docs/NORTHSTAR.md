@@ -72,7 +72,7 @@ Same rhythm as the best social-outdoor apps; UAE Trail's version:
 4. **Go together** — show up outdoors  
 5. **Stay connected** — buddies, group chat, repeat crew  
 
-Landing teaches **promise + proof + path**. Explore **is** the product. Profile **continues** the relationship.
+Landing teaches **promise + proof + path**. Signed-in **Home** (`/home`) is intent + navigation. Explore is discovery. Profile **continues** the relationship.
 
 ---
 
@@ -91,6 +91,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | Surface | Route | North-star job |
 |---------|-------|----------------|
 | **Marketing** | `/` | Emotional promise + trust + proof → **Explore the map** or **Join free** |
+| **Home** | `/home` | Signed-in **intent + navigation** — greeting, launchers into Trips / Places / Crews / Plans / Chat / Profile |
 | **Browse** | `/explore` | **Find people and plans** — map/list of what's on + FAB to organize, find, or add |
 | **Entity detail** | `/activity`, `/trail`, … | **Understand the plan** → **I'm going** or **request to join** (see [`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 | **Personal hub** | `/profile` | **Your crew & what's next** — up next, messages, repeat outings |
@@ -98,7 +99,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 
 **Hard rules**
 
-- Signed-in users never stay on `/` — product home is `/explore`  
+- Signed-in users never stay on `/` — demand product home is `/home`; Explore remains discovery  
 - Do not teach full marketplace mechanics on landing  
 - Do not describe the product as a “trail database” or “host management tool” to consumers  
 

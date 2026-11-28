@@ -24,7 +24,7 @@ export interface ConsoleHubSectionsProps {
   upcomingActivitiesCount: number;
   pastActivitiesCount: number;
   upcomingActivities: ActivityDTO[];
-  /** Workspace shortcuts — omitted when the shell already shows nav (e.g. `/publishing/overview`). */
+  /** Workspace shortcuts — omitted when the shell already shows nav (e.g. `/operator/overview`). */
   showConsoleLinks?: boolean;
   /** Compact “Up next” preview — hide when Activities chip covers the same list. */
   showUpcomingPreview?: boolean;

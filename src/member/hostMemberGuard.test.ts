@@ -17,6 +17,7 @@ const ALLOW_HOST_CONSOLE_PATHS = new Set([
   'src/pages/Messages.tsx',
   'src/utils/authRouting.ts',
   'src/utils/authRouting.test.ts',
+  'src/routing/inboundBookmark.contract.test.ts',
   'src/utils/authRedirect.test.ts',
   'src/config/systemCoherenceGuard.test.ts',
   'src/config/discoverBrowseNav.test.ts',
@@ -138,7 +139,7 @@ describe('hostMemberGuard', { timeout: 30_000 }, () => {
     expect(violations).toEqual([]);
   });
 
-  it('product gates do not use isHostRole (use useMemberStatus / canAccessPublishingWorkspace)', () => {
+  it('product gates do not use isHostRole (use useMemberStatus / canAccessOperatorWorkspace)', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) => file !== 'src/utils/roles.ts' && !file.endsWith('.test.ts')
     );
@@ -147,7 +148,7 @@ describe('hostMemberGuard', { timeout: 30_000 }, () => {
     for (const file of files) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/\bisHostRole\s*\(/.test(content)) {
-        violations.push(`${file}: use useMemberStatus / canAccessPublishingWorkspace`);
+        violations.push(`${file}: use useMemberStatus / canAccessOperatorWorkspace`);
       }
     }
 

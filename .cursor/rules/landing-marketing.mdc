@@ -1,5 +1,5 @@
 ---
-description: Guest-only marketing page at / — not the product home; members always use /explore
+description: Guest-only marketing page at / — not the product home; members always use /home
 alwaysApply: true
 ---
 
@@ -18,14 +18,14 @@ Lead with **find your people · get outside · go together** — not map/host ar
 ## Audience (hard rule)
 
 - **`/` is for signed-out guests only.**
-- **Signed-in users always redirect to `/explore`** — they never see the marketing page.
-- **`/explore` is the product home** (map-first discovery). Do not treat `/` as a second home or onboarding hub for members.
+- **Signed-in users always redirect to `/home`** — they never see the marketing page.
+- **`/home` is the signed-in product home** (intent + navigation). `/explore` is discovery. Do not treat `/` as a second home or onboarding hub for members.
 
 Enforced in `src/pages/Home.tsx`. Do not remove or bypass that redirect.
 
 ## What Home is
 
-Guest **signup funnel**: emotional promise + trust + live proof → **Explore the map** / **Join free**. One pass, then the user lives on the map.
+Guest **signup funnel**: emotional promise + trust + live proof → **Explore the map** / **Join free**. One pass, then the user lives on **Home** (`/home`).
 
 ## What Home is not
 
@@ -61,6 +61,6 @@ When editing scroll order, update `docs/LANDING.md` and `docs/NAVIGATION.md` § 
 ## CTAs
 
 - Primary: **Explore the map** → `EXPLORE_MAP_PATH`  
-- Secondary: **Join free** → `joinAuthPath(EXPLORE_MAP_PATH)`  
+- Secondary: **Join free** → `joinAuthPath(MEMBER_HOME_PATH)`  
 
 Use helpers from `src/config/platform.ts` — not raw paths.

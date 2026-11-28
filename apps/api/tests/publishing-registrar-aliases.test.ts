@@ -18,8 +18,8 @@ describe('publishing registrar surface', () => {
     expect(existsSync(join(publishingDir, 'registerHostActivityRoutes.ts'))).toBe(false);
   });
 
-  it('exports publishingRouter from publishing mount shell', () => {
-    const shell = readFileSync(join(process.cwd(), 'src/routes/publishing.ts'), 'utf8');
-    expect(shell).toMatch(/export const publishingRouter/);
+  it('exports workspaceRouter from workspace mount shell', () => {
+    const shell = readFileSync(join(process.cwd(), 'src/routes/workspace.ts'), 'utf8');
+    expect(shell).toMatch(/export const workspaceRouter/);
   });
 });

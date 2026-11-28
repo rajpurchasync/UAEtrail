@@ -32,7 +32,7 @@
 | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |
 | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts (**§3–§7**), debt register (**§7**), catalog alignment (**§8.4.9**), routing canon (**§8.7**), platform defaults (**§8.9**) |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
-| [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/publishing/*`, explore, deprecations |
+| [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/workspace/*`, explore, deprecations |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat inbox (`/messages`), `/chat/*` wire, crew wall |
 **Vocabulary:** [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) § Terminology spine — UPL/BWL in code; Tier-1 for routes and entities.
 

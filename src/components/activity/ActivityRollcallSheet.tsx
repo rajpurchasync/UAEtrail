@@ -4,7 +4,7 @@ import {
   ACTIVITY_ROLLCALL_BACK_LABEL,
   ACTIVITY_ROLLCALL_TITLE,
 } from '../../content/activityRollcallCopy';
-import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
+import type { ActivityRequestView } from '../../hooks/operatorWorkspaceJoinQueueClientApi';
 import { MobileBackButton } from '../mobile/MobileBackButton';
 import { ActivityRollcallView, type ActivityRollcallViewProps } from './ActivityRollcallView';
 

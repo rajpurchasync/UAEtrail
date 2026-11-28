@@ -9,43 +9,43 @@ import type { HostApplication, TeamMember } from '../api/types';
 
 export type { HostApplication, OperatorHostDetailsDTO, TeamMember };
 
-export const fetchPublishingTeam = async (tenantId: string): Promise<TeamMember[]> => {
-  const res = await api.getPublishingTeam(tenantId);
+export const fetchWorkspaceTeam = async (tenantId: string): Promise<TeamMember[]> => {
+  const res = await api.getWorkspaceTeam(tenantId);
   return res.data;
 };
 
-export const createPublishingTeamMember = async (
+export const createWorkspaceTeamMember = async (
   tenantId: string,
   payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
 ): Promise<void> => {
-  await api.createPublishingTeamMember(tenantId, payload);
+  await api.createWorkspaceTeamMember(tenantId, payload);
 };
 
-export const removePublishingTeamMember = async (
+export const removeWorkspaceTeamMember = async (
   tenantId: string,
   membershipId: string
 ): Promise<void> => {
-  await api.removePublishingTeamMember(tenantId, membershipId);
+  await api.removeWorkspaceTeamMember(tenantId, membershipId);
 };
 
-export const updatePublishingTeamMemberRole = async (
+export const updateWorkspaceTeamMemberRole = async (
   tenantId: string,
   membershipId: string,
   role: 'tenant_admin' | 'tenant_guide'
 ): Promise<void> => {
-  await api.updatePublishingTeamMemberRole(tenantId, membershipId, role);
+  await api.updateWorkspaceTeamMemberRole(tenantId, membershipId, role);
 };
 
-export const togglePublishingTeamMemberStatus = async (
+export const toggleWorkspaceTeamMemberStatus = async (
   tenantId: string,
   membershipId: string,
   active: boolean
 ): Promise<void> => {
-  await api.togglePublishingTeamMemberStatus(tenantId, membershipId, active);
+  await api.toggleWorkspaceTeamMemberStatus(tenantId, membershipId, active);
 };
 
-export const fetchPublishingSubmittedPlaces = async (tenantId: string): Promise<PlaceDTO[]> => {
-  const res = await api.getPublishingSubmittedPlaces(tenantId);
+export const fetchWorkspaceSubmittedPlaces = async (tenantId: string): Promise<PlaceDTO[]> => {
+  const res = await api.getWorkspaceSubmittedPlaces(tenantId);
   return res.data;
 };
 

@@ -30,7 +30,7 @@ describe('notification bookmark migration (shared canonicalize)', () => {
   });
 
   it('rewrites stale console and profile history bookmarks', () => {
-    expect(canonicalizeInboundProductPath('/publishing/overview')).toBe('/operator/overview');
+    expect(canonicalizeInboundProductPath('/publishing/overview')).toBe('/publishing/overview');
     expect(canonicalizeInboundProductPath('/profile/my-trips/map')).toBe('/profile/history/map');
     expect(canonicalizeInboundProductPath('/my-rewards?ref=abc')).toBe('/profile/badges?ref=abc');
   });

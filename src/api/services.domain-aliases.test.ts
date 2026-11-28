@@ -9,13 +9,13 @@ describe('api canonical surface', () => {
     expect(typeof api.getWeatherForecast).toBe('function');
     expect(typeof api.getPublicPlaceDetail).toBe('function');
     expect(typeof api.getPublicPlaceTrackPreview).toBe('function');
-    expect(typeof api.submitPublishingPlace).toBe('function');
+    expect(typeof api.submitWorkspacePlace).toBe('function');
     expect((api as Record<string, unknown>).submitPlace).toBeUndefined();
   });
 
   it('exposes tenant activity console and member status', () => {
     expect(typeof api.getOperatorPublicProfile).toBe('function');
-    expect(typeof api.getPublishingActivityJoinRequests).toBe('function');
+    expect(typeof api.getWorkspaceActivityJoinRequests).toBe('function');
     expect(typeof api.decideActivityJoinRequest).toBe('function');
     expect(typeof api.getMemberStatus).toBe('function');
     expect(typeof api.listActivities).toBe('function');

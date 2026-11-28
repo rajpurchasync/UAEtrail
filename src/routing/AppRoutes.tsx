@@ -4,6 +4,7 @@ import { LIST_DISCOVERY_PATH } from '../config/routingCatalogLite';
 import { COMMUNITY_CLUB_PATH_PREFIX } from '../config/routingCatalog';
 import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoveryPortExploreSearchRouting';
 import {
+  MEMBER_HOME_PATH,
   PLAN_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SUBMISSIONS_PATH,
@@ -33,6 +34,7 @@ import { ADMIN_DESTINATIONS_PATH } from '../config/adminSurfacePaths';
 import {
   ProtectedRoute,
   Home,
+  MemberHomePage,
   ExploreExperience,
   ExploreSearchResultsPage,
   BrowseListPage,
@@ -127,7 +129,7 @@ const adminDestinationsRoute = (
 );
 
 const operatorOverviewRoute = (
-  <ProtectedRoute publishingWorkspace>
+  <ProtectedRoute operatorWorkspace>
     <PublishingOverview />
   </ProtectedRoute>
 );
@@ -135,6 +137,14 @@ const operatorOverviewRoute = (
 export const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Home />} />
+    <Route
+      path={MEMBER_HOME_PATH}
+      element={
+        <Suspense fallback={<PageLoader />}>
+          <MemberHomePage />
+        </Suspense>
+      }
+    />
     <Route
       path={EXPLORE_SEARCH_RESULTS_PATH}
       element={
@@ -577,7 +587,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_ACTIVITIES_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingActivities />
         </ProtectedRoute>
       }
@@ -585,7 +595,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_ACTIVITIES_NEW_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingActivities />
         </ProtectedRoute>
       }
@@ -593,7 +603,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_REQUESTS_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingJoinRequests />
         </ProtectedRoute>
       }
@@ -601,7 +611,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_TEAM_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingTeam />
         </ProtectedRoute>
       }
@@ -609,7 +619,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_PROFILE_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingPublicProfileEdit />
         </ProtectedRoute>
       }
@@ -617,7 +627,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_SECURITY_PRIVACY_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <SecurityPrivacy />
         </ProtectedRoute>
       }
@@ -625,7 +635,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_PLACES_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingPlaces />
         </ProtectedRoute>
       }
@@ -633,7 +643,7 @@ export const AppRoutes = () => (
     <Route
       path={OPERATOR_HISTORY_PATH}
       element={
-        <ProtectedRoute publishingWorkspace>
+        <ProtectedRoute operatorWorkspace>
           <PublishingHistory />
         </ProtectedRoute>
       }

@@ -33,7 +33,7 @@ registerAdminSubmissionRoutes(adminRouter);
 registerAdminAlertRoutes(adminRouter);
 registerAdminAmenityReportRoutes(adminRouter);
 registerAdminVerificationRoutes(adminRouter);
-// Outing publish for tenants is POST/PATCH /publishing/activities — admin only moderates.
+// Outing publish for tenants is POST/PATCH /workspace/activities — admin only moderates.
 registerAdminActivityModerationRoutes(adminRouter);
 registerAdminMetricsRoutes(adminRouter);
 registerAdminUserRoutes(adminRouter);

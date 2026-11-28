@@ -33,6 +33,8 @@ export const loadPublicTenantProfileBySlug = async (slug: string) => {
     description: tenant.description ?? null,
     website: tenant.website ?? null,
     region: tenant.region ?? null,
+    primarySiteAnchorPlaceId: tenant.primarySiteAnchorPlaceId ?? null,
+    primarySiteAnchorFacilityId: tenant.primarySiteAnchorFacilityId ?? null,
     latitude: tenant.latitude ?? null,
     longitude: tenant.longitude ?? null,
     ownerId: tenant.ownerId,

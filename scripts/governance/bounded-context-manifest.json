@@ -39,7 +39,8 @@
         "src/places-discovery",
         "src/access",
         "src/list",
-        "src/discovery"
+        "src/discovery",
+        "src/home"
       ]
     },
     {
@@ -48,7 +49,7 @@
       "apiFiles": ["apps/api/src/services/member-publish-gate.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
-        "apps/api/src/routes/publishing.ts"
+        "apps/api/src/routes/workspace.ts"
       ],
       "feDomains": ["src/api/domains/explore.ts", "src/api/domains/availability.ts"],
       "feRoots": ["src/explore/ui", "src/explore/create"]
@@ -117,11 +118,11 @@
       "feRoots": ["src/member"]
     },
     {
-      "id": "publishing_workspace",
-      "label": "Publishing workspace",
-      "apiFiles": ["apps/api/src/routes/publishing.ts"],
+      "id": "operator_workspace",
+      "label": "Operator workspace",
+      "apiFiles": ["apps/api/src/routes/workspace.ts"],
       "routeRegistrars": [
-        "apps/api/src/routes/publishing.ts",
+        "apps/api/src/routes/workspace.ts",
         "apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts",
         "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts",
         "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts",
@@ -130,8 +131,8 @@
         "apps/api/src/routes/publishing/registerPublishingShopStorefrontRoutes.ts"
       ],
       "feDomains": [
-        "src/api/domains/publishingWorkspace.ts",
-        "src/hooks/publishingJoinQueueClientApi.ts",
+        "src/api/domains/operatorWorkspace.ts",
+        "src/hooks/operatorWorkspaceJoinQueueClientApi.ts",
         "src/hooks/tenantActivityClientApi.ts",
         "src/hooks/operatorDeskClientApi.ts",
         "src/hooks/operatorShopStorefrontClientApi.ts"
@@ -457,7 +458,7 @@
   "apiMounts": [
     { "prefix": "/auth", "file": "apps/api/src/routes/auth.ts" },
     { "prefix": "/admin", "file": "apps/api/src/routes/admin.ts" },
-    { "prefix": "/publishing", "file": "apps/api/src/routes/publishing.ts", "note": "HTTP + SPA /publishing/* (publishingRouter module)" },
+    { "prefix": "/workspace", "file": "apps/api/src/routes/workspace.ts", "note": "Operator workspace HTTP /workspace/*" },
     { "prefix": "/chat", "file": "apps/api/src/routes/chat.ts" },
     { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
     { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },

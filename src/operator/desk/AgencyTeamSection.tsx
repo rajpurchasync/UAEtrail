@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  createPublishingTeamMember,
-  fetchPublishingTeam,
-  removePublishingTeamMember,
+  createWorkspaceTeamMember,
+  fetchWorkspaceTeam,
+  removeWorkspaceTeamMember,
   type TeamMember,
 } from '../../hooks/operatorDeskClientApi';
 import { GlassCard } from '../../components/mobile/GlassCard';
@@ -31,7 +31,7 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await fetchPublishingTeam(tenantId);
+      const data = await fetchWorkspaceTeam(tenantId);
       setMembers(data);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
@@ -50,7 +50,7 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     setError(null);
     setBusy(true);
     try {
-      await createPublishingTeamMember(tenantId, { email: email.trim(), role });
+      await createWorkspaceTeamMember(tenantId, { email: email.trim(), role });
       setEmail('');
       setRole('tenant_guide');
       await loadMembers();
@@ -66,7 +66,7 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     setBusy(true);
     setError(null);
     try {
-      await removePublishingTeamMember(tenantId, memberId);
+      await removeWorkspaceTeamMember(tenantId, memberId);
       await loadMembers();
     } catch (removeError) {
       setError(removeError instanceof Error ? removeError.message : 'Failed to remove member');

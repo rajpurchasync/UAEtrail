@@ -8,10 +8,9 @@ export const openApiTags = [
   {
     name: 'Operator',
     description:
-      'Publishing console — tenant activities, team, places, shop storefront (`/publishing/*`).',
+      'Operator workspace — tenant activities, team, places, shop storefront (`/workspace/*` + `x-tenant-id`).',
   },
-  { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/publishing/*` paths in new clients.' },
-  { name: 'Shop', description: 'Shop public read (`/shop/shops/:id`). Desk manage: `PATCH /publishing/shop-profile` + `x-tenant-id`.' },
+  { name: 'Shop', description: 'Shop public read (`/shop/shops/:id`). Desk manage: `PATCH /workspace/shop-profile` + `x-tenant-id`.' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
   { name: 'Social', description: 'Reviews, buddies, and groups.' },
@@ -150,7 +149,7 @@ export const openApiSpec = swaggerJsdoc({
           }
         }
       },
-      '/publishing/shop-profile': {
+      '/workspace/shop-profile': {
         get: {
           tags: ['Operator', 'Shop'],
           summary: 'Get shop operator storefront (desk)',

@@ -29,7 +29,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 
 - `/auth` — JWT + refresh
 - `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, **`/me/availability`**, groups, buddies, wishlist, member-discovery)
-- `/publishing` — tenant-scoped activities, check-in, join queue (`x-tenant-id`; no `/host` or `/operator` API)
+- `/workspace` — tenant-scoped operator supply  activities, check-in, join queue (`x-tenant-id`; no `/host` or `/operator` API)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — operator shop **profiles** (public read + merchant manage); no product catalog or shop checkout routes
 - `/safety` — member content reports (`POST /safety/reports`)
@@ -85,7 +85,7 @@ utils/          authRouting, shopPaths — explore URL builders live in `src/exp
 
 - List endpoints: `{ data, pagination: { page, pageSize, total, totalPages } }`
 - Errors: `{ error: { code, message } }` via `ApiError`
-- Auth: `Authorization: Bearer` + `x-tenant-id` for `/publishing/*` routes
+- Auth: `Authorization: Bearer` + `x-tenant-id` for `/workspace/*` routes
 - Dates: stored UTC; returned as local `date` + `time` per tenant `countryCode`
 
 ## Cross-Platform Session + Access Addendum (2026-08)

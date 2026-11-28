@@ -46,7 +46,7 @@ export type SurfaceActionDTO = {
 /** BWL paths per layer (subset — extend in place, do not fork ad-hoc strings in UI). */
 export const LAYER_ACTION_WIRE: Record<PlatformLayer, Partial<Record<LayerActionId, string>>> = {
   publish: {
-    compose_activity: 'POST /publishing/activities',
+    compose_activity: 'POST /workspace/activities',
     compose_place: 'POST /me/submitted-places',
     compose_intent: 'PUT /me/availability',
   },
@@ -73,8 +73,8 @@ export const LAYER_ACTION_WIRE: Record<PlatformLayer, Partial<Record<LayerAction
     availability_edit: 'PUT /me/availability',
   },
   manage: {
-    edit_supply: 'PATCH /publishing/activities/:id',
-    host_console: 'GET /publishing',
+    edit_supply: 'PATCH /workspace/activities/:id',
+    host_console: 'GET /workspace',
     moderate: 'POST /safety/reports',
   },
 };

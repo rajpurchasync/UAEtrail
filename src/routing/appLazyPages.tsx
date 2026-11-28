@@ -4,6 +4,9 @@ export const ProtectedRoute = lazy(() =>
   import('../components/auth/ProtectedRoute').then((m) => ({ default: m.ProtectedRoute }))
 );
 export const Home = lazy(() => import('../pages/Home').then((m) => ({ default: m.Home })));
+export const MemberHomePage = lazy(() =>
+  import('../home/MemberHomePage').then((m) => ({ default: m.MemberHomePage }))
+);
 export const ExploreExperience = lazy(() => {
   // Start the map library with the explore route. Home never calls this.
   return import('../explore/ui/ExploreExperience').then((m) => ({ default: m.ExploreExperience }));

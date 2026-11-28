@@ -52,7 +52,7 @@ export const publishingProfileKindToDeskBrand = (
 };
 
 /**
- * Management shell title — member SPA **`/operator/*`** (HTTP API stays `/publishing/*`).
+ * Management shell title — member SPA **`/operator/*`** (HTTP API **`/workspace/*`**).
  * Community hosts see community schedule on **`/operator/overview`** (`UPL_OPERATOR_DASHBOARD`).
  */
 export const workspaceConsoleLabel = (kind?: WorkspaceBrandKind | null): string => {

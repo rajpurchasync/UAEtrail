@@ -3,7 +3,7 @@ import type { ActivityManageCapabilities } from '../../activity/activityManageCa
 import { ConsumerDetailSection } from '../../detail/shell/ConsumerDetailSection';
 import { ActivityHostParticipantsRollcallEntry } from './ActivityHostParticipantsRollcallEntry';
 import { ActivityJoinRequestCard } from '../../operator/desk/ActivityJoinRequestCard';
-import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
+import type { ActivityRequestView } from '../../hooks/operatorWorkspaceJoinQueueClientApi';
 export type ConsumerDetailHostParticipantsSurface = {
   tenantId: string;
   caps: ActivityManageCapabilities;

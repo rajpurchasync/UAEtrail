@@ -32,7 +32,7 @@ const ROUTES = [
   {
     surface: 'Activity (host approve)',
     path: '/activity/:id',
-    note: 'host on Buddies tab — pending requests approve/decline (not /publishing/requests only)',
+    note: 'host on Buddies tab — pending requests approve/decline (not /workspace/requests only)',
   },
   { surface: 'Place trail', path: '/trail/:id' },
   { surface: 'Place camp', path: '/camp/:id' },
@@ -64,7 +64,7 @@ const ROUTES = [
   {
     surface: 'Operator (workspace)',
     path: '/operator/overview',
-    note: 'canAccessPublishingWorkspace; inbound /publishing/* redirects',
+    note: 'canAccessOperatorWorkspace; SPA /operator/* only',
   },
   {
     surface: 'Plan (hosting filter)',

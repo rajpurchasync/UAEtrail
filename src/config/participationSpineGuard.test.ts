@@ -22,10 +22,10 @@ describe('participationSpineGuard (DMCP Phase 5)', () => {
     expect(read('scripts/governance/authority-matrix.json')).toMatch(/client\.join_api/);
   });
 
-  it('PART-SPINE-ROLLUP-03: host queue routes through publishingJoinQueueClientApi', () => {
-    const queueApi = read('src/hooks/publishingJoinQueueClientApi.ts');
+  it('PART-SPINE-ROLLUP-03: host queue routes through operatorWorkspaceJoinQueueClientApi', () => {
+    const queueApi = read('src/hooks/operatorWorkspaceJoinQueueClientApi.ts');
     expect(queueApi).toMatch(/getActivityJoinRequests|decideActivityJoinRequest/);
-    expect(read('scripts/governance/authority-matrix.json')).toMatch(/client\.publishing_join_queue/);
+    expect(read('scripts/governance/authority-matrix.json')).toMatch(/client\.operator_workspace_join_queue/);
   });
 
   it('PART-SPINE-ROLLUP-04: activity L3 + peek share presentation spine', () => {

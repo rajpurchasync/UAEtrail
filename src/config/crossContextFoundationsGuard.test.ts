@@ -17,7 +17,7 @@ const COHERENCE_CONTEXT_IDS = [
   'member_discovery',
   'member_identity',
   'member_publish_capabilities',
-  'publishing_workspace',
+  'operator_workspace',
   'communication',
   'social_graph',
   'places',
@@ -27,9 +27,9 @@ const COHERENCE_CONTEXT_IDS = [
   'platform_ops',
 ] as const;
 
-const PUBLISHING_WORKSPACE_DOMAIN = 'src/api/domains/publishingWorkspace.ts';
+const OPERATOR_WORKSPACE_DOMAIN = 'src/api/domains/operatorWorkspace.ts';
 
-const TENANT_DOMAIN_MODULES = [PUBLISHING_WORKSPACE_DOMAIN] as const;
+const TENANT_DOMAIN_MODULES = [OPERATOR_WORKSPACE_DOMAIN] as const;
 
 describe('crossContextFoundationsGuard', () => {
   it('CTX-FOUND-01: manifest contexts are documented in SYSTEM_COHERENCE §3.1', () => {
@@ -51,13 +51,13 @@ describe('crossContextFoundationsGuard', () => {
     expect(missingInCoherence).toEqual([]);
   });
 
-  it('CTX-FOUND-02: tenant HTTP uses /publishing + tenantScopeHeaders (one methodology)', () => {
+  it('CTX-FOUND-02: tenant HTTP uses /workspace + tenantScopeHeaders (one methodology)', () => {
     const violations: string[] = [];
     for (const file of TENANT_DOMAIN_MODULES) {
       const content = read(file);
-      if (content.includes('/publishing/')) {
+      if (content.includes('/workspace/')) {
         if (!content.includes('tenantScopeHeaders')) {
-          violations.push(`${file}: /publishing without tenantScopeHeaders`);
+          violations.push(`${file}: /workspace without tenantScopeHeaders`);
         }
       }
       if (/['"`]\/operator\//.test(content)) {
@@ -70,16 +70,16 @@ describe('crossContextFoundationsGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('CTX-FOUND-02b: /publishing HTTP only in publishingWorkspace domain module', () => {
+  it('CTX-FOUND-02b: /workspace HTTP only in operatorWorkspace domain module', () => {
     const domainDir = join(ROOT, 'src/api/domains');
     const violations: string[] = [];
     for (const name of readdirSync(domainDir)) {
       if (!name.endsWith('.ts') || name.endsWith('.test.ts') || name === 'index.ts') continue;
       const rel = `src/api/domains/${name}`;
-      if (rel === PUBLISHING_WORKSPACE_DOMAIN) continue;
+      if (rel === OPERATOR_WORKSPACE_DOMAIN) continue;
       const content = read(rel);
-      if (content.includes('/publishing/')) {
-        violations.push(`${rel}: move /publishing/* to publishingWorkspace.ts`);
+      if (content.includes('/workspace/')) {
+        violations.push(`${rel}: move /workspace/* to operatorWorkspace.ts`);
       }
     }
     expect(violations).toEqual([]);
@@ -93,8 +93,8 @@ describe('crossContextFoundationsGuard', () => {
     expect(activities).not.toMatch(/\/publishing\/activities/);
     expect(activities).not.toMatch(/\/me\/activities\/.*\/publish/);
 
-    const workspace = read(PUBLISHING_WORKSPACE_DOMAIN);
-    expect(workspace).toMatch(/\/publishing\/activities/);
+    const workspace = read(OPERATOR_WORKSPACE_DOMAIN);
+    expect(workspace).toMatch(/\/workspace\/activities/);
     expect(workspace).toMatch(/tenantScopeHeaders/);
 
     const availability = read('src/api/domains/availability.ts');
@@ -245,7 +245,7 @@ describe('crossContextFoundationsGuard', () => {
       walk(dir);
     }
     expect(violations).toEqual([]);
-    expect(read('src/api/domains/publishingWorkspace.ts')).toMatch(/\/publishing\/activities/);
+    expect(read('src/api/domains/operatorWorkspace.ts')).toMatch(/\/workspace\/activities/);
   });
 
   it('CTX-FOUND-12: public facility detail — GET /facilities/:id client only in facilities domain', () => {

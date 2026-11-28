@@ -5,9 +5,9 @@ import { ExternalLink, Store } from 'lucide-react';
 import type { ShopOperatorProfileDTO } from '@uaetrail/shared-types';
 import { getActiveTenantId } from '../../api/tenant';
 import {
-  createPublishingShopProfile,
-  fetchPublishingShopProfile,
-  updatePublishingShopProfile,
+  createWorkspaceShopProfile,
+  fetchWorkspaceShopProfile,
+  updateWorkspaceShopProfile,
 } from '../../hooks/operatorShopStorefrontClientApi';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { GlassCard } from '../../components/mobile/GlassCard';
@@ -37,7 +37,7 @@ export const ShopDeskProfilePanel = () => {
   const [error, setError] = useState<string | null>(null);
 
   const loadProfile = async (scopeTenantId: string) => {
-    const data = await fetchPublishingShopProfile(scopeTenantId);
+    const data = await fetchWorkspaceShopProfile(scopeTenantId);
     setProfile(data);
     if (data) {
       setProfileForm({
@@ -79,9 +79,9 @@ export const ShopDeskProfilePanel = () => {
         websiteUrl: profileForm.websiteUrl.trim() || null,
       };
       if (profile?.id) {
-        await updatePublishingShopProfile(tenantId, payload);
+        await updateWorkspaceShopProfile(tenantId, payload);
       } else {
-        await createPublishingShopProfile(tenantId, {
+        await createWorkspaceShopProfile(tenantId, {
           shopName: profileForm.shopName,
           ...payload,
           websiteUrl: profileForm.websiteUrl.trim() || undefined,

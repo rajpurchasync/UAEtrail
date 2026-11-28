@@ -23,6 +23,7 @@ export {
 export { PRO_MEMBERSHIP_PATH, proMembershipPath, proMembershipAnchorPath } from './memberRoutes';
 
 export {
+  MEMBER_HOME_PATH,
   PROFILE_PATH,
   PROFILE_EDIT_PATH,
   PROFILE_GUIDE_PATH,

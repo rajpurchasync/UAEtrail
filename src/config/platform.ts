@@ -11,6 +11,7 @@ import {
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   PROFILE_PATH,
+  MEMBER_HOME_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   HOSTING_HUB_PATH,
@@ -95,7 +96,7 @@ export const DOMAIN_GLOSSARY = {
     product: 'Operator',
     description: 'Publishing identity — community host, guide, agency, partner, or shop (tenant row).',
     storage: 'Tenant',
-    api: '/publishing, /tenants/:slug',
+    api: '/workspace, /tenants/:slug',
     consoleRoute: '/operator/*',
     publicRoute: '/agency/:slug · /partner/:slug · /member/:userId (individuals)',
     manageRoute: '/operator/profile',
@@ -175,6 +176,14 @@ export type ConsumerHamburgerMenuItem =
 export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   {
     kind: 'link',
+    label: 'Home',
+    emoji: '🏠',
+    to: MEMBER_HOME_PATH,
+    match: [MEMBER_HOME_PATH],
+    authGate: true,
+  },
+  {
+    kind: 'link',
     label: 'Trips',
     emoji: '🥾',
     to: TRIPS_LIST_NAV_PATH,
@@ -208,7 +217,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     label: 'Chat',
     emoji: '💬',
     to: MESSAGES_PATH,
-    match: [MESSAGES_PATH, '/operator/messages', '/publishing/messages'],
+    match: [MESSAGES_PATH, '/operator/messages'],
     authGate: true,
   },
   {
@@ -398,6 +407,7 @@ export const isEntityDetailRoute = (pathname: string): boolean =>
  */
 export const CONSUMER_SELF_HEADER_EXACT = [
   '/',
+  MEMBER_HOME_PATH,
   '/explore',
   LIST_DISCOVERY_PATH,
   PLAN_PATH,
@@ -515,10 +525,11 @@ export const shouldShowMobileBottomNav = (
     const params = new URLSearchParams(search);
     if (params.get('list') === '1') return false;
   }
+  if (pathname === MEMBER_HOME_PATH) return signedIn;
   if (pathname === '/explore/search') {
     return true;
   }
-  if (pathname === MESSAGES_PATH || pathname === '/operator/messages' || pathname === '/publishing/messages') {
+  if (pathname === MESSAGES_PATH || pathname === '/operator/messages') {
     const params = new URLSearchParams(search);
     if (params.get('to') || params.get('group')) return false;
   }

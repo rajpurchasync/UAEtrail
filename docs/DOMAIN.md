@@ -193,9 +193,9 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 |-------|-----|---------|---------|
 | **A — Community pin** | Member **Add → Shops** (`add.place.shop`) | Gear shop **on the map** (informational) | `POST /me/places` (`PlaceKind.shop`) — keywords, delivery, contact; public `/shop/:id` when approved; **no** product catalog |
 | **B — Catalog place** | Admin / import | Listed shop place; claim toward Pro | Admin places; optional pin |
-| **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/publishing/*`**, `EntityKind.shop` |
+| **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/workspace/*`**, `EntityKind.shop` |
 
-**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/publishing/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Add.
+**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/workspace/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Add.
 
 **Shop listing lifecycle (layer B → C):** catalog → claimed (Pro) → managed — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.4.
 
@@ -285,7 +285,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`) or **`/oper
 | Individual guide | **Guide**, **guide profile**, **guide desk** | — |
 | Licensed business | **Agency**, **agency profile**, **agency desk** | — |
 | Gear seller | **Shop**, **shop profile**, **shop desk** | — |
-| Code / filenames / API | `tenantId`, `/publishing/*`, `x-tenant-id`, operator desk modules | Product copy uses **operator**, **host**, **shop** — not organisation |
+| Code / filenames / API | `tenantId`, `/workspace/*`, `x-tenant-id`, operator desk modules | Product copy uses **operator**, **host**, **shop** — not organisation |
 
 Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `workspaceProfileLabel()`, `normalizeWorkspaceBrandKind()`.
 
@@ -300,7 +300,7 @@ Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `wo
 | `hostName` (signup) | `organizationName` | Wire field on `/auth/register` |
 | `hostDetails`, `shopId` (tenant profile JSON) | — | GET tenant profile sends `hostDetails` and `shopId` |
 | `GET /admin/places` (admin CRUD) | `GET /admin/locations` | SPA redirect only |
-| `shopId`, `PATCH /publishing/shop-profile` + `x-tenant-id` (desk) | — | Mongo collection stays `merchant_profiles` (C6 internal dual-write) |
+| `shopId`, `PATCH /workspace/shop-profile` + `x-tenant-id` (desk) | — | Mongo collection stays `merchant_profiles` (C6 internal dual-write) |
 | `GET /shop/shops/:id` (public shop) | — | One public storefront route |
 
 ### Capabilities by host kind
@@ -339,7 +339,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 |-------------|-------------------|--------------|
 | Location | **Place** (entity) | HTTP **`/places`** (legacy `/locations` alias); collection `locations`; `LocationDTO` — storage name only |
 | Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity; map `source: venue` normalizes to `place` |
-| `/host/*`, `/publishing/*` SPA | Inbound redirects | Canonical SPA `/operator/*`; HTTP `/publishing/*`; `/operator/:slug` is not a storefront |
+| `/host/*`, `/workspace/*` SPA | Inbound redirects | Canonical SPA `/operator/*`; HTTP `/workspace/*`; `/operator/:slug` is not a storefront |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host (outing) or operator (desk) | — |
 | Tenant | Operator storefront row | `tenants`, `x-tenant-id` |
@@ -349,7 +349,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `TenantStorefrontPage` | `/agency/:id`, `/partner/:id` | Public business brand profile |
-| `src/operator/desk/Overview` (`Overview`) | `/operator/overview` | **Operator desk** hub (HTTP `/publishing/*`) |
+| `src/operator/desk/Overview` (`Overview`) | `/operator/overview` | **Operator desk** hub (HTTP `/workspace/*`) |
 | `src/operator/desk/Activities` (`Activities`) | `/operator/activities` | Tenant activity list + manage sheet |
 | `src/operator/desk/JoinRequests` (`JoinRequests`) | `/operator/requests` | Activity join queue |
 | `src/operator/desk/PublicProfileEdit` (`PublicProfileEdit`) | `/operator/profile` | Shop/agency public profile panels (`?kind=`) |
@@ -407,7 +407,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 
 | Flow | What happens | New activity id? |
 |------|----------------|------------------|
-| **Publishing workspace · Duplicate** | `POST /publishing/activities/:id/duplicate` → draft in workspace | Yes — audit `activity.duplicate` + `metadata.sourceActivityId` |
+| **Publishing workspace · Duplicate** | `POST /workspace/activities/:id/duplicate` → draft in workspace | Yes — audit `activity.duplicate` + `metadata.sourceActivityId` |
 | **Explore · Reorganize on map** | `?compose=activity:…&hostFrom=:activityId` → FAB wizard prefill → publish | Yes — `activity.create` with optional `metadata.sourceActivityId` (`clonedFromActivityId` on create body) |
 
 Reorganize never updates the source row; venue registry ids are **reused** when the draft still points at the same registry place.

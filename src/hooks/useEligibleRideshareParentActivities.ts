@@ -5,7 +5,7 @@ import {
   type RideshareParentCandidate,
   type SelfRideshareCandidate,
 } from '../discovery/discoveryPortExploreHosting';
-import { usePublishingTenantActivities } from './publishingWorkspaceQueries';
+import { useOperatorWorkspaceActivities } from './operatorWorkspaceQueries';
 
 export function useEligibleRideshareParentActivities(input: {
   enabled: boolean;
@@ -16,7 +16,7 @@ export function useEligibleRideshareParentActivities(input: {
   loading: boolean;
 } {
   const joined = useMyJoinedActivities(input.enabled);
-  const hostedQuery = usePublishingTenantActivities(input.tenantId, input.enabled);
+  const hostedQuery = useOperatorWorkspaceActivities(input.tenantId, input.enabled);
 
   const candidates = mergeEligibleRideshareParents({
     joined: joined.activities,
@@ -40,7 +40,7 @@ export function useEligibleSelfRideshares(input: {
   candidates: SelfRideshareCandidate[];
   loading: boolean;
 } {
-  const hostedQuery = usePublishingTenantActivities(input.tenantId, input.enabled);
+  const hostedQuery = useOperatorWorkspaceActivities(input.tenantId, input.enabled);
   return {
     candidates: filterEligibleSelfRideshares(hostedQuery.data ?? [], input.parentActivityId),
     loading: Boolean(

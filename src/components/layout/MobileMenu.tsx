@@ -1,4 +1,5 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { MEMBER_HOME_PATH } from '../../config/surfacePaths';
 import { isDiscoverBrowseRoute } from '@/discovery/discoveryPortExploreRouting';
 import {
   createContext,
@@ -97,7 +98,7 @@ const isConsumerHamburgerLinkActive = (
     );
   }
   if (item.label === 'Chat') {
-    if (pathname !== MESSAGES_PATH && pathname !== '/operator/messages' && pathname !== '/publishing/messages') return false;
+    if (pathname !== MESSAGES_PATH && pathname !== '/operator/messages') return false;
     const params = new URLSearchParams(search.replace(/^\?/, ''));
     if (params.get('to') || params.get('group')) return false;
     return true;
@@ -696,7 +697,7 @@ const MobileMenuPanel = () => {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
-  const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
+  const { canAccessOperatorWorkspace } = useMemberStatus({ enabled: Boolean(user) });
   const deskKind = useActiveOperatorDeskKind();
   const operatorConsoleLinks = useMemo(
     () => operatorDeskNavLinksForKind(deskKind).map(({ to, label }) => ({ to, label })),
@@ -715,7 +716,7 @@ const MobileMenuPanel = () => {
   }, [open]);
 
   const isAdminRole = user?.role === 'platform_admin';
-  const isPrivilegedRole = canAccessPublishingWorkspace || isAdminRole;
+  const isPrivilegedRole = canAccessOperatorWorkspace || isAdminRole;
   const onAdminConsole = pathname.startsWith('/admin');
   const onPublishingConsole = isOperatorConsolePath(pathname);
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
@@ -741,7 +742,7 @@ const MobileMenuPanel = () => {
       const res = await switchMeRoleSession(target);
       persistAuthSessionTokens(res.tokens);
       await refreshUser();
-      navigate(target === 'participant' ? EXPLORE_MAP_PATH : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
+      navigate(target === 'participant' ? MEMBER_HOME_PATH : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
     } catch { /* noop */ }
   };
 
@@ -787,7 +788,7 @@ const MobileMenuPanel = () => {
     );
   }
 
-  if (canAccessPublishingWorkspace && onPublishingConsole) {
+  if (canAccessOperatorWorkspace && onPublishingConsole) {
     return (
       <MobileDrawer
         open={open}

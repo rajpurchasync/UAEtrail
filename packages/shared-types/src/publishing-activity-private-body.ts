@@ -1,5 +1,5 @@
 /**
- * Crew-only fields accepted on POST/PATCH `/publishing/activities`.
+ * Crew-only fields accepted on POST/PATCH `/workspace/activities`.
  * Stored in `activity_private`; merged onto crew/trusted activity reads as `activityPrivateDetails`.
  *
  * PATCH: omit a key to leave it unchanged; send both name and phone together to set or clear emergency contact.

@@ -30,7 +30,7 @@ export const assertMemberCanPublishActivities = async (
     );
   }
   const publishStatus = {
-    publish: { canPublish: status.canPublish, canAccessPublishingWorkspace: status.canAccessPublishingWorkspace },
+    publish: { canPublish: status.canPublish, canAccessOperatorWorkspace: status.canAccessOperatorWorkspace },
   } as MemberStatusDTO;
   if (!canPublishFromMemberStatus(publishStatus)) {
     throw new ApiError(403, 'publish_not_allowed', 'You cannot publish activities yet.');

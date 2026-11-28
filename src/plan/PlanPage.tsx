@@ -48,7 +48,7 @@ export const PlanPage = () => {
   const pendingSavedSummaryScrollRef = useRef(false);
   const [savedSummaryScrollRequest, setSavedSummaryScrollRequest] = useState(0);
   const gate = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessOperatorWorkspace);
   const {
     goals,
     loading: goalsLoading,

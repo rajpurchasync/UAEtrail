@@ -22,7 +22,7 @@ describe('shop route registrars (COH-11)', () => {
   });
 
   it('shop operator manage lives on publishing workspace', () => {
-    const publishing = read('src/routes/publishing.ts');
+    const publishing = read('src/routes/workspace.ts');
     expect(publishing).toMatch(/registerPublishingShopStorefrontRoutes/);
     const registrar = read('src/routes/publishing/registerPublishingShopStorefrontRoutes.ts');
     expect(registrar).toMatch(/\/shop-profile/);
@@ -30,9 +30,9 @@ describe('shop route registrars (COH-11)', () => {
     expect(registrar).toMatch(/assertPublishingShopTenant/);
   });
 
-  it('FE desk uses publishingWorkspace for shop profile manage', () => {
-    const workspace = read('../../src/api/domains/publishingWorkspace.ts');
-    expect(workspace).toMatch(/\/publishing\/shop-profile/);
+  it('FE desk uses operatorWorkspace for shop profile manage', () => {
+    const workspace = read('../../src/api/domains/operatorWorkspace.ts');
+    expect(workspace).toMatch(/\/workspace\/shop-profile/);
     expect(workspace).not.toMatch(/\/shop\/merchant\//);
     const shop = read('../../src/api/domains/shop.ts');
     expect(shop).not.toMatch(/\/shop\/merchant\//);

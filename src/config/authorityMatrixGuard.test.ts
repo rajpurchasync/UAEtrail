@@ -86,10 +86,10 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
 
   it('AUTH-07: FE publish gates read publish slice only (DMCP Phase 1)', () => {
     const hook = read('src/hooks/useMemberStatus.ts');
-    expect(hook).toMatch(/publish\?\.canAccessPublishingWorkspace/);
+    expect(hook).toMatch(/publish\?\.canAccessOperatorWorkspace/);
     expect(hook).toMatch(/publish\?\.isPlatformStaff/);
     expect(hook).not.toMatch(/\bisHostRole\b/);
-    const workspaceResolver = read('apps/api/src/services/member-publishing-workspace-access.ts');
+    const workspaceResolver = read('apps/api/src/services/member-operator-workspace-access.ts');
     expect(workspaceResolver).not.toMatch(/\bisHostRole\b/);
   });
 
@@ -141,8 +141,8 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(5);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('client.join_api')?.resolver?.module).toBe('src/hooks/activityJoinClientApi.ts');
-    expect(byId.get('client.publishing_join_queue')?.resolver?.module).toBe(
-      'src/hooks/publishingJoinQueueClientApi.ts'
+    expect(byId.get('client.operator_workspace_join_queue')?.resolver?.module).toBe(
+      'src/hooks/operatorWorkspaceJoinQueueClientApi.ts'
     );
     expect(byId.get('participate.join_request')?.resolver?.module).toMatch(/activity-engagement-policy/);
     expect(read('src/config/participationSpineGuard.test.ts')).toMatch(/PART-SPINE-ROLLUP-06/);

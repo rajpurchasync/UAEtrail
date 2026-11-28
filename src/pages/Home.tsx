@@ -1,5 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { EXPLORE_MAP_PATH, hasSessionExpiredQuery, joinAuthPath } from '../config/routingCatalogLite';
+import {
+  MEMBER_HOME_PATH,
+  hasSessionExpiredQuery,
+  joinAuthPath,
+} from '../config/routingCatalogLite';
 import { ADMIN_INBOX_PATH } from '../config/adminSurfacePaths';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
@@ -31,7 +35,7 @@ const HomeReviewsFaqSection = lazy(() =>
   }))
 );
 
-/** Guest marketing funnel only — signed-in users redirect to /explore. See docs/LANDING.md */
+/** Guest marketing funnel only — signed-in users redirect to /home. See docs/LANDING.md */
 export const Home = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -46,10 +50,10 @@ export const Home = () => {
     if (isPlatformAdmin(user.role)) {
       return <Navigate to={ADMIN_INBOX_PATH} replace />;
     }
-    return <Navigate to={EXPLORE_MAP_PATH} replace />;
+    return <Navigate to={MEMBER_HOME_PATH} replace />;
   }
 
-  const joinHref = joinAuthPath(EXPLORE_MAP_PATH);
+  const joinHref = joinAuthPath(MEMBER_HOME_PATH);
   return (
     <div id="main-content" className="home-v2-font min-h-screen w-full bg-home-surface">
       <PageMeta

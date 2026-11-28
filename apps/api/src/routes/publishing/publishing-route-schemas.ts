@@ -5,7 +5,7 @@ import { MembershipRole } from '../../domain/enums.js';
 export const idParamSchema = z.object({ id: z.string().min(1) });
 export const membershipIdSchema = z.object({ membershipId: z.string().min(1) });
 
-/** Approve/reject payload for **activity** join requests (`/publishing/requests/:id`). */
+/** Approve/reject payload for **activity** join requests (`/workspace/requests/:id`). */
 export const activityRequestDecisionSchema = z
   .object({
     status: z.enum(['approved', 'rejected']),

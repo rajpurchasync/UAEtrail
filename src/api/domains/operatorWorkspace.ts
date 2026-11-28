@@ -12,16 +12,16 @@ import { tenantScopeHeaders } from '../tenantScopeHeaders';
 import type { ActivityRequestView, TeamMember } from '../types';
 
 /**
- * Tenant publishing workspace HTTP (`/publishing/*` + `x-tenant-id`).
+ * Operator workspace HTTP (`/workspace/*` + `x-tenant-id`).
  * UI should use `tenantActivityClientApi` / `operatorDeskClientApi` — not raw `api.*` (`apiClientSurfaceGuard`).
  */
-export const publishingWorkspaceApi = {
-  getPublishingActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
+export const operatorWorkspaceApi = {
+  getWorkspaceActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
     const params = new URLSearchParams({ pageSize: '100' });
     if (options?.activityId) {
       params.set('activityId', options.activityId);
     }
-    return apiRequest<{ data: ActivityRequestView[] }>(`/publishing/requests?${params.toString()}`, {
+    return apiRequest<{ data: ActivityRequestView[] }>(`/workspace/requests?${params.toString()}`, {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     });
@@ -33,45 +33,45 @@ export const publishingWorkspaceApi = {
     status: 'approved' | 'rejected',
     hostNote?: string
   ) =>
-    apiRequest(`/publishing/requests/${requestId}`, {
+    apiRequest(`/workspace/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify({ status, hostNote }),
     }),
 
-  getPublishingTeam: (tenantId: string) =>
-    apiRequest<{ data: TeamMember[] }>('/publishing/team', {
+  getWorkspaceTeam: (tenantId: string) =>
+    apiRequest<{ data: TeamMember[] }>('/workspace/team', {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
-  createPublishingTeamMember: (
+  createWorkspaceTeamMember: (
     tenantId: string,
     payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
   ) =>
-    apiRequest<{ data: TeamMember }>('/publishing/team', {
+    apiRequest<{ data: TeamMember }>('/workspace/team', {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
-  updatePublishingTeamMemberRole: (
+  updateWorkspaceTeamMemberRole: (
     tenantId: string,
     membershipId: string,
     role: 'tenant_admin' | 'tenant_guide'
   ) =>
-    apiRequest<{ data: { id: string; role: string } }>(`/publishing/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string } }>(`/workspace/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify({ role }),
     }),
 
-  togglePublishingTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
+  toggleWorkspaceTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
     apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(
-      `/publishing/team/${membershipId}`,
+      `/workspace/team/${membershipId}`,
       {
         method: 'PATCH',
         auth: true,
@@ -80,47 +80,47 @@ export const publishingWorkspaceApi = {
       }
     ),
 
-  removePublishingTeamMember: (tenantId: string, membershipId: string) =>
-    apiRequest(`/publishing/team/${membershipId}`, {
+  removeWorkspaceTeamMember: (tenantId: string, membershipId: string) =>
+    apiRequest(`/workspace/team/${membershipId}`, {
       method: 'DELETE',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
-  submitPublishingPlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
-    apiRequest<{ data: PlaceDTO }>('/publishing/places', {
+  submitWorkspacePlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
+    apiRequest<{ data: PlaceDTO }>('/workspace/places', {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
-  getPublishingSubmittedPlaces: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/publishing/places', {
+  getWorkspaceSubmittedPlaces: (tenantId: string) =>
+    apiRequest<{ data: LocationDTO[] }>('/workspace/places', {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   listActivities: (tenantId: string) =>
-    apiRequest<{ data: ActivityDTO[] }>('/publishing/activities?pageSize=100', {
+    apiRequest<{ data: ActivityDTO[] }>('/workspace/activities?pageSize=100', {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
-  listPublishingActivitiesPage: (
+  listWorkspaceActivitiesPage: (
     tenantId: string,
     queryString: string
   ) =>
     apiRequest<{
       data: ActivityDTO[];
       meta?: { page: number; pageSize: number; total: number; totalPages: number };
-    }>(`/publishing/activities?${queryString}`, {
+    }>(`/workspace/activities?${queryString}`, {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   createActivity: (tenantId: string, payload: PublishingActivityUpsertBody) =>
-    apiRequest<{ data: ActivityDTO }>('/publishing/activities', {
+    apiRequest<{ data: ActivityDTO }>('/workspace/activities', {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
@@ -128,7 +128,7 @@ export const publishingWorkspaceApi = {
     }),
 
   updateActivity: (tenantId: string, activityId: string, payload: PublishingActivityUpsertBody) =>
-    apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}`, {
+    apiRequest<{ data: ActivityDTO }>(`/workspace/activities/${activityId}`, {
       method: 'PATCH',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
@@ -136,35 +136,35 @@ export const publishingWorkspaceApi = {
     }),
 
   publishActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/publish`, {
+    apiRequest(`/workspace/activities/${activityId}/publish`, {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   suspendActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/suspend`, {
+    apiRequest(`/workspace/activities/${activityId}/suspend`, {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   resumeActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/resume`, {
+    apiRequest(`/workspace/activities/${activityId}/resume`, {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   duplicateActivity: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}/duplicate`, {
+    apiRequest<{ data: ActivityDTO }>(`/workspace/activities/${activityId}/duplicate`, {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   cancelActivity: (tenantId: string, activityId: string) =>
-    apiRequest(`/publishing/activities/${activityId}`, {
+    apiRequest(`/workspace/activities/${activityId}`, {
       method: 'DELETE',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
@@ -179,20 +179,20 @@ export const publishingWorkspaceApi = {
         activityEnded: boolean;
         participants: ParticipantDTO[];
       };
-    }>(`/publishing/activities/${activityId}/participants`, {
+    }>(`/workspace/activities/${activityId}/participants`, {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
+    apiRequest(`/workspace/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
   undoCheckin: (tenantId: string, activityId: string, participantId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
+    apiRequest(`/workspace/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'DELETE',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
@@ -204,7 +204,7 @@ export const publishingWorkspaceApi = {
     participantId: string,
     hostNote: string
   ) =>
-    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/revoke`, {
+    apiRequest(`/workspace/activities/${activityId}/participants/${participantId}/revoke`, {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
@@ -227,7 +227,7 @@ export const publishingWorkspaceApi = {
     }
   ) =>
     apiRequest<{ data: { score: number; comment: string | null; ratedAt: string | null } }>(
-      `/publishing/activities/${activityId}/participants/${participantId}/rating`,
+      `/workspace/activities/${activityId}/participants/${participantId}/rating`,
       {
         method: 'POST',
         auth: true,
@@ -236,8 +236,8 @@ export const publishingWorkspaceApi = {
       }
     ),
 
-  getPublishingActivityGuides: (tenantId: string, activityId: string) =>
-    apiRequest<{ data: ActivityGuideHostDTO[] }>(`/publishing/activities/${activityId}/guides`, {
+  getWorkspaceActivityGuides: (tenantId: string, activityId: string) =>
+    apiRequest<{ data: ActivityGuideHostDTO[] }>(`/workspace/activities/${activityId}/guides`, {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
@@ -255,18 +255,18 @@ export const publishingWorkspaceApi = {
         participantCount: number;
         checkedInCount: number;
       }>;
-    }>('/publishing/activities/history', {
+    }>('/workspace/activities/history', {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
-  getPublishingShopProfile: (tenantId: string) =>
-    apiRequest<{ data: ShopOperatorProfileDTO }>('/publishing/shop-profile', {
+  getWorkspaceShopProfile: (tenantId: string) =>
+    apiRequest<{ data: ShopOperatorProfileDTO }>('/workspace/shop-profile', {
       auth: true,
       headers: tenantScopeHeaders(tenantId),
     }),
 
-  createPublishingShopProfile: (
+  createWorkspaceShopProfile: (
     tenantId: string,
     payload: {
       shopName: string;
@@ -282,14 +282,14 @@ export const publishingWorkspaceApi = {
       showContactPhone?: boolean;
     }
   ) =>
-    apiRequest<{ data: ShopOperatorProfileDTO }>('/publishing/shop-profile', {
+    apiRequest<{ data: ShopOperatorProfileDTO }>('/workspace/shop-profile', {
       method: 'POST',
       auth: true,
       headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
-  updatePublishingShopProfile: (
+  updateWorkspaceShopProfile: (
     tenantId: string,
     payload: Partial<{
       shopName: string;
@@ -305,7 +305,7 @@ export const publishingWorkspaceApi = {
       showContactPhone?: boolean;
     }>
   ) =>
-    apiRequest<{ data: ShopOperatorProfileDTO }>('/publishing/shop-profile', {
+    apiRequest<{ data: ShopOperatorProfileDTO }>('/workspace/shop-profile', {
       method: 'PATCH',
       auth: true,
       headers: tenantScopeHeaders(tenantId),

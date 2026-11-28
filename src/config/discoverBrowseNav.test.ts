@@ -16,6 +16,7 @@ describe('discover browse navigation contract', () => {
     const linkLabels = CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map(
       (item) => item.label
     );
+    expect(linkLabels[0]).toBe('Home');
     const fiveTabLabels = linkLabels.filter((label) => label !== 'Home');
     expect(fiveTabLabels.slice(0, 5)).toEqual(['Trips', 'Places', 'Plans', 'Crews', 'Chat']);
     expect(linkLabels).not.toContain('Explore');
@@ -95,7 +96,7 @@ describe('discover browse navigation contract', () => {
 
   it('consumer hamburger stays on map for operators (workspace drawer on publishing console paths)', () => {
     const menu = readFileSync(join(process.cwd(), 'src/components/layout/MobileMenu.tsx'), 'utf8');
-    expect(menu).toMatch(/canAccessPublishingWorkspace && onPublishingConsole/);
+    expect(menu).toMatch(/canAccessOperatorWorkspace && onPublishingConsole/);
     expect(menu).toMatch(/isOperatorConsolePath/);
     expect(menu).toMatch(/useMemberStatus/);
     expect(menu).toMatch(/CONSUMER_HAMBURGER_MENU/);

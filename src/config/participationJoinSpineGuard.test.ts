@@ -38,14 +38,14 @@ const CONSUMER_JOIN_MUTATION_ALLOW = new Set([
 ]);
 
 const HOST_QUEUE_MUTATION_ALLOW = new Set([
-  'src/hooks/publishingJoinQueueClientApi.ts',
-  'src/api/domains/publishingWorkspace.ts',
+  'src/hooks/operatorWorkspaceJoinQueueClientApi.ts',
+  'src/api/domains/operatorWorkspace.ts',
   'src/api/services.ts',
   'src/api/index.ts',
 ]);
 
 describe('participationJoinSpineGuard', () => {
-  it('PART-SPINE-01: host join queue surfaces use publishingJoinQueueClientApi', () => {
+  it('PART-SPINE-01: host join queue surfaces use operatorWorkspaceJoinQueueClientApi', () => {
     const violations: string[] = [];
     for (const file of HOST_JOIN_SURFACES) {
       const source = read(file);
@@ -56,11 +56,11 @@ describe('participationJoinSpineGuard', () => {
         tenantQueueImport &&
         /getActivityJoinRequests|decideActivityJoinRequest/.test(tenantQueueImport[1])
       ) {
-        violations.push(`${file}: import join queue from publishingJoinQueueClientApi, not tenantActivityClientApi`);
+        violations.push(`${file}: import join queue from operatorWorkspaceJoinQueueClientApi, not tenantActivityClientApi`);
       }
       if (/getActivityJoinRequests|decideActivityJoinRequest/.test(source)) {
-        if (!source.includes('publishingJoinQueueClientApi')) {
-          violations.push(`${file}: missing publishingJoinQueueClientApi import`);
+        if (!source.includes('operatorWorkspaceJoinQueueClientApi')) {
+          violations.push(`${file}: missing operatorWorkspaceJoinQueueClientApi import`);
         }
       }
     }
@@ -79,7 +79,7 @@ describe('participationJoinSpineGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('PART-SPINE-03: host queue mutations only via publishingJoinQueueClientApi outside API layer', () => {
+  it('PART-SPINE-03: host queue mutations only via operatorWorkspaceJoinQueueClientApi outside API layer', () => {
     const violations: string[] = [];
     for (const rel of [
       ...walkTs('src/pages'),
@@ -89,16 +89,16 @@ describe('participationJoinSpineGuard', () => {
     ]) {
       if (HOST_QUEUE_MUTATION_ALLOW.has(rel)) continue;
       const source = read(rel);
-      if (/\bapi\.(decideActivityJoinRequest|getPublishingActivityJoinRequests)\b/.test(source)) {
-        violations.push(`${rel}: route host queue through publishingJoinQueueClientApi`);
+      if (/\bapi\.(decideActivityJoinRequest|getWorkspaceActivityJoinRequests)\b/.test(source)) {
+        violations.push(`${rel}: route host queue through operatorWorkspaceJoinQueueClientApi`);
       }
     }
     expect(violations).toEqual([]);
   });
 
-  it('PART-SPINE-04: publishingJoinQueueClientApi is thin facade over workspace API', () => {
-    const source = read('src/hooks/publishingJoinQueueClientApi.ts');
-    expect(source).toMatch(/getPublishingActivityJoinRequests/);
+  it('PART-SPINE-04: operatorWorkspaceJoinQueueClientApi is thin facade over workspace API', () => {
+    const source = read('src/hooks/operatorWorkspaceJoinQueueClientApi.ts');
+    expect(source).toMatch(/getWorkspaceActivityJoinRequests/);
     expect(source).toMatch(/decideActivityJoinRequest/);
     expect(source).not.toMatch(/fetch\(/);
   });

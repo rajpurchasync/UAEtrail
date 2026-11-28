@@ -1,5 +1,4 @@
 import {
-  EXPLORE_MAP_PATH,
   ADMIN_INBOX_PATH,
   ADMIN_ACCOUNT_PATH,
   MESSAGES_PATH,
@@ -13,11 +12,12 @@ import { planHostingFilterPath } from '../plan/planRouting';
 import { UserRole, canonicalizeInboundProductPath } from '@uaetrail/shared-types';
 
 import { OPERATOR_PROFILE_PATH, operatorDeskProfilePath } from '../config/routingCatalog';
+import { MEMBER_HOME_PATH } from '../config/surfacePaths';
 import { isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
-  return EXPLORE_MAP_PATH;
+  return MEMBER_HOME_PATH;
 };
 
 /** Personal hub (profile / admin account) — not the host-mode home. */
@@ -27,19 +27,19 @@ export const accountRouteByRole = (role: UserRole): string => {
 };
 
 /**
- * Stale `/publishing/*`, `/operator/*`, and other console bookmarks for members **without**
- * `canAccessPublishingWorkspace`. Consumer equivalents only — not explore compose shims (O0.5).
+ * Stale `/operator/*` console bookmarks for members **without**
+ * `canAccessOperatorWorkspace`. Consumer equivalents only — not explore compose shims (O0.5).
  */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
   const canonical = canonicalizeInboundProductPath(pathname);
   const canonicalPathname = canonical.split('?')[0]?.split('#')[0] ?? pathname;
   if (
     canonicalPathname !== pathname &&
-    !/^\/(?:publishing|operator)(?=\/|$)/.test(canonicalPathname)
+    !/^\/operator(?=\/|$)/.test(canonicalPathname)
   ) {
     return canonicalPathname;
   }
-  const rest = canonicalPathname.replace(/^\/(?:publishing|operator)(?=\/|$)/, '') || '/';
+  const rest = canonicalPathname.replace(/^\/operator(?=\/|$)/, '') || '/';
   if (rest.startsWith('/messages')) {
     return MESSAGES_PATH;
   }

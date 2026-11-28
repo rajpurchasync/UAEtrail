@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ClipboardList,
   History,
+  Home,
   Map,
   MapPin,
   MessageCircle,
@@ -30,6 +31,7 @@ import {
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   PLAN_PATH,
+  MEMBER_HOME_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_PATH,
@@ -111,6 +113,15 @@ export const isDesktopSocialNavActive = (pathname: string, search: string): bool
 
 /** Signed-in left nav — where you go. People live in their own section. */
 export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
+  {
+    key: 'home',
+    label: 'Home',
+    to: MEMBER_HOME_PATH,
+    icon: Home,
+    match: [MEMBER_HOME_PATH],
+    authGate: true,
+    navHint: 'What would you like to do today?',
+  },
   {
     key: 'explore',
     label: 'Explore',
@@ -232,6 +243,7 @@ export const isDesktopHostingNavActive = (pathname: string, search: string): boo
   isOperatorConsolePath(pathname) || isPlanHostingFilterRoute(pathname, search);
 
 export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, search: string): boolean => {
+  if (item.key === 'home') return pathname === MEMBER_HOME_PATH;
   if (item.key === 'explore') return isDesktopExploreNavActive(pathname, search);
   if (item.key === 'hosting') return isDesktopHostingNavActive(pathname, search);
   if (item.key === 'social') return isDesktopSocialNavActive(pathname, search);

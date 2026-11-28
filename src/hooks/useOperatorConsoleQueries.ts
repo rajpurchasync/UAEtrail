@@ -2,16 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import type { TeamMember } from '../api/types';
 import {
-  fetchPublishingSubmittedPlaces,
-  fetchPublishingTeam,
+  fetchWorkspaceSubmittedPlaces,
+  fetchWorkspaceTeam,
   fetchTenantStorefrontReviews,
 } from './operatorDeskClientApi';
 import { fetchMyTenantMemberships } from './tenantMembershipApi';
 import {
   myTenantMembershipsQueryKey,
   operatorDeskRatingQueryKey,
-  publishingSubmittedPlacesQueryKey,
-  publishingTeamQueryKey,
+  workspaceSubmittedPlacesQueryKey,
+  workspaceTeamQueryKey,
 } from './clientQueryKeys';
 
 export type OperatorDeskRating = {
@@ -19,17 +19,19 @@ export type OperatorDeskRating = {
   reviewCount: number;
 };
 
-export const usePublishingSubmittedPlaces = (tenantId: string | null | undefined) =>
+export const useWorkspaceSubmittedPlaces = (tenantId: string | null | undefined) =>
   useQuery({
-    queryKey: tenantId ? publishingSubmittedPlacesQueryKey(tenantId) : ['publishing', 'submitted-places', ''],
-    queryFn: async (): Promise<PlaceDTO[]> => fetchPublishingSubmittedPlaces(tenantId!),
+    queryKey: tenantId
+      ? workspaceSubmittedPlacesQueryKey(tenantId)
+      : (['operator-workspace', 'submitted-places', ''] as const),
+    queryFn: async (): Promise<PlaceDTO[]> => fetchWorkspaceSubmittedPlaces(tenantId!),
     enabled: Boolean(tenantId),
   });
 
-export const usePublishingTeam = (tenantId: string | null | undefined) =>
+export const useWorkspaceTeam = (tenantId: string | null | undefined) =>
   useQuery({
-    queryKey: tenantId ? publishingTeamQueryKey(tenantId) : ['publishing', 'team', ''],
-    queryFn: async (): Promise<TeamMember[]> => fetchPublishingTeam(tenantId!),
+    queryKey: tenantId ? workspaceTeamQueryKey(tenantId) : (['operator-workspace', 'team', ''] as const),
+    queryFn: async (): Promise<TeamMember[]> => fetchWorkspaceTeam(tenantId!),
     enabled: Boolean(tenantId),
   });
 
@@ -42,7 +44,9 @@ export const useMyTenantMemberships = () =>
 /** Header rating chip on operator desk shell (best-effort). */
 export const useOperatorDeskRating = (tenantId: string | null | undefined) =>
   useQuery({
-    queryKey: tenantId ? operatorDeskRatingQueryKey(tenantId) : ['publishing', 'console-rating', ''],
+    queryKey: tenantId
+      ? operatorDeskRatingQueryKey(tenantId)
+      : (['operator-workspace', 'console-rating', ''] as const),
     queryFn: async (): Promise<OperatorDeskRating> => {
       const reviews = await fetchTenantStorefrontReviews(tenantId!);
       if (reviews.length === 0) {

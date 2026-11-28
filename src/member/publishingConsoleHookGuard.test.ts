@@ -47,7 +47,7 @@ describe('publishingConsoleHookGuard', () => {
           violations.push(`${file}: use api.listActivities`);
         }
         if (/\bapi\.getHostActivityJoinRequests\s*\(/.test(content)) {
-          violations.push(`${file}: use api.getPublishingActivityJoinRequests`);
+          violations.push(`${file}: use api.getWorkspaceActivityJoinRequests`);
         }
       }
     }

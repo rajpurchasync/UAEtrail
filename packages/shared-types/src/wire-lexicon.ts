@@ -92,13 +92,20 @@ export const resolveHostNote = (input: {
 };
 
 /** HTTP mount prefixes (canonical). */
-/** Consumer SPA route prefix — tenant HTTP remains {@link BWL_API_MOUNTS.PUBLISHING_WORKSPACE}. */
+/** Consumer SPA: operator desk. Supply-side HTTP: {@link BWL_API_MOUNTS.OPERATOR_WORKSPACE}. */
 export const BWL_SPA_ROUTES = {
   OPERATOR_CONSOLE_PREFIX: '/operator',
 } as const;
 
+/** Mongo `tenants` — optional map anchor for organization operator profiles (all kinds). */
+export const BWL_OPERATOR_TENANT_FIELDS = {
+  PRIMARY_SITE_ANCHOR_PLACE_ID: 'primarySiteAnchorPlaceId',
+  PRIMARY_SITE_ANCHOR_FACILITY_ID: 'primarySiteAnchorFacilityId',
+} as const;
+
 export const BWL_API_MOUNTS = {
-  PUBLISHING_WORKSPACE: '/publishing',
+  /** Tenant operator lifecycle HTTP (activities, team, storefront, queue). */
+  OPERATOR_WORKSPACE: '/workspace',
   MEMBER_DISCOVERY: '/me/member-discovery',
   /** Optional target; default keep member-discovery */
   PEOPLE_DISCOVERY_TARGET: '/me/people',

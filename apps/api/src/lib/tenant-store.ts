@@ -26,6 +26,8 @@ export type TenantRecord = {
   region?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   publishingPurpose?: TenantPublishingPurpose | null;
+  primarySiteAnchorPlaceId?: string | null;
+  primarySiteAnchorFacilityId?: string | null;
   discoverFeatured?: boolean;
   hiddenFromPublic?: boolean;
   createdAt: Date;
@@ -50,6 +52,8 @@ type MongoTenantDoc = {
   region?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   publishingPurpose?: TenantPublishingPurpose | null;
+  primarySiteAnchorPlaceId?: string | null;
+  primarySiteAnchorFacilityId?: string | null;
   discoverFeatured?: boolean;
   hiddenFromPublic?: boolean;
   groupRegionBrowseKey?: string | null;
@@ -79,6 +83,8 @@ const mapMongoTenant = (doc: MongoTenantDoc): TenantRecord => ({
   region: doc.region ?? null,
   groupRegionLevels: doc.groupRegionLevels ?? null,
   publishingPurpose: doc.publishingPurpose ?? null,
+  primarySiteAnchorPlaceId: doc.primarySiteAnchorPlaceId ?? null,
+  primarySiteAnchorFacilityId: doc.primarySiteAnchorFacilityId ?? null,
   discoverFeatured: doc.discoverFeatured ?? false,
   hiddenFromPublic: doc.hiddenFromPublic ?? false,
   createdAt: doc.createdAt,
@@ -105,6 +111,8 @@ const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => {
     region: row.region ?? null,
     groupRegionLevels: row.groupRegionLevels ?? null,
     publishingPurpose: row.publishingPurpose ?? null,
+    primarySiteAnchorPlaceId: row.primarySiteAnchorPlaceId ?? null,
+    primarySiteAnchorFacilityId: row.primarySiteAnchorFacilityId ?? null,
     discoverFeatured: row.discoverFeatured ?? false,
     hiddenFromPublic: row.hiddenFromPublic ?? false,
     ...indexFields,

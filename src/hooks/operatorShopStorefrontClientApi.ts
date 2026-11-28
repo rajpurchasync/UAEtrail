@@ -1,11 +1,11 @@
 import type { ShopOperatorProfileDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
-export const fetchPublishingShopProfile = async (
+export const fetchWorkspaceShopProfile = async (
   tenantId: string
 ): Promise<ShopOperatorProfileDTO | null> => {
   try {
-    const res = await api.getPublishingShopProfile(tenantId);
+    const res = await api.getWorkspaceShopProfile(tenantId);
     return res.data;
   } catch (error) {
     const err = error as Error & { status?: number; code?: string };
@@ -16,7 +16,7 @@ export const fetchPublishingShopProfile = async (
   }
 };
 
-export const createPublishingShopProfile = async (
+export const createWorkspaceShopProfile = async (
   tenantId: string,
   payload: {
     shopName: string;
@@ -30,11 +30,11 @@ export const createPublishingShopProfile = async (
     showContactPhone?: boolean;
   }
 ): Promise<ShopOperatorProfileDTO> => {
-  const res = await api.createPublishingShopProfile(tenantId, payload);
+  const res = await api.createWorkspaceShopProfile(tenantId, payload);
   return res.data;
 };
 
-export const updatePublishingShopProfile = async (
+export const updateWorkspaceShopProfile = async (
   tenantId: string,
   payload: Partial<{
     shopName: string;
@@ -48,6 +48,6 @@ export const updatePublishingShopProfile = async (
     showContactPhone?: boolean;
   }>
 ): Promise<ShopOperatorProfileDTO> => {
-  const res = await api.updatePublishingShopProfile(tenantId, payload);
+  const res = await api.updateWorkspaceShopProfile(tenantId, payload);
   return res.data;
 };

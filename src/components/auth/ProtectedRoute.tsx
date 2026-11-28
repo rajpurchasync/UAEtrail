@@ -23,16 +23,16 @@ import { AsyncLoadingState } from '../ui/AsyncLoadingState';
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
-  /** Requires `publish.canAccessPublishingWorkspace` from {@link useMemberStatus}. */
-  publishingWorkspace?: boolean;
+  /** Requires `publish.canAccessOperatorWorkspace` from {@link useMemberStatus}. */
+  operatorWorkspace?: boolean;
   children: ReactElement;
 }
 
-export const ProtectedRoute = ({ roles, publishingWorkspace, children }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ roles, operatorWorkspace, children }: ProtectedRouteProps) => {
   const { user, initializing } = useAuth();
   const location = useLocation();
-  const memberStatusEnabled = Boolean(user) && Boolean(publishingWorkspace);
-  const { canAccessPublishingWorkspace, loading: memberStatusLoading } = useMemberStatus({
+  const memberStatusEnabled = Boolean(user) && Boolean(operatorWorkspace);
+  const { canAccessOperatorWorkspace, loading: memberStatusLoading } = useMemberStatus({
     enabled: memberStatusEnabled,
   });
 
@@ -80,11 +80,11 @@ export const ProtectedRoute = ({ roles, publishingWorkspace, children }: Protect
     return <Navigate to={ADMIN_ACCOUNT_PATH} replace />;
   }
 
-  if (publishingWorkspace) {
+  if (operatorWorkspace) {
     if (memberStatusLoading) {
       return <AsyncLoadingState variant="page" label="Loading workspace access" />;
     }
-    if (!canAccessPublishingWorkspace && !isPlatformAdmin(user.role)) {
+    if (!canAccessOperatorWorkspace && !isPlatformAdmin(user.role)) {
       return <Navigate to={participantHostBookmarkRedirect(location.pathname)} replace />;
     }
   } else if (roles && !roles.includes(user.role)) {

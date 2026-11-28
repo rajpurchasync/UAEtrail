@@ -30,8 +30,8 @@ import { registerPublishingActivityParticipantRoutes } from './registerPublishin
 import { registerPublishingActivityGuideRoutes } from './registerPublishingActivityGuideRoutes.js';
 import { idParamSchema } from './publishing-route-schemas.js';
 
-/** Publishing workspace **activity** CRUD, publish, and history (`/publishing/activities/*`). */
-export const registerPublishingActivityRoutes = (publishingRouter: Router): void => {
+/** Operator workspace **activity** CRUD, publish, and history (`/workspace/activities/*`). */
+export const registerPublishingActivityRoutes = (workspaceRouter: Router): void => {
   const hostActivitiesRouter = createRouter();
 
   hostActivitiesRouter.get('/', async (req, res, next) => {
@@ -187,8 +187,8 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
     }
   );
 
-  registerPublishingActivityRequestRoutes(publishingRouter);
-  registerPublishingTeamRoutes(publishingRouter);
+  registerPublishingActivityRequestRoutes(workspaceRouter);
+  registerPublishingTeamRoutes(workspaceRouter);
   registerPublishingActivityParticipantRoutes(hostActivitiesRouter);
   registerPublishingActivityGuideRoutes(hostActivitiesRouter);
 
@@ -207,5 +207,5 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
     }
   });
 
-  mountActivityRoutes(publishingRouter, hostActivitiesRouter);
+  mountActivityRoutes(workspaceRouter, hostActivitiesRouter);
 };

@@ -46,7 +46,7 @@ export const Profile = () => {
 
   const {
     ownedProfiles,
-    canAccessPublishingWorkspace,
+    canAccessOperatorWorkspace,
     profileRoleLabel: profileRoleKey,
     isCommunityHost: gateCommunityHost,
     hostTiers,
@@ -81,7 +81,7 @@ export const Profile = () => {
 
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const isActivityHost =
-    canAccessPublishingWorkspace && hostProfileKind !== 'shop' && (gateCommunityHost || (hubStats?.isCommunityHost ?? false));
+    canAccessOperatorWorkspace && hostProfileKind !== 'shop' && (gateCommunityHost || (hubStats?.isCommunityHost ?? false));
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const roleLabel = memberProfileRoleLabel(profileRoleKey);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;

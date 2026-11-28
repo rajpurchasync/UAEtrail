@@ -27,10 +27,10 @@ import { ActivityManageSheet } from '../../components/activity/ActivityManageShe
 import { HostActivityManageCancelDialogs } from '../../components/activity/HostActivityManageCancelDialogs';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import {
-  useInvalidatePublishingWorkspace,
-  usePublishingJoinQueue,
-  usePublishingTenantActivities,
-} from '../../hooks/publishingWorkspaceQueries';
+  useInvalidateOperatorWorkspace,
+  useOperatorWorkspaceJoinQueue,
+  useOperatorWorkspaceActivities,
+} from '../../hooks/operatorWorkspaceQueries';
 import { useAuth } from '../../context/AuthContext';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
 import { OPERATOR_ACTIVITIES_NEW_PATH, OPERATOR_ACTIVITIES_PATH } from '../../config/routingCatalog';
@@ -68,7 +68,7 @@ const activityDateTimeValue = (activity: ActivityDTO): number => {
 const bookedSpots = (activity: ActivityDTO): number =>
   Math.max(0, (activity.slotsTotal ?? 0) - (activity.slotsAvailable ?? 0));
 
-/** Publishing workspace: tenant-scoped activities (`GET /publishing/activities`). */
+/** Operator workspace: tenant-scoped activities (`GET /workspace/activities`). */
 export const Activities = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,9 +86,9 @@ export const Activities = () => {
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const activitiesQuery = usePublishingTenantActivities(tenantId, Boolean(tenantId));
-  const joinQueueQuery = usePublishingJoinQueue(tenantId, Boolean(tenantId));
-  const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
+  const activitiesQuery = useOperatorWorkspaceActivities(tenantId, Boolean(tenantId));
+  const joinQueueQuery = useOperatorWorkspaceJoinQueue(tenantId, Boolean(tenantId));
+  const invalidateWorkspace = useInvalidateOperatorWorkspace(tenantId);
 
   const events = useMemo(() => activitiesQuery.data ?? [], [activitiesQuery.data]);
   const pendingRequests = useMemo(

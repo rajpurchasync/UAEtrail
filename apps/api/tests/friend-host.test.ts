@@ -19,7 +19,7 @@ beforeAll(async () => {
 });
 
 describe('buddy host access', () => {
-  it('allows tenant owner without membership row on /publishing and backfills membership', async () => {
+  it('allows tenant owner without membership row on /workspace and backfills membership', async () => {
     const visitor = await registerVerifiedVisitor(app, `owner-no-mem-${Date.now()}`);
     const user = await findAuthUserByEmail(visitor.email);
     if (!user) throw new Error('expected user');
@@ -36,7 +36,7 @@ describe('buddy host access', () => {
     await db.collection('tenant_memberships').deleteMany({ tenantId: tenant.id, userId: user._id });
 
     const canonical = await request(app)
-      .get('/api/publishing/activities')
+      .get('/api/workspace/activities')
       .set('Authorization', `Bearer ${visitor.accessToken}`)
       .set('x-tenant-id', tenant.id);
     expect(canonical.status).toBe(200);

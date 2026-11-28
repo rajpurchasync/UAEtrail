@@ -22,7 +22,7 @@ const run = (label, command) => {
 try {
   buildSharedTypesWorkspace(root, childEnv(), { logPrefix: 'verify:host-member' });
   run('API typecheck', 'npm run typecheck:api');
-  run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts tests/member-publishing-workspace-access.test.ts');
+  run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts tests/member-operator-workspace-access.test.ts');
   run('API member-discovery contracts', 'npm --workspace @uaetrail/api run test -- --run tests/member-discovery-contract.test.ts');
   run(
     'Frontend host-member + schedule/guide guards',

@@ -4,11 +4,11 @@ import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClie
 import {
   decideActivityJoinRequest,
   type ActivityRequestView,
-} from '../../hooks/publishingJoinQueueClientApi';
+} from '../../hooks/operatorWorkspaceJoinQueueClientApi';
 import {
-  useInvalidatePublishingWorkspace,
-  usePublishingJoinQueue,
-} from '../../hooks/publishingWorkspaceQueries';
+  useInvalidateOperatorWorkspace,
+  useOperatorWorkspaceJoinQueue,
+} from '../../hooks/operatorWorkspaceQueries';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from './ConsoleShell';
 import { ActivityJoinRequestCard } from './ActivityJoinRequestCard';
@@ -29,8 +29,8 @@ export const JoinRequests = () => {
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const joinQueueQuery = usePublishingJoinQueue(tenantId, Boolean(tenantId));
-  const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
+  const joinQueueQuery = useOperatorWorkspaceJoinQueue(tenantId, Boolean(tenantId));
+  const invalidateWorkspace = useInvalidateOperatorWorkspace(tenantId);
 
   const requests = useMemo(() => joinQueueQuery.data ?? [], [joinQueueQuery.data]);
   const loading = Boolean(tenantId) && joinQueueQuery.isLoading && !joinQueueQuery.data;

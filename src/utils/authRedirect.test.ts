@@ -23,7 +23,7 @@ describe('canReturnAfterAuth', () => {
   it('blocks participants from admin but allows operator redirect targets', () => {
     expect(canReturnAfterAuth('/admin/overview', 'participant')).toBe(false);
     expect(canReturnAfterAuth('/operator/overview', 'participant')).toBe(true);
-    expect(canReturnAfterAuth('/publishing/overview', 'participant')).toBe(true);
+    expect(canReturnAfterAuth('/operator/overview', 'participant')).toBe(true);
     expect(canReturnAfterAuth('/profile', 'participant')).toBe(true);
   });
 });

@@ -9,6 +9,7 @@ export {
   joinAuthPath,
 } from './platform';
 export {
+  MEMBER_HOME_PATH,
   SIGNIN_PATH,
   SESSION_EXPIRED_QUERY_KEY,
   hasSessionExpiredQuery,

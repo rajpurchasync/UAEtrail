@@ -32,7 +32,7 @@ Use full run-project scripts only when explicitly requested.
 - **Seed/backfill CLI audit:** one-shot API scripts (`npm run seed`, `seed-dev-qa`, `mongo:sync`, backfills, …) append a JSON line to `apps/api/logs/seed-script-runs.jsonl` (`script`, `ok`, `durationMs`, `exitCode`). Override path with `SEED_SCRIPT_AUDIT_LOG`. Scripts exit after teardown (Mongo + Redis) so terminals do not hang.
 - **Explore map guest cap:** signed-out map preview is **3 outings + 3 places** in **production** only. Local dev serves the full catalog (set `EXPLORE_MAP_GUEST_CATALOG_CAP=1` to rehearse guest preview). Signed-in members always get the full payload. QA seed adds **20 outings** (mix of hike/camp/**event**/rideshare) — only rows with `activityType: event` count as **Events** on the map filter, not all 20.
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
-- Buddy **Host** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/status` exposes `profileComplete` and `publish.canPublish`. Publish/create on `POST /publishing/activities` enforces the same server-side.
+- Buddy **Host** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/status` exposes `profileComplete` and `publish.canPublish`. Publish/create on `POST /workspace/activities` enforces the same server-side.
 - **`npm run dev:local`:** prints a reminder to run `SEED_DATA=true npm run seed` when the map has no pins (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)).
 - Set `QUERY_TIMING=1` to log store queries slower than 25ms (see `apps/api/src/lib/query-timing.ts`).
 

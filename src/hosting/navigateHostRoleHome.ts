@@ -1,7 +1,7 @@
 import type { NavigateFunction } from 'react-router-dom';
 import type { OwnedHostProfileDTO, UserRole } from '@uaetrail/shared-types';
 import { setActiveTenantId } from '../api/tenant';
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { MEMBER_HOME_PATH } from '../config/surfacePaths';
 import { fetchMemberStatus } from '../hooks/memberStatusApi';
 import { defaultRouteByRole } from '../utils/authRouting';
 import { resolveHostingHubPath, isHostConsoleRole } from './hostingHubRouting';
@@ -32,5 +32,5 @@ export const navigateToHostModeHome = async (
 };
 
 export const navigateToVisitorHome = (navigate: NavigateFunction): void => {
-  navigate(EXPLORE_MAP_PATH, { replace: true });
+  navigate(MEMBER_HOME_PATH, { replace: true });
 };

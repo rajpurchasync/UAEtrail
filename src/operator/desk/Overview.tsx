@@ -22,7 +22,7 @@ export const Overview = () => {
   const refreshKey = 0;
   const host = useConsoleHubData();
   const gate = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessOperatorWorkspace);
 
   const handleCreate = useCallback(() => {
     navigateToExploreHost(navigate);

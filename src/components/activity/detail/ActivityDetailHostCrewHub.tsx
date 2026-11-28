@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { afterHostJoinDecisionClientRefresh } from '../../../hooks/activityJoinClientEffects';
 import type { ActivityRequestView } from '../../../api/types';
-import { decideActivityJoinRequest } from '../../../hooks/publishingJoinQueueClientApi';
+import { decideActivityJoinRequest } from '../../../hooks/operatorWorkspaceJoinQueueClientApi';
 import { ActivityJoinRequestCard } from '../../../operator/desk/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../../operator/desk/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from '../ActivityParticipantsPanel';

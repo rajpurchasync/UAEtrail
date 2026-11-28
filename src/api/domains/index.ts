@@ -30,7 +30,7 @@ export { reviewsApi } from './reviews';
 export { safetyApi } from './safety';
 export { memberApi } from './member';
 export { operatorPublicApi } from './operatorPublic';
-export { publishingWorkspaceApi } from './publishingWorkspace';
+export { operatorWorkspaceApi } from './operatorWorkspace';
 export { shopApi } from './shop';
 export { adminApi } from './admin';
 export { chatApi } from './chat';

@@ -168,7 +168,7 @@ export const resolveMobileBottomTab = (pathname: string, search = ''): MobileBot
     return 'trips';
   }
   if (pathname === PLAN_PATH) return 'plan';
-  if (pathname === MESSAGES_PATH || pathname === '/operator/messages' || pathname === '/publishing/messages') {
+  if (pathname === MESSAGES_PATH || pathname === '/operator/messages') {
     const params = new URLSearchParams(search.replace(/^\?/, ''));
     if (params.get('to') || params.get('group')) return null;
     return 'chat';

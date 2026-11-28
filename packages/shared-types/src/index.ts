@@ -601,7 +601,7 @@ export interface HostStatusDTO {
   /** Can post Host / publish activities (community / pro / business tenant). */
   canPublish: boolean;
   /** Publishing workspace (publish queue, team) when publish-capable or business member. */
-  canAccessPublishingWorkspace: boolean;
+  canAccessOperatorWorkspace: boolean;
   /** Platform operator shell — not a community host tier. */
   isPlatformStaff: boolean;
   applicationStatus: HostApplicationStatus;
@@ -622,7 +622,7 @@ export interface HostStatusDTO {
 /** Publish/workspace slice of {@link MemberStatusDTO} — not a separate HTTP resource. */
 export interface MemberPublishCapabilitiesDTO {
   canPublish: boolean;
-  canAccessPublishingWorkspace: boolean;
+  canAccessOperatorWorkspace: boolean;
   /** Platform operator — use for admin shell; not `isCommunityHost`. */
   isPlatformStaff: boolean;
   canHostPaidActivities: boolean;
@@ -656,7 +656,7 @@ export const buildMemberPublishCapabilities = (
   status: HostStatusDTO
 ): MemberPublishCapabilitiesDTO => ({
   canPublish: status.canPublish,
-  canAccessPublishingWorkspace: status.canAccessPublishingWorkspace,
+  canAccessOperatorWorkspace: status.canAccessOperatorWorkspace,
   isPlatformStaff: status.isPlatformStaff,
   canHostPaidActivities: status.canHostPaidActivities,
   applicationStatus: status.applicationStatus,
@@ -1144,6 +1144,10 @@ export interface TenantPublicDTO {
   description?: string | null;
   website?: string | null;
   region?: string | null;
+  /** Optional map anchor — Place row id (shop, agency office, hotel, partner venue). */
+  primarySiteAnchorPlaceId?: string | null;
+  /** Optional map anchor — Facility row id when amenity-only pin. */
+  primarySiteAnchorFacilityId?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   ownerId: string;

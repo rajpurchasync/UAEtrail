@@ -14,8 +14,8 @@ import { useMemberStatus } from '../../hooks/useMemberStatus';
 /** Shown when there are no upcoming activities. */
 export const EmptyActivitiesBanner = () => {
   const { user } = useAuth();
-  const { canAccessPublishingWorkspace, canPublish } = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = canAccessPublishingWorkspace;
+  const { canAccessOperatorWorkspace, canPublish } = useMemberStatus({ enabled: Boolean(user) });
+  const canHost = canAccessOperatorWorkspace;
   const memberHostCtaPath = canPublish ? EXPLORE_MAP_PATH : PRO_MEMBERSHIP_PATH;
 
   return (

@@ -173,13 +173,13 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     });
   }
 
-  const publishingConsolePageAssertions: Array<{ page: string; hook: string; queryKey: string }> = [
-    { page: 'src/operator/desk/Places.tsx', hook: 'usePublishingSubmittedPlaces', queryKey: 'publishingSubmittedPlacesQueryKey' },
-    { page: 'src/operator/desk/Team.tsx', hook: 'usePublishingTeam', queryKey: 'publishingTeamQueryKey' },
+  const operatorConsolePageAssertions: Array<{ page: string; hook: string; queryKey: string }> = [
+    { page: 'src/operator/desk/Places.tsx', hook: 'useWorkspaceSubmittedPlaces', queryKey: 'workspaceSubmittedPlacesQueryKey' },
+    { page: 'src/operator/desk/Team.tsx', hook: 'useWorkspaceTeam', queryKey: 'workspaceTeamQueryKey' },
     { page: 'src/operator/desk/PublicProfileEdit.tsx', hook: 'useMyTenantMemberships', queryKey: 'myTenantMembershipsQueryKey' },
   ];
 
-  for (const { page, hook, queryKey } of publishingConsolePageAssertions) {
+  for (const { page, hook, queryKey } of operatorConsolePageAssertions) {
     it(`${page} uses ${hook}`, () => {
       const content = read(page);
       expect(content).toMatch(new RegExp(hook));
@@ -199,7 +199,7 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     const content = read('src/operator/desk/ConsoleShell.tsx');
     expect(content).toMatch(/useOperatorDeskRating/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
-    expect(read('src/hooks/usePublishingConsoleQueries.ts')).toMatch(/operatorDeskRatingQueryKey/);
+    expect(read('src/hooks/useOperatorConsoleQueries.ts')).toMatch(/operatorDeskRatingQueryKey/);
   });
 
   it('W6c surfaces use TanStack Query (no mount useSafeAsyncEffect)', () => {

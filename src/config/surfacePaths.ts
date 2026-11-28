@@ -5,6 +5,9 @@
  * @see docs/NAVIGATION.md · docs/DOMAIN_CANONICALS.md
  */
 
+/** Signed-in demand Home — intent hub (`src/home/`). Guest marketing stays `/`. */
+export const MEMBER_HOME_PATH = '/home' as const;
+
 /** Personal hub */
 export const PROFILE_PATH = '/profile' as const;
 

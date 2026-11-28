@@ -20,8 +20,8 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
     expect(read('src/member/hostMemberGuard.test.ts')).toMatch(/become-host/);
   });
 
-  it('STOREFRONT-SPINE-03: operator desk SPA /operator/*; HTTP /publishing', () => {
-    expect(read('src/config/publishingConsoleRoutingGuard.test.ts')).toMatch(/\/publishing/);
+  it('STOREFRONT-SPINE-03: operator desk SPA /operator/*; HTTP /workspace', () => {
+    expect(read('src/config/publishingConsoleRoutingGuard.test.ts')).toMatch(/\/operator/);
     expect(read('src/member/publishingConsoleHookGuard.test.ts')).toMatch(/tenantActivityClientApi/);
     expect(read('src/member/organisationNamingGuard.test.ts')).toMatch(/TenantStorefrontPage/);
   });
@@ -33,15 +33,15 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('shop.public_profile')?.axis).toBe('C_STOREFRONT');
     expect(byId.get('publish.as_tenant')?.resolver?.module).toMatch(/publishing-profile-kind/);
-    expect(byId.get('publish.shop_storefront')?.contextId).toBe('publishing_workspace');
-    expect(byId.get('publish.shop_storefront')?.http?.path).toBe('/publishing/shop-profile');
+    expect(byId.get('publish.shop_storefront')?.contextId).toBe('operator_workspace');
+    expect(byId.get('publish.shop_storefront')?.http?.path).toBe('/workspace/shop-profile');
   });
 
   it('STOREFRONT-SPINE-05: workspace access does not broaden via UserRole', () => {
-    expect(read('apps/api/src/services/member-publishing-workspace-access.ts')).toMatch(
-      /resolvePublishingWorkspaceAccess/
+    expect(read('apps/api/src/services/member-operator-workspace-access.ts')).toMatch(
+      /resolveOperatorWorkspaceAccess/
     );
-    expect(read('apps/api/src/services/member-publishing-workspace-access.ts')).not.toMatch(/\bisHostRole\b/);
+    expect(read('apps/api/src/services/member-operator-workspace-access.ts')).not.toMatch(/\bisHostRole\b/);
   });
 
   it('STOREFRONT-SPINE-06: verify:storefront-spine wired (DMCP Phase 6)', () => {

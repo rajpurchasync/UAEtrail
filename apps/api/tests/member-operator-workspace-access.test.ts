@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePublishingWorkspaceAccess } from '../src/services/member-publishing-workspace-access.js';
+import { resolveOperatorWorkspaceAccess } from '../src/services/member-operator-workspace-access.js';
 
 const emptyTiers = { community: false, professional: false, business: false };
 
-describe('resolvePublishingWorkspaceAccess (DMCP Phase 1)', () => {
+describe('resolveOperatorWorkspaceAccess (DMCP Phase 1)', () => {
   it('denies workspace when profile publish and business tier are false', () => {
     expect(
-      resolvePublishingWorkspaceAccess({
+      resolveOperatorWorkspaceAccess({
         isPlatformAdmin: false,
         canPublish: false,
         hostTiers: emptyTiers,
@@ -16,7 +16,7 @@ describe('resolvePublishingWorkspaceAccess (DMCP Phase 1)', () => {
 
   it('allows workspace for publish-capable members', () => {
     expect(
-      resolvePublishingWorkspaceAccess({
+      resolveOperatorWorkspaceAccess({
         isPlatformAdmin: false,
         canPublish: true,
         hostTiers: { community: true, professional: false, business: false },
@@ -26,7 +26,7 @@ describe('resolvePublishingWorkspaceAccess (DMCP Phase 1)', () => {
 
   it('allows workspace for verified business tier without widening on tenant job role alone', () => {
     expect(
-      resolvePublishingWorkspaceAccess({
+      resolveOperatorWorkspaceAccess({
         isPlatformAdmin: false,
         canPublish: false,
         hostTiers: { community: false, professional: false, business: true },
@@ -36,7 +36,7 @@ describe('resolvePublishingWorkspaceAccess (DMCP Phase 1)', () => {
 
   it('allows platform staff', () => {
     expect(
-      resolvePublishingWorkspaceAccess({
+      resolveOperatorWorkspaceAccess({
         isPlatformAdmin: true,
         canPublish: false,
         hostTiers: emptyTiers,

@@ -32,9 +32,9 @@ describe('inbound bookmark contracts (R6)', () => {
     expect(notifPath('/buddies')).toBe('/crews');
   });
 
-  it('participant publishing bookmarks route to consumer surfaces', () => {
-    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/profile');
-    expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
+  it('participant operator desk bookmarks route to consumer surfaces', () => {
+    expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/profile');
+    expect(participantHostBookmarkRedirect('/operator/requests')).toBe('/my-requests');
   });
 
   it('compose wire parses canonical activity · intent · place emits', () => {

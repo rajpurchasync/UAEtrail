@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getActiveTenantId } from '../../api/tenant';
-import { useOperatorDeskRating } from '../../hooks/usePublishingConsoleQueries';
+import { useOperatorDeskRating } from '../../hooks/useOperatorConsoleQueries';
 import { ConsumerShell } from '../../components/mobile/ConsumerShell';
 import { ConsumerHeaderActions } from '../../components/layout/ConsumerHeaderActions';
 import { FilterChips } from '../../components/mobile/FilterChips';
@@ -22,7 +22,7 @@ interface ConsoleShellProps {
   headerExtra?: ReactNode;
 }
 
-/** Operator desk shell — SPA `/operator/*` (HTTP tenant API stays `/publishing/*`). */
+/** Operator desk shell — SPA `/operator/*` (HTTP tenant API `/workspace/*`). */
 export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShellProps) => {
   const backChrome = useProfileHubBackChrome();
   const location = useLocation();

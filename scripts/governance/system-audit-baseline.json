@@ -9,7 +9,7 @@
     "mongoCollectionsMultiWriterOver4": 4,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 86,
+    "spaRouteElements": 87,
     "feDomainModules": 33,
     "boundedContexts": 18
   },
@@ -49,9 +49,9 @@
       "file": "apps/api/src/routes/admin.ts"
     },
     {
-      "prefix": "/publishing",
-      "file": "apps/api/src/routes/publishing.ts",
-      "note": "HTTP + SPA /publishing/* (publishingRouter module)"
+      "prefix": "/workspace",
+      "file": "apps/api/src/routes/workspace.ts",
+      "note": "Operator workspace HTTP /workspace/*"
     },
     {
       "prefix": "/chat",

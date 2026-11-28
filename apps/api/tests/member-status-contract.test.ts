@@ -27,7 +27,7 @@ describe('member status contract', () => {
       hostTiers: { community: true, professional: false, business: false },
       profileRoleLabel: 'community_member',
       canPublish: true,
-      canAccessPublishingWorkspace: true,
+      canAccessOperatorWorkspace: true,
       isPlatformStaff: false,
       applicationStatus: 'none',
       tenantId: 't1',
@@ -42,7 +42,7 @@ describe('member status contract', () => {
       ownedProfiles: [],
     });
     expect(dto.publish.canPublish).toBe(true);
-    expect(dto.publish.canAccessPublishingWorkspace).toBe(true);
+    expect(dto.publish.canAccessOperatorWorkspace).toBe(true);
     expect(dto.publish.isPlatformStaff).toBe(false);
     expect(dto.profileComplete).toBe(true);
     expect(dto.guideProfileComplete).toBe(true);
@@ -63,7 +63,7 @@ describe('member status contract', () => {
       hostTiers: { community: false, professional: false, business: false },
       profileRoleLabel: 'community_member',
       canPublish: true,
-      canAccessPublishingWorkspace: true,
+      canAccessOperatorWorkspace: true,
       isPlatformStaff: true,
       applicationStatus: 'none',
       tenantId: null,
