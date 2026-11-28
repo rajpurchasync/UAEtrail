@@ -10,7 +10,7 @@
     "publishing_workspace": {
       "spa": ["/publishing/overview", "/publishing/activities", "/publishing/requests", "/publishing/team", "/publishing/profile", "/publishing/places", "/publishing/history", "/publishing/security-privacy"],
       "api": ["/publishing"],
-      "feDomain": "organisation.ts"
+      "feDomain": "publishingWorkspace.ts"
     },
     "member_identity": {
       "spa": ["/member/:userId"],

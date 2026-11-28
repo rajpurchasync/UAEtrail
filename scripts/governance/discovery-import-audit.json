@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dmcpPhase": 3,
-  "generated": "2026-11-27",
+  "generated": "2026-11-28",
   "description": "Cross-import counts from list/discovery/* into sibling folders. GW-7: list imports explore modules directly (no list facade).",
   "sourceRoots": [
     "src/list",

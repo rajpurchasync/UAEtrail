@@ -420,7 +420,7 @@ SPA: `/admin/hosts` → `pages/admin/Operators` (see [`NAVIGATION.md`](./NAVIGAT
 | `wishlist.ts`, `entityFollow.ts`, `reviews.ts` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
 | `places.ts` | `/me/places` (canonical); `GET /me/locations` read alias only |
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |
-| `organisation.ts` | `/me/pro-application` (alias `/me/host-application`) |
+| `operatorPublic.ts` | Pro application + public tenant profile reads (`/me/pro-application`, tenant slug) |
 | `admin.ts` | `/admin/pro-applications` (alias `/admin/host-applications`) |
 
 ---
