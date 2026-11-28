@@ -8,7 +8,7 @@
   "axes": {
     "A_RBAC": "Platform/job role — auth middleware, route mounts, admin/merchant API",
     "B_PUBLISH": "Host publish capabilities — GET /me/status publish.* only",
-    "C_STOREFRONT": "Tenant storefront kind — PublishingProfileKind, x-tenant-id",
+    "C_STOREFRONT": "Publishing profile kind (PublishingProfileKind) — tenant scope, x-tenant-id; business kinds use brand storefront URLs",
     "D_PARTICIPATE": "Per-outing engagement — viewerAccess, join spine, medical safety",
     "E_ENGAGEMENT": "Points/membership tier — badges, reviews; never publish/join"
   },
@@ -311,7 +311,7 @@
       "label": "Public shop profile",
       "axis": "C_STOREFRONT",
       "contextId": "shop_profiles",
-      "resolver": { "module": "packages/shared-types/src/publishing-profile-kind.ts", "symbol": "inferHostStorefrontKindFromTenantWire" },
+      "resolver": { "module": "packages/shared-types/src/publishing-profile-kind.ts", "symbol": "inferPublishingProfileKindFromTenantWire" },
       "http": { "method": "GET", "path": "/shop/:id" }
     },
     {

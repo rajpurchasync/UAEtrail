@@ -26,6 +26,8 @@ import { BrowseCompactRow } from '../browse/BrowseCompactRow';
 import { BrowseThumbnailCard } from '../browse/BrowseThumbnailCard';
 import { BrowsePlaceDistanceProvider } from '../browse/browsePlaceDistanceContext';
 import { useBrowseViewerLocation } from '../browse/useBrowseViewerLocation';
+import { resolveViewerAnchorGeo } from '../browse/viewerAnchor';
+import { useViewerAnchor } from '../browse/useViewerAnchor';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { BrowseListLayout } from '../browse/browseListLayout';
@@ -285,8 +287,13 @@ export const ListExplorer = ({
       ? 'thumbnails'
       : layout;
   const locationEnabled = bucket === 'places' || browseListSortUsesViewerLocation(sort);
-  const { fix: viewer, pending: locationPending, denied: locationDenied } =
+  const savedAnchor = useViewerAnchor();
+  const { fix: sessionFix, pending: locationPending, denied: locationDenied } =
     useBrowseViewerLocation(locationEnabled);
+  const viewer = useMemo(() => {
+    if (!locationEnabled) return null;
+    return resolveViewerAnchorGeo(sessionFix, savedAnchor);
+  }, [locationEnabled, sessionFix, savedAnchor]);
   const { units } = useDisplayPreferences();
   const listSections = useMemo(() => {
     const sorted = sortBrowseListCards(cards, sort, viewer);

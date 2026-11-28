@@ -125,12 +125,14 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(read('package.json')).toMatch(/verify:people-graph-plan/);
   });
 
-  it('AUTH-10: storefront kinds and Pro path stay matrix-resolved (DMCP Phase 6)', () => {
+  it('AUTH-10: publishing profile kinds and Pro path stay matrix-resolved (DMCP Phase 6)', () => {
     const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(6);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('client.pro_membership')?.resolver?.module).toBe('src/config/memberRoutes.ts');
-    expect(byId.get('shop.public_profile')?.resolver?.symbol).toBe('inferHostStorefrontKindFromTenantWire');
+    expect(byId.get('shop.public_profile')?.resolver?.symbol).toBe(
+      'inferPublishingProfileKindFromTenantWire'
+    );
     expect(byId.get('storefront.agency_public')?.axis).toBe('C_STOREFRONT');
     expect(read('src/config/operatorStorefrontSpineGuard.test.ts')).toMatch(/STOREFRONT-SPINE-06/);
     expect(read('package.json')).toMatch(/verify:storefront-spine/);

@@ -26,6 +26,7 @@ interface NotificationBellPopoverProps {
   className?: string;
   viewAllPath?: string;
   preferAdminRoutes?: boolean;
+  compact?: boolean;
 }
 
 const UNREAD_PREVIEW_LIMIT = 12;
@@ -35,6 +36,7 @@ export const NotificationBellPopover = ({
   className = '',
   viewAllPath = APP_SETTINGS_NOTIFICATIONS_PATH,
   preferAdminRoutes = false,
+  compact = false,
 }: NotificationBellPopoverProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -132,7 +134,7 @@ export const NotificationBellPopover = ({
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
       : 'text-neutral-600 bg-transparent border border-transparent hover:bg-neutral-100 hover:text-neutral-900';
 
-  const bellSizeClass = 'h-10 w-10';
+  const bellSizeClass = compact ? 'h-9 w-9' : 'h-10 w-10';
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${className}`}>

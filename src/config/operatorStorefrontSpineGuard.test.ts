@@ -6,9 +6,10 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
   it('STOREFRONT-SPINE-01: PublishingProfileKind resolves in shared-types only', () => {
-    expect(read('packages/shared-types/src/publishing-profile-kind.ts')).toMatch(
-      /export const resolvePublishingProfileKind/
-    );
+    const kindModule = read('packages/shared-types/src/publishing-profile-kind.ts');
+    expect(kindModule).toMatch(/export const resolvePublishingProfileKind/);
+    expect(kindModule).toMatch(/export const inferPublishingProfileKindFromTenantWire/);
+    expect(kindModule).not.toMatch(/inferHostStorefrontKindFromTenantWire/);
     expect(read('packages/shared-types/src/explore-presentation.ts')).toMatch(/PublishingProfileKind/);
     expect(read('apps/api/src/services/member-status.ts')).toMatch(/resolvePublishingProfileKind/);
   });

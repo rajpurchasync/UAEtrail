@@ -25,7 +25,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **Publishing actor = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/status` → `publish.ownedProfiles[].publishingProfileKind`; Host publish step `HostingPublishAsField`). Workspace publish-as: TBD.
 
-**Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.tenant` is the agency/partner storefront slug URL, not product copy.
+**Publishing profile kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Individual kinds use **`/member/:userId`**; business kinds add a **brand storefront** URL. Wire `EntityKind.tenant` is the agency/partner brand slug URL, not product copy.
 
 **Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing** (joiner-facing); **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **any publishing identity** (community host, guide, shop, agency, partner) with a shared **desk** at **`/operator/*`** (kind-specific modules); **Host / publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture:** SPA **`/operator/*`**; tenant HTTP **`/workspace/*`** + `x-tenant-id`. **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
 

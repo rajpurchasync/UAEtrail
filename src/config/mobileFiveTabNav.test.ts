@@ -1,9 +1,13 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import {
+  MOBILE_BOTTOM_TAB_ORDER,
   MOBILE_FIVE_TAB_ORDER,
   MOBILE_FIVE_TAB_UI_LABELS,
+  MOBILE_HUB_HOME_TAB_ID,
   crewsHomePath,
+  mobileBottomTabHomePath,
   mobileFiveTabHomePath,
+  resolveMobileBottomTab,
   resolveMobileFiveTab,
   tripsListHomePath,
   tripsMapHomePath,
@@ -13,18 +17,23 @@ import {
 } from './mobileFiveTabNav';
 
 describe('mobile five-tab nav contract', () => {
-  it('orders tabs Trips · Places · Crews · Chat · Plans', () => {
-    expect(MOBILE_FIVE_TAB_ORDER).toEqual(['trips', 'venues', 'crews', 'chat', 'plan']);
+  it('orders bottom bar Home · Trips · Places · Crews · Plans', () => {
+    expect(MOBILE_FIVE_TAB_ORDER).toEqual(['trips', 'venues', 'crews', 'plan']);
+    expect(MOBILE_BOTTOM_TAB_ORDER).toEqual(['home', 'trips', 'venues', 'crews', 'plan']);
   });
 
-  it('exposes UI labels Trips · Places · Crews · Chat · Plans', () => {
+  it('exposes UI labels Trips · Places · Crews · Plans', () => {
     expect(MOBILE_FIVE_TAB_UI_LABELS).toEqual({
       trips: 'Trips',
       venues: 'Places',
       crews: 'Crews',
       plan: 'Plans',
-      chat: 'Chat',
     });
+  });
+
+  it('routes Home tab to member home', () => {
+    expect(mobileBottomTabHomePath(MOBILE_HUB_HOME_TAB_ID)).toBe('/home');
+    expect(resolveMobileBottomTab('/home', '')).toBe('home');
   });
 
   it('builds scoped home paths for map/list projections', () => {
@@ -39,7 +48,7 @@ describe('mobile five-tab nav contract', () => {
 
   it('resolves active tab from pathname + search', () => {
     expect(resolveMobileFiveTab('/plan', '')).toBe('plan');
-    expect(resolveMobileFiveTab('/chat', '')).toBe('chat');
+    expect(resolveMobileFiveTab('/chat', '')).toBeNull();
     expect(resolveMobileFiveTab('/chat', '?to=user-1')).toBeNull();
     expect(resolveMobileFiveTab('/list', '')).toBe('trips');
     expect(resolveMobileFiveTab('/list', '?listCat=venues')).toBe('venues');

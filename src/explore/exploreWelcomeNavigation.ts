@@ -1,9 +1,8 @@
-import { EXPLORE_MAP_PATH } from '../config/platform';
 import { PLAN_PATH } from '../config/surfacePaths';
 import { shouldShowExploreLocationPrompt } from './exploreMapLocationPreference';
 
-/** Trips map home — default landing after signup profile wizard. */
-export const POST_SIGNUP_EXPLORE_PATH = EXPLORE_MAP_PATH;
+/** Trips map home — default landing after signup profile wizard. Literal avoids platform init cycle. */
+export const POST_SIGNUP_EXPLORE_PATH = '/explore';
 
 /**
  * After `/welcome`, send new members to the Trips map — not My Plans or other gated hubs

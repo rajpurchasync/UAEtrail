@@ -175,7 +175,7 @@ export const PublicProfileEdit = () => {
         </GlassCard>
       ) : !tenantSlug ? (
         <GlassCard padding className="py-10 text-center">
-          <p className="text-neutral-600">Select an operator profile above to edit your storefront.</p>
+          <p className="text-neutral-600">Select a publishing profile above to edit your public profile.</p>
         </GlassCard>
       ) : (
         <TenantStorefrontDetail slug={tenantSlug} mode="owner" />

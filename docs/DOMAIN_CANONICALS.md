@@ -47,6 +47,9 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | User-facing FAB buttons — reserved word for **message compose** later |
 | **Host** | Product role | Individual leading **this outing** (joiner-facing) | The Mongo `tenants` row; the operator desk |
 | **Operator** | Product identity | Any publishing identity (community host, guide, shop, agency, partner) + shared **desk** at `/operator/*` | The person on this outing (that's **Host**); a single `tenant` row (Mongo `tenants`) |
+| **Publishing profile kind** | Wire `PublishingProfileKind` | How a publishing identity shows up in public — member card vs brand page; operator desk modules | Member **settings** hub `/profile`; `profileComplete` onboarding |
+| **Member profile** | Consumer surface | **`/member/:userId`** — one person layout for all member links | The publishing-profile **kind** enum; business **brand** pages |
+| **Brand storefront** | Consumer surface (business) | Tenant **public brand page** — `/shop/:id`, `/agency/:slug`, `/partner/:slug` | Calling buddy hosts or pro guides a “storefront” (they use the member profile shell) |
 | **Tenant storefront** | Code + wire | **One tenant row** for all publishing kinds (guide, agency, shop, partner, …): `TenantStorefront*`, `x-tenant-id`, `EntityKind: tenant` | Consumer copy — **host**, **guide**, **agency**, **shop**, **partner**, **operator**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Retired label | — | Product noun is **host** (activity) or **tenant** (storage) |
 | **Partner** | Product kind | Hotel / campaign / brand **host storefront** — not a shop, not a tour agency | Outdoor gear **shop**; do not call shops “partners” in UI |
@@ -72,9 +75,16 @@ An **Activity** is **Who + When** (often anchored to **Where** via `locationId`)
 
 ---
 
-### 1.3 Host storefront kinds (`PublishingProfileKind` — target wire)
+### 1.3 Publishing profile kinds (`PublishingProfileKind` — wire)
 
-One **person** account; zero or more **storefronts** (tenant-backed public brands). Orthogonal to `EntityKind` (§1.5).
+**Publishing profile kind** is the flavor of **public publishing identity**: which **public shell** (layout + URL) and which **operator desk** modules apply. It is **not** the member settings hub (`/profile`) or `profileComplete` gates.
+
+| Shell class | Kinds | Public surface |
+|-------------|-------|----------------|
+| **Member profile** | `community`, `pro_guide` | **`/member/:userId`** — one person card; no separate brand page |
+| **Brand profile** | `agency`, `shop`, `partner`, `hospitality`, `ecommerce`, … | Brand URL (`/agency/:slug`, `/shop/:id`, …) — product copy **brand storefront** where business-facing |
+
+One **person** account; zero or more **publishing profiles** (each backed by a `tenants` row when publishing). Orthogonal to `EntityKind` (§1.5).
 
 | Kind | Product | Map pin? | Join / book model | Public URL (today) |
 |------|---------|----------|-------------------|-------------------|
@@ -85,7 +95,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `hospitality` | Hotels, lodges, stay + hike packages | **Optional** site pin (property on map) | Stays + linked Activities (future) | TBD |
 | `partner` | Campaign / brand partner | **Optional** site pin (property, campaign venue) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
-**Invariant (all business kinds):** **Storefront** = tenant + public brand page + **one shared desk** (SPA **`/operator/*`**, HTTP **`/workspace/*`**). **Site anchor** = optional linked **Place** and/or **Facility** row with coords + `destinationId` — same mechanism for shop, agency trailhead office, hotel at trail, partner venue. Pin absence does not remove operator status (remote agencies); pin presence does not make the row a “shop-only” concept.
+**Invariant (all kinds):** Every publishing profile has a **tenant** row + **one shared desk** (SPA **`/operator/*`**, HTTP **`/workspace/*`**). **Business kinds** also expose a **brand profile** (brand storefront URL). **Individual kinds** use the **member profile** as the only public shell. **Site anchor** = optional linked **Place** and/or **Facility** with coords + `destinationId` (shop pin, agency office, hotel, partner venue). Pin absence does not remove operator status (remote agencies); pin presence does not make the row “shop-only”.
 
 **Shops ≠ agencies ≠ partners** — separate Pro applications and **public URL shape** (`EntityKind` / lens). **Not** separate supply stacks. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
 
@@ -103,7 +113,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 
 ---
 
-### 1.5 `EntityKind` (URLs) vs `PublishingProfileKind` (brand type)
+### 1.5 `EntityKind` (URLs) vs `PublishingProfileKind` (publishing profile kind)
 
 | `EntityKind` | Role on the wire | Paired with |
 |--------------|------------------|-------------|
@@ -366,7 +376,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 | **Entity (document)** | `/activity/:id`, `/trail/:id`, `/venue/:id`, `/shop/:id`, `/agency/:slug`, `/member/:userId`, … | Share link, notification target, SEO snippet, per-record auth (`viewerAccess`) | Per-entity fetch + cache (`activity`, place, shop, tenant). **Not** used as “browse all hikes” hubs. |
 | **Personal (not public browse)** | `/plan`, `/profile/history`, `/profile`, `/settings` | Upcoming + goals; history + journey map; profile hub; **app settings** (not `/profile/edit`) | `/me/*` APIs; separate from explore map payload. |
 
-**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Mobile bottom nav:** five tabs (Trips · Places · People · Chat · Plans) — Trips/Venues use **map + list projections**, not a sixth “List” tab; use `mobileFiveTabHomePath()` instead of ad hoc `/list` links in chrome.
+**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Mobile bottom nav:** five tabs (Home · Trips · Places · Crews · Plans) — Trips/Places use **map + list projections**; Chat is header-only; use `mobileBottomTabHomePath()` / `mobileFiveTabHomePath()` instead of ad hoc `/list` links in chrome.
 
 **When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
 
@@ -630,7 +640,7 @@ flowchart TB
 
 **Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|facility|destination|shop}/`. Do **not** add `Explore*Peek*` modules. Do **not** emit `source: 'area'` on `GET /explore/map`. Helpers: `isPlaceMapSource`, `isFacilityMapSource`, `isGeographyMapSource`.
 
-**Pro account storefronts (one user, optional tenant per subtype)** — each has a **public profile URL**; map and People discovery differ by subtype:
+**Pro publishing profiles (one user, optional tenant per subtype)** — each has a **public profile URL** (member card or brand page); map and People discovery differ by subtype:
 
 | Subtype | Profile URL | Map pin? | How members find them |
 |---------|-------------|----------|------------------------|

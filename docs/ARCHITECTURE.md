@@ -56,9 +56,9 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Destination (curated hub) | `areas` | `/destination/:slug` | **No** — filter `?destination=` and hub page; country/state from **AdminGeo** (`geoRef`) |
 | Activity (hosted outings) | `activities` | `/activity/:id` | Yes (`source: activity`) |
 | Member availability (find crew) | `member_availability` | profile + map pin | Yes (`source: availability`) |
-| Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only (`source: shop`) |
+| Shop (operator tenant) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only (`source: shop`) |
 | Individual Pro | `tenants` (professional) + member | `/member/:userId` | No |
-| Agency (organisation) | `tenants` (agency) | `/agency/:slug` | No |
+| Agency (operator tenant) | `tenants` (agency) | `/agency/:slug` | No |
 
 Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/operator/profile?kind=shop`: contact, branding). Saving there syncs both and invalidates the explore map cache.
 
@@ -75,7 +75,7 @@ context/        AuthContext
 utils/          authRouting, shopPaths — explore URL builders live in `src/explore/routing.ts` (`routingCatalog`)
 ```
 
-**Mobile IA:** Bottom tabs **Trips · Venues · Crews · Chat · Plan** (`src/config/mobileFiveTabNav.ts`) — map-first **Trips** at `/explore`, list routes via `/list` and tab handoffs; Profile via header avatar. Signed-in default landing is **`/explore`**. Guest marketing is **`/`** only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan surfaces link to Chat for crew threads — not embedded chat on `/plan`.
+**Mobile IA:** Bottom tabs **Home · Trips · Places · Crews · Plans** (`src/config/mobileFiveTabNav.ts`); **Chat** via header / hamburger only. Post-auth default **`/home`** (`defaultRouteByRole`). Guest marketing **`/`** only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan surfaces link to Chat for crew threads — not embedded chat on `/plan`.
 
 **SEO & agents:** `PageMeta` updates title/description/canonical per route; static `robots.txt`, `sitemap.xml`, `llms.txt`, and `/.well-known/agent.json` in `public/`. Public agent discovery: `GET /api/agent/manifest.json` and `GET /api/agent/discover` (see [`API_ROUTING.md`](./API_ROUTING.md)).
 

@@ -110,7 +110,7 @@ export const ShopDeskProfilePanel = () => {
   if (!tenantId) {
     return (
       <GlassCard padding>
-        <p className="text-sm text-neutral-600">Select a shop operator above to edit the public storefront.</p>
+        <p className="text-sm text-neutral-600">Select a shop operator above to edit the public shop profile.</p>
       </GlassCard>
     );
   }

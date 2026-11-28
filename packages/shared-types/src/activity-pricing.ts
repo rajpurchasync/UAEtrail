@@ -7,13 +7,13 @@ export type ActivityPricingMode = 'free' | 'shared' | 'paid';
 export type ActivityPricingPublishProfile = 'guide' | 'agency' | 'shop';
 
 export type ActivityPricingContext = {
-  /** Storefront kind for the tenant selected in Host / publish. */
+  /** Publishing profile kind for the tenant selected in Host / publish. */
   publishingProfileKind?: PublishingProfileKind | null;
   /** Legacy publish-as wire type — mapped when `publishingProfileKind` is absent. */
   publishProfileType?: ActivityPricingPublishProfile | null;
 };
 
-/** Verified business storefronts may list paid commercial outings (not individual pro guides). */
+/** Verified business publishing profiles (shop/agency) may list paid commercial outings (not individual pro guides). */
 export const publishingProfileKindAllowsPaidActivities = (
   kind?: PublishingProfileKind | null
 ): boolean => kind === 'agency' || kind === 'shop' || kind === 'partner';

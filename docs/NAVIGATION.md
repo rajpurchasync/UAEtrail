@@ -10,21 +10,21 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 | Surface | Route(s) | Job |
 |---------|----------|-----|
-| **Home** | `/home` | Signed-in intent + navigation (`src/home/`). Not guest marketing `/`. |
+| **Home** | `/home` | Intent + navigation hub (`src/home/`). Guests and members; guest marketing funnel stays `/`. |
 | **Explore** | `/explore`, `/list` | Discovery — browse **Trips** · **Places** · **Discover crews** (not My Crews roster) |
 | **Plans** | `/plan` | **My Plans** — joined, goals, wishlist, hosted projection (`/me/*` data) |
 | **Crews** | `/crews`, `/groups` | **My Crews** — friends, teams, groups |
 | **Chat** | `/chat` | Threads |
 | **Profile** | `/profile`, `/settings` | Identity; **Operator desk** → **`/operator`** |
 
-**Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/crews`) · **Plans** · **Chat**. Home is **not** a bottom tab — return via hamburger / desktop sidebar. **Discover crews** ≠ **My Crews** (`/crews`, `/groups`). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
+**Mobile bottom bar** (`mobileFiveTabNav`): **Home** (`/home`) · **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/crews`) · **Plans**. **Chat** — header icon + hamburger, not a bottom tab. **Discover crews** ≠ **My Crews** (`/crews`, `/groups`). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
 
 ## Three surfaces
 
 | Surface | Route | Purpose |
 |---------|-------|---------|
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
-| **Member Home** | `/home` | Signed-in intent hub (`src/home/`) — greeting, tiles, suggested joins. Not marketing `/`. |
+| **Member Home** | `/home` | Product home hub (`src/home/`) — greeting, tiles, suggested joins. Not marketing `/`. |
 | **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`crew-discovery`); map/list/search are projections |
 | **List discovery** | `/list` | Full-screen explorer (thumbnails · list · calendar, date-sorted; same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/settings`, `/profile/edit`, `/profile/history` | Account hub, **app settings**, edit profile, outing **history** + journey map |

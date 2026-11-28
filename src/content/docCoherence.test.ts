@@ -166,10 +166,11 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/\/list/);
   });
 
-  it('Pro storefront discovery: shop pin, guide/agency via profile surfaces', () => {
+  it('Pro publishing profile discovery: shop pin, guide/agency via profile surfaces', () => {
     const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
     const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');
-    expect(canon).toMatch(/Pro account storefronts/);
+    expect(canon).toMatch(/### 1\.3 Publishing profile kinds/);
+    expect(canon).toMatch(/Pro publishing profiles/);
     expect(canon).toMatch(/Do not.*emit.*agency.*explore map/i);
     expect(domain).toMatch(/No agency\/guide map pins/);
     expect(domain).toMatch(/Shops.*map pin/i);

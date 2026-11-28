@@ -130,7 +130,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
 
   it('PCO-17: crews inbound contract present (R6)', () => {
     expect(existsSync(join(ROOT, 'src/routing/crewsUrlInbound.contract.test.ts'))).toBe(true);
-    expect(read('src/components/layout/MobileBottomNav.tsx')).toMatch(/Trips · Places · Crews/);
+    expect(read('src/components/layout/MobileBottomNav.tsx')).toMatch(/Home · Trips · Places · Crews/);
   });
 
   it('PCO-16: Phase 8 Tier-1 — intent edit path + create entry preset name', () => {

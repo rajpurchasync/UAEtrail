@@ -1,6 +1,6 @@
 import {
   activityInstantHasEnded,
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
   resolveActivityHostReviewTarget,
   resolveActivityHostUserId,
 } from '@uaetrail/shared-types';
@@ -59,7 +59,7 @@ export const assertViewerCanReviewActivityHost = async (input: {
   }
 
   const expected = resolveActivityHostReviewTarget({
-    publishingProfileKind: inferHostStorefrontKindFromTenantWire({
+    publishingProfileKind: inferPublishingProfileKindFromTenantWire({
       type: activity.tenant.type,
       businessMode: activity.tenant.businessMode,
       publishingPurpose: activity.tenant.publishingPurpose,

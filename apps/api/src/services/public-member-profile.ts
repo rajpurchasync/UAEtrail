@@ -14,7 +14,7 @@ import {
   canViewProfileField,
   computeProfileDetailExposure,
   hostBrandProfilePath,
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
   mergeProfileDateOfBirthShare,
   mergeProfileFieldPrivacy,
   resolveMemberCardDateOfBirth,
@@ -126,7 +126,7 @@ const resolveHostProfilePath = (tenant: TenantRecord | null): string | null => {
   }
   return hostBrandProfilePath(
     tenant.slug,
-    inferHostStorefrontKindFromTenantWire({
+    inferPublishingProfileKindFromTenantWire({
       type: tenant.type,
       businessMode: tenant.businessMode,
       publishingPurpose: tenant.publishingPurpose,

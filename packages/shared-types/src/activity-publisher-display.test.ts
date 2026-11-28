@@ -50,7 +50,7 @@ describe('activity publisher display', () => {
     ).toBe('/member/u-omar?source=host');
   });
 
-  it('agency posts use business name and host storefront URL', () => {
+  it('agency posts use business name and brand profile URL', () => {
     expect(
       resolveActivityPublisherDisplayName({
         publishingProfileKind: 'agency',

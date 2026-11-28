@@ -68,7 +68,6 @@ const HAMBURGER_FIVE_TAB_BY_LABEL: Record<string, MobileFiveTabId> = {
   Crews: 'crews',
   /** @deprecated Legacy hamburger label */
   People: 'crews',
-  Chat: 'chat',
 };
 
 type ConsumerHamburgerLinkItem = Extract<ConsumerHamburgerMenuItem, { kind: 'link' }>;

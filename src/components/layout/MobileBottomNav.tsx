@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { ProductNavLink } from '../navigation/ProductNavLink';
-import { ClipboardList, Home, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
+import { ClipboardList, Home, MapPin, Users, type LucideIcon } from 'lucide-react';
 
 import { NAV_ICONS } from '../../config/navIcons';
 import {
@@ -12,7 +12,6 @@ import {
   resolveMobileBottomTab,
   type MobileBottomTabId,
 } from '../../config/mobileFiveTabNav';
-import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 
 const TAB_ICONS: Record<MobileBottomTabId, LucideIcon> = {
@@ -21,7 +20,6 @@ const TAB_ICONS: Record<MobileBottomTabId, LucideIcon> = {
   venues: MapPin,
   crews: Users,
   plan: ClipboardList,
-  chat: MessageSquare,
 };
 
 const tabShellClass = (active: boolean) =>
@@ -44,13 +42,12 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Trips · Places · Crews · Chat · Plans (`MOBILE_FIVE_TAB_ORDER`). */
+/** Mobile tab bar — Home · Trips · Places · Crews · Plans (`MOBILE_BOTTOM_TAB_ORDER`). Chat: header only. */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname, search } = useLocation();
   const tabs = mobileBottomTabOrder();
   const activeTab = resolveMobileBottomTab(pathname, search);
-  const unreadMessages = useInboxUnreadCount();
   const [portalReady, setPortalReady] = useState(false);
 
   useEffect(() => {
@@ -81,7 +78,6 @@ export const MobileBottomNav = () => {
           const label = MOBILE_BOTTOM_TAB_UI_LABELS[tab];
           const active = activeTab === tab;
           const href = mobileBottomTabHomePath(tab);
-          const isChat = tab === 'chat';
 
           return (
             <ProductNavLink
@@ -91,18 +87,7 @@ export const MobileBottomNav = () => {
               aria-current={active ? 'page' : undefined}
               aria-label={label}
             >
-              {isChat ? (
-                <span className="relative">
-                  <TabIcon icon={TAB_ICONS[tab]} active={active} />
-                  {unreadMessages > 0 ? (
-                    <span className="absolute -right-1.5 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-emerald-600 px-0.5 text-[10px] font-bold text-white ring-2 ring-white">
-                      {unreadMessages > 9 ? '9+' : unreadMessages}
-                    </span>
-                  ) : null}
-                </span>
-              ) : (
-                <TabIcon icon={TAB_ICONS[tab]} active={active} />
-              )}
+              <TabIcon icon={TAB_ICONS[tab]} active={active} />
               <span className={tabLabelClass(active)}>{label}</span>
             </ProductNavLink>
           );

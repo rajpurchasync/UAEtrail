@@ -8,7 +8,7 @@
  */
 
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from './platform';
-import { MESSAGES_PATH, PLAN_PATH } from './surfacePaths';
+import { MEMBER_HOME_PATH, PLAN_PATH } from './surfacePaths';
 import { explorePath, parseExplorePanel } from '../discovery/discoveryPortExploreRouting';
 import { parseExplorePinKindFilter } from '../discovery/discoveryPortExploreMapClient';
 import {
@@ -26,7 +26,8 @@ import {
   parseExploreSearchScopeFromParams,
 } from '../discovery/discoveryPortExploreSearchRouting';
 
-export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'crews', 'chat', 'plan'] as const;
+/** Discovery tabs in the bottom bar (Chat is header / hamburger only — `docs/NAVIGATION.md`). */
+export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'crews', 'plan'] as const;
 
 export type MobileFiveTabId = (typeof MOBILE_FIVE_TAB_ORDER)[number];
 
@@ -34,8 +35,13 @@ export const MOBILE_HUB_HOME_TAB_ID = 'home' as const;
 
 export type MobileBottomTabId = MobileFiveTabId | typeof MOBILE_HUB_HOME_TAB_ID;
 
-/** Five-tab bar — no separate booking home (search is modal + `/explore/search`). */
-export const mobileBottomTabOrder = (): readonly MobileBottomTabId[] => MOBILE_FIVE_TAB_ORDER;
+/** Bottom bar tab order — Home + four discovery tabs (`MOBILE_BOTTOM_TAB_ORDER`). */
+export const MOBILE_BOTTOM_TAB_ORDER: readonly MobileBottomTabId[] = [
+  MOBILE_HUB_HOME_TAB_ID,
+  ...MOBILE_FIVE_TAB_ORDER,
+];
+
+export const mobileBottomTabOrder = (): readonly MobileBottomTabId[] => MOBILE_BOTTOM_TAB_ORDER;
 
 export type MobileFiveTabProjection = 'map' | 'list';
 
@@ -49,7 +55,7 @@ export const MOBILE_FIVE_TAB_DEFAULTS = {
   listModePath: 'full-list' as const,
   clearScopeWhenSwitchingDiscoveryTabs: true,
   guestsSeeAllTabLabels: true,
-  guestsGatedTabs: ['crews', 'plan', 'chat'] as const satisfies readonly MobileFiveTabId[],
+  guestsGatedTabs: ['crews', 'plan'] as const satisfies readonly MobileFiveTabId[],
 } as const;
 
 export const MOBILE_FIVE_TAB_UI_LABELS: Record<MobileFiveTabId, string> = {
@@ -57,7 +63,6 @@ export const MOBILE_FIVE_TAB_UI_LABELS: Record<MobileFiveTabId, string> = {
   venues: 'Places',
   crews: PRODUCT_CREWS_TAB_LABEL,
   plan: 'Plans',
-  chat: 'Chat',
 };
 
 export const MOBILE_BOTTOM_TAB_UI_LABELS: Record<MobileBottomTabId, string> = {
@@ -121,8 +126,6 @@ export const mobileFiveTabHomePath = (tab: MobileFiveTabId): string => {
       return crewsHomePath();
     case 'plan':
       return PLAN_PATH;
-    case 'chat':
-      return MESSAGES_PATH;
     default: {
       const _exhaustive: never = tab;
       return _exhaustive;
@@ -131,7 +134,7 @@ export const mobileFiveTabHomePath = (tab: MobileFiveTabId): string => {
 };
 
 export const mobileBottomTabHomePath = (tab: MobileBottomTabId): string => {
-  if (tab === MOBILE_HUB_HOME_TAB_ID) return tripsMapHomePath();
+  if (tab === MOBILE_HUB_HOME_TAB_ID) return MEMBER_HOME_PATH;
   return mobileFiveTabHomePath(tab);
 };
 
@@ -160,6 +163,7 @@ const exploreIsVenuesScope = (search: string): boolean => {
  * Returns `null` on routes that are not a five-tab home (entity detail, threads, host console, …).
  */
 export const resolveMobileBottomTab = (pathname: string, search = ''): MobileBottomTabId | null => {
+  if (pathname === MEMBER_HOME_PATH) return MOBILE_HUB_HOME_TAB_ID;
   if (pathname === EXPLORE_SEARCH_RESULTS_PATH) {
     const params = new URLSearchParams(search.replace(/^\?/, ''));
     const mode = parseExploreSearchScopeFromParams(params);
@@ -168,11 +172,6 @@ export const resolveMobileBottomTab = (pathname: string, search = ''): MobileBot
     return 'trips';
   }
   if (pathname === PLAN_PATH) return 'plan';
-  if (pathname === MESSAGES_PATH || pathname === '/operator/messages') {
-    const params = new URLSearchParams(search.replace(/^\?/, ''));
-    if (params.get('to') || params.get('group')) return null;
-    return 'chat';
-  }
 
   if (pathname === LIST_DISCOVERY_PATH) {
     const params = new URLSearchParams(search.replace(/^\?/, ''));

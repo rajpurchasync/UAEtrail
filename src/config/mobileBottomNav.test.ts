@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { MOBILE_FIVE_TAB_ORDER } from './mobileFiveTabNav';
+import { MOBILE_BOTTOM_TAB_ORDER } from './mobileFiveTabNav';
 import {
   LIST_DISCOVERY_PATH,
   MOBILE_BOTTOM_NAV_TAB_PATHS,
@@ -9,8 +9,8 @@ import {
 } from '../config/platform';
 
 describe('mobile bottom nav contract', () => {
-  it('exposes five tab ids and four shell route roots (explore + list + plan + chat)', () => {
-    expect(MOBILE_FIVE_TAB_ORDER).toHaveLength(5);
+  it('exposes five bottom tabs and guest shell route roots', () => {
+    expect(MOBILE_BOTTOM_TAB_ORDER).toHaveLength(5);
     expect(MOBILE_BOTTOM_NAV_TAB_PATHS).toEqual(['/explore', '/list', '/plan', '/chat']);
     expect(MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).toContain(LIST_DISCOVERY_PATH);
   });

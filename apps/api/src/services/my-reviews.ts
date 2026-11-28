@@ -1,6 +1,6 @@
 import {
   activityDetailPath,
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
   memberProfilePath,
   placeDetailPath,
   resolveActivityPublisherProfilePath,
@@ -99,7 +99,7 @@ const resolveTargetMetaFromContext = (
   }
 
   const brandPath = resolveActivityPublisherProfilePath({
-    publishingProfileKind: inferHostStorefrontKindFromTenantWire({
+    publishingProfileKind: inferPublishingProfileKindFromTenantWire({
       type: tenant.type,
       businessMode: tenant.businessMode,
       publishingPurpose: tenant.publishingPurpose ?? null,

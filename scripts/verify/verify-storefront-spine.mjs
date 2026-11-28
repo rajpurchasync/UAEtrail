@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DMCP Phase 6 — operator / storefront spine (PublishingProfileKind, /publishing console, shop/agency public).
+ * DMCP Phase 6 — operator spine (PublishingProfileKind, brand storefront public reads, /workspace console).
  */
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';

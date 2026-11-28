@@ -1,5 +1,6 @@
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
-import { readStoredViewerFix } from '../../discovery/discoverySession';
+import { readViewerAnchor } from '../../list/browse/viewerAnchor';
+import { readStoredViewerFix } from '../../list/browse/viewerLocationStorage';
 import { getExploreMapLocationPreference } from '../exploreMapLocationPreference';
 import { inferEmirateFromPin } from '../hostingPublishDestination';
 
@@ -16,6 +17,10 @@ const whereFromCoords = (lat: number, lng: number): string => {
  * Works for guests (no account). Sign-in only affects search limits, not location detection.
  */
 export const resolveExploreSearchDetectedWhereQuery = (): string => {
+  const anchor = readViewerAnchor();
+  if (anchor?.query?.trim()) return anchor.query.trim();
+  if (anchor?.label?.trim()) return anchor.label.trim();
+
   const pref = getExploreMapLocationPreference();
   if (pref.lastLat != null && pref.lastLng != null) {
     const fromPref = whereFromCoords(pref.lastLat, pref.lastLng);

@@ -5,7 +5,7 @@ import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortEx
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { useAuth } from '../../context/AuthContext';
 
-/** Active tenant's storefront kind for desk chrome (nav filter + titles). */
+/** Active tenant's publishing profile kind for desk chrome (nav filter + titles). */
 export const useActiveOperatorDeskKind = (): PublishingProfileKind => {
   const { user } = useAuth();
   const { ownedProfiles } = useMemberStatus({ enabled: Boolean(user) });

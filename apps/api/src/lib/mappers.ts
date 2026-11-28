@@ -12,7 +12,7 @@ import {
   ActivityDTO,
   LocationDTO,
   resolveActivityDisplayCoordinates,
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
   resolveHostPersonDisplayName,
   HOST_FALLBACK_DISPLAY_NAME,
   acceptedActivityGuides,
@@ -193,7 +193,7 @@ export const buildActivityDto = (event: ActivityWithRelations, opts?: ActivityDt
   const guideName = event.guide?.profile?.displayName ?? null;
   const createdByName = event.createdBy?.profile?.displayName ?? null;
   const tenantOwnerName = event.tenantOwner?.profile?.displayName ?? null;
-  const publishingProfileKind = inferHostStorefrontKindFromTenantWire({
+  const publishingProfileKind = inferPublishingProfileKindFromTenantWire({
     type: event.tenant.type,
     businessMode: event.tenant.businessMode,
     publishingPurpose: event.tenant.publishingPurpose,

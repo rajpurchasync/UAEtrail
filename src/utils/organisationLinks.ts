@@ -1,12 +1,12 @@
 import {
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
 
 export {
   memberProfilePath,
   hostBrandProfilePath,
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
 } from '@uaetrail/shared-types';
 
 /** Domain alias — prefer in new code. Same URL as memberProfilePath. */
@@ -26,7 +26,7 @@ export const tenantBrandPublicPath = (
   slugFallback?: string | null
 ): string | null => {
   const slug = tenant.slug?.trim() || slugFallback?.trim();
-  const kind = inferHostStorefrontKindFromTenantWire(tenant);
+  const kind = inferPublishingProfileKindFromTenantWire(tenant);
   return resolveActivityPublisherProfilePath({
     publishingProfileKind: kind,
     tenantSlug: slug,

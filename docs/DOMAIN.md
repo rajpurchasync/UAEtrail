@@ -34,7 +34,7 @@ Program CPC ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) splits **Plac
 | **Activity** | A scheduled outing hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
 | **Event (Host chip)** | **Host** FAB label — public happening; default **I’m going** RSVP | Same **Activity** row (`activityType: event`) | `/activity/:id` | Yes |
 | **Activity (Host chip)** | **Host** FAB label — generic buddy plan (run, jog, …); default **request to join** | Same **Activity** row (see CREATE_FLOW for `activityType`) | `/activity/:id` | Yes |
-| **Host** (publishing) | Always a **signed-in user** who publishes; may act **as self** or **on behalf of a business** they’re linked to | `createdById`, `hostId`, `tenantId` on activities; `tenants`, storefronts | See [Host storefronts](#host-storefronts-where-vs-who) | Via activities / seeking |
+| **Host** (publishing) | Always a **signed-in user** who publishes; may act **as self** or **on behalf of a business** they’re linked to | `createdById`, `hostId`, `tenantId` on activities; `tenants`, `publishingProfileKind` | See [Publishing profiles & map lenses](#publishing-profiles--map-lenses-where-vs-who) | Via activities / seeking |
 | **Person** | A member's identity (member card at `/member/:id`) | `users` (profile fields) | `/profile`, `/member/:id` | Via seeking cards |
 | **User** | Auth account (login, roles, suspension) | `users`, `UserDTO`, `AuthContext` | `/signin`, `/signup` | — |
 
@@ -55,7 +55,7 @@ Guest → Sign in → Auth user (participate; hosting disabled until profile com
 
 Business capabilities attach to **operator tenants** (shop/agency), each with **≥ one linked user**. Those users’ **member profiles** show the **operator name** (clickable) → agency or shop profile. Canonical vocabulary: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.1–1.5 · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary.
 
-### Host storefronts (Where vs Who)
+### Publishing profiles & map lenses (Where vs Who)
 
 | Lens | Examples | Not the same as |
 |------|----------|-----------------|

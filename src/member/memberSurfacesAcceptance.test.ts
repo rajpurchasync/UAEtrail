@@ -97,7 +97,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-lang: mobile tab bar labels Plans (not Trips hub)', () => {
     const nav = read('src/components/layout/MobileBottomNav.tsx');
     expect(nav).toContain('MOBILE_BOTTOM_TAB_UI_LABELS');
-    expect(nav).toMatch(/Trips · Places · Crews · Chat · Plans/);
+    expect(nav).toMatch(/Home · Trips · Places · Crews · Plans/);
     expect(nav).not.toMatch(/aria-label=\{['"]Trips['"]\}/);
     const northStar = read('src/content/productNorthStar.ts');
     expect(northStar).toContain("PRODUCT_PLAN_SURFACE_TITLE = 'My Plans'");

@@ -1,6 +1,6 @@
 import type { Collection } from 'mongodb';
 import {
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
   type EntityFollowDTO,
   normalizeEntityFollowKind,
   type EntityFollowKind,
@@ -161,7 +161,7 @@ export const listEntityFollowsWithDetails = async (
       slug: tenant.slug,
       ownerUserId: tenant.ownerId,
       logoUrl: tenant.logoUrl ?? null,
-      brandProfileKind: inferHostStorefrontKindFromTenantWire({
+      brandProfileKind: inferPublishingProfileKindFromTenantWire({
         type: tenant.type,
         businessMode: tenant.businessMode,
         publishingPurpose: tenant.publishingPurpose,

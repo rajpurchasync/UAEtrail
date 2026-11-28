@@ -14,6 +14,9 @@ export const fetchWorkspaceTeam = async (tenantId: string): Promise<TeamMember[]
   return res.data;
 };
 
+/** Alias kept for HostSelect / hosting compose fields. */
+export const fetchPublishingTeam = fetchWorkspaceTeam;
+
 export const createWorkspaceTeamMember = async (
   tenantId: string,
   payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }

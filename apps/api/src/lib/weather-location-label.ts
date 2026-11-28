@@ -12,6 +12,5 @@ export const formatWeatherForecastLocationName = (locality: PlaceLocality | null
   };
   push(locality.community);
   push(locality.city);
-  push(locality.state);
   return parts[0] ?? null;
 };

@@ -3,6 +3,7 @@
  *
  * 1. **UI actor labels** — **Host** = individual on an outing; **Operator** = any publishing identity
  *    (community host, guide, shop, agency) at **`/operator/*`**; joiner copy still says Host / brand name.
+ *    **Publishing profile kind** (`PublishingProfileKind`) = public shell flavor (member card vs brand page) — not `/profile` settings.
  * 2. **Capabilities** — **Host** / **publish** (`GET /me/status` → `publish.*`, `canPublish`);
  *    not HTTP personas or duplicate `/me/publishing-*` routes.
  * 3. **Gates** — **`profileComplete`** to host/publish; **signed in** suffices to participate

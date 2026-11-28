@@ -577,7 +577,7 @@ export interface OwnedHostProfileDTO {
   tenantId: string;
   name: string;
   slug: string;
-  /** Resolved storefront kind for publish-as UI and public links. */
+  /** Resolved publishing profile kind for publish-as UI and public links. */
   publishingProfileKind?: PublishingProfileKind;
 }
 
@@ -1662,7 +1662,7 @@ export {
   type PublishingProfileKind,
   isActivityPublishingProfileType,
   resolvePublishingProfileKind,
-  inferHostStorefrontKindFromTenantWire,
+  inferPublishingProfileKindFromTenantWire,
 } from './publishing-profile-kind.js';
 
 export type {
