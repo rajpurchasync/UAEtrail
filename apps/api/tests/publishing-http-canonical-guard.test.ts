@@ -23,19 +23,20 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
     expect(workspace).toMatch(/\/publishing\/team/);
     expect(workspace).toMatch(/\/publishing\/places/);
     expect(workspace).toMatch(/\/publishing\/activities/);
+    expect(workspace).toMatch(/\/publishing\/shop-profile/);
     expect(workspace).not.toMatch(/['"`]\/operator\//);
     expect(org).not.toMatch(/\/publishing\//);
     expect(places).not.toMatch(/\/publishing\//);
     expect(activities).not.toMatch(/\/publishing\//);
   });
 
-  it('organisation scope header is x-organisation-id only', () => {
+  it('tenant scope header is x-tenant-id only', () => {
     const tenantMw = read('apps/api/src/middleware/tenant.ts');
-    const orgHeaders = read('src/api/orgHeaders.ts');
-    expect(tenantMw).toMatch(/readHeader\(req, 'x-organisation-id'\)/);
-    expect(tenantMw).not.toMatch(/x-tenant-id/);
-    expect(orgHeaders).toMatch(/'x-organisation-id': organisationId/);
-    expect(orgHeaders).not.toMatch(/x-tenant-id/);
+    const tenantHeaders = read('src/api/tenantScopeHeaders.ts');
+    expect(tenantMw).toMatch(/readHeader\(req, 'x-tenant-id'\)/);
+    expect(tenantMw).not.toMatch(/x-organisation-id/);
+    expect(tenantHeaders).toMatch(/'x-tenant-id': tenantId/);
+    expect(tenantHeaders).not.toMatch(/x-organisation-id/);
   });
 
   it('SPA surface paths are /operator/*', () => {

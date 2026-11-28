@@ -3,7 +3,7 @@ import type { ShopPublicDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import type { ShopPublicView } from '../components/shop/ShopPublicPage';
-import { fetchOrganisationProfileBySlug } from './operatorDeskClientApi';
+import { fetchOperatorPublicProfileBySlug } from './operatorDeskClientApi';
 import { fetchPublicPlaceDetail } from './placeDetailClientApi';
 import { communityShopPlaceToView } from '../utils/communityShopPlace';
 
@@ -62,7 +62,7 @@ export const fetchShopPublicPage = async (id: string): Promise<ShopPublicPageRes
     };
   } catch {
     try {
-      const tenant = await fetchOrganisationProfileBySlug(id);
+      const tenant = await fetchOperatorPublicProfileBySlug(id);
       return { communityPeekOnly: false, shop: tenantToShopView(tenant as TenantPublicDTO) };
     } catch {
       try {

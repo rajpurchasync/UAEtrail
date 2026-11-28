@@ -322,15 +322,15 @@ export const adminActivityPreviewVenueQueryKey = (locationId: string): QueryKey 
   locationId,
 ];
 
-export const organisationSubmittedPlacesQueryKey = (tenantId: string): QueryKey => [
+export const publishingSubmittedPlacesQueryKey = (tenantId: string): QueryKey => [
   'publishing',
   'submitted-places',
   tenantId,
 ];
 
-export const organisationTeamQueryKey = (tenantId: string): QueryKey => ['publishing', 'team', tenantId];
+export const publishingTeamQueryKey = (tenantId: string): QueryKey => ['publishing', 'team', tenantId];
 
-export const organisationConsoleRatingQueryKey = (tenantId: string): QueryKey => [
+export const operatorDeskRatingQueryKey = (tenantId: string): QueryKey => [
   'publishing',
   'console-rating',
   tenantId,

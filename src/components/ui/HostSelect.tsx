@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchOrganisationTeam, type TeamMember } from '../../hooks/operatorDeskClientApi';
+import { fetchPublishingTeam, type TeamMember } from '../../hooks/operatorDeskClientApi';
 import { useAuth } from '../../context/AuthContext';
 import { AppSelect } from './AppSelect';
 
@@ -22,7 +22,7 @@ export const HostSelect = ({ tenantId, value, onChange, required, className = ''
       return;
     }
     setLoading(true);
-    fetchOrganisationTeam(tenantId)
+    fetchPublishingTeam(tenantId)
       .then((data) => setHosts(data))
       .catch(() => setHosts([]))
       .finally(() => setLoading(false));

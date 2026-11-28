@@ -8,10 +8,10 @@ export const openApiTags = [
   {
     name: 'Operator',
     description:
-      'Publishing console — tenant activities, team, places (`/publishing/*`).',
+      'Publishing console — tenant activities, team, places, shop storefront (`/publishing/*`).',
   },
   { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/publishing/*` paths in new clients.' },
-  { name: 'Shop', description: 'Shop profiles (`/shop/shops/:id`; manage `/shop/merchant/*`). No product catalog.' },
+  { name: 'Shop', description: 'Shop public read (`/shop/shops/:id`). Desk manage: `PATCH /publishing/shop-profile` + `x-tenant-id`.' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
   { name: 'Social', description: 'Reviews, buddies, and groups.' },
@@ -150,15 +150,22 @@ export const openApiSpec = swaggerJsdoc({
           }
         }
       },
-      '/shop/merchant/profile': {
+      '/publishing/shop-profile': {
         get: {
-          tags: ['Shop', 'Host'],
-          summary: 'Get managed shop profile',
-          description:
-            'Canonical shop manage. Scope via `shopId` or `tenantId` query. Inbound alias: `/shop/organisation/profile`.',
+          tags: ['Operator', 'Shop'],
+          summary: 'Get shop operator storefront (desk)',
+          description: 'Requires `x-tenant-id` for a shop operator tenant.',
           security: [{ bearerAuth: [] }],
           responses: {
-            200: { description: 'Shop profile (`id` and `shopId`).' }
+            200: { description: 'Shop operator profile (`id` and `shopId`).' }
+          }
+        },
+        patch: {
+          tags: ['Operator', 'Shop'],
+          summary: 'Update shop operator storefront',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: 'Updated shop operator profile.' }
           }
         }
       },

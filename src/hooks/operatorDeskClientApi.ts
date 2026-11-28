@@ -1,5 +1,5 @@
 import type {
-  OrganisationHostDetailsDTO,
+  OperatorHostDetailsDTO,
   PlaceDTO,
   ReviewDTO,
   TenantPublicDTO,
@@ -7,70 +7,70 @@ import type {
 import { api } from '../api/index';
 import type { HostApplication, TeamMember } from '../api/types';
 
-export type { HostApplication, OrganisationHostDetailsDTO, TeamMember };
+export type { HostApplication, OperatorHostDetailsDTO, TeamMember };
 
-export const fetchOrganisationTeam = async (tenantId: string): Promise<TeamMember[]> => {
-  const res = await api.getOrganisationTeam(tenantId);
+export const fetchPublishingTeam = async (tenantId: string): Promise<TeamMember[]> => {
+  const res = await api.getPublishingTeam(tenantId);
   return res.data;
 };
 
-export const createOrganisationTeamMember = async (
+export const createPublishingTeamMember = async (
   tenantId: string,
   payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
 ): Promise<void> => {
-  await api.createOrganisationTeamMember(tenantId, payload);
+  await api.createPublishingTeamMember(tenantId, payload);
 };
 
-export const removeOrganisationTeamMember = async (
+export const removePublishingTeamMember = async (
   tenantId: string,
   membershipId: string
 ): Promise<void> => {
-  await api.removeOrganisationTeamMember(tenantId, membershipId);
+  await api.removePublishingTeamMember(tenantId, membershipId);
 };
 
-export const updateOrganisationTeamMemberRole = async (
+export const updatePublishingTeamMemberRole = async (
   tenantId: string,
   membershipId: string,
   role: 'tenant_admin' | 'tenant_guide'
 ): Promise<void> => {
-  await api.updateOrganisationTeamMemberRole(tenantId, membershipId, role);
+  await api.updatePublishingTeamMemberRole(tenantId, membershipId, role);
 };
 
-export const toggleOrganisationTeamMemberStatus = async (
+export const togglePublishingTeamMemberStatus = async (
   tenantId: string,
   membershipId: string,
   active: boolean
 ): Promise<void> => {
-  await api.toggleOrganisationTeamMemberStatus(tenantId, membershipId, active);
+  await api.togglePublishingTeamMemberStatus(tenantId, membershipId, active);
 };
 
-export const fetchOrganisationSubmittedPlaces = async (tenantId: string): Promise<PlaceDTO[]> => {
-  const res = await api.getOrganisationSubmittedPlaces(tenantId);
+export const fetchPublishingSubmittedPlaces = async (tenantId: string): Promise<PlaceDTO[]> => {
+  const res = await api.getPublishingSubmittedPlaces(tenantId);
   return res.data;
 };
 
-export const fetchMyOrganisationApplication = async (): Promise<HostApplication | null> => {
-  const res = await api.getMyOrganisationApplication();
+export const fetchMyOperatorProApplication = async (): Promise<HostApplication | null> => {
+  const res = await api.getMyOperatorProApplication();
   return res.data;
 };
 
-export const submitOrganisationApplication = async (
+export const submitOperatorProApplication = async (
   data: Record<string, unknown>
 ): Promise<HostApplication> => {
-  const res = await api.submitOrganisationApplication(data);
+  const res = await api.submitOperatorProApplication(data);
   return res.data;
 };
 
-export const fetchOrganisationProfileBySlug = async (slug: string): Promise<TenantPublicDTO> => {
-  const res = await api.getOrganisationProfile(slug);
+export const fetchOperatorPublicProfileBySlug = async (slug: string): Promise<TenantPublicDTO> => {
+  const res = await api.getOperatorPublicProfile(slug);
   return res.data;
 };
 
-export const fetchOrganisationReviews = async (organisationId: string): Promise<ReviewDTO[]> => {
-  const res = await api.getOrganisationReviews(organisationId);
+export const fetchTenantStorefrontReviews = async (tenantId: string): Promise<ReviewDTO[]> => {
+  const res = await api.getTenantStorefrontReviews(tenantId);
   return res.data;
 };
 
-export const updateOrganisationDetails = async (data: OrganisationHostDetailsDTO): Promise<void> => {
-  await api.updateOrganisationDetails(data);
+export const updateOperatorHostDetails = async (data: OperatorHostDetailsDTO): Promise<void> => {
+  await api.updateOperatorHostDetails(data);
 };

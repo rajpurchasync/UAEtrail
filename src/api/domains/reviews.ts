@@ -17,19 +17,19 @@ export const reviewsApi = {
       { auth: false }
     ),
 
-  getOrganisationReviews: (organisationId: string, page = 1) =>
+  getTenantStorefrontReviews: (tenantId: string, page = 1) =>
     apiRequest<{
       data: ReviewDTO[];
       meta: { page: number; pageSize: number; total: number; totalPages: number };
-    }>(`/reviews?targetType=tenant&targetId=${organisationId}&page=${page}&pageSize=20`),
+    }>(`/reviews?targetType=tenant&targetId=${tenantId}&page=${page}&pageSize=20`),
 
-  createOrganisationReview: (payload: { organisationId: string; rating: number; comment: string }) =>
+  createTenantStorefrontReview: (payload: { tenantId: string; rating: number; comment: string }) =>
     apiRequest<{ data: ReviewDTO }>('/reviews', {
       method: 'POST',
       auth: true,
       body: JSON.stringify({
         targetType: 'tenant',
-        targetId: payload.organisationId,
+        targetId: payload.tenantId,
         rating: payload.rating,
         comment: payload.comment,
       }),

@@ -8,7 +8,7 @@ import {
 } from '../../lib/publishing-tenant-activity-schemas.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { publishingTenantActivitiesListQuerySchema } from '../../lib/publishing-tenant-activities-list-query.js';
-import { requireOrgRole } from '../../middleware/tenant.js';
+import { requireMembershipRole } from '../../middleware/tenant.js';
 import { ORG_ACTIVITY_EDIT_ROLES, ORG_ACTIVITY_PUBLISH_ROLES } from '../../lib/org-permissions.js';
 import { validate } from '../../middleware/validate.js';
 import {
@@ -52,7 +52,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.post(
     '/',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ body: publishingTenantActivityCreateSchema }),
     async (req, res, next) => {
       try {
@@ -71,7 +71,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.patch(
     '/:id',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: idParamSchema, body: publishingTenantActivityPatchSchema }),
     async (req, res, next) => {
       try {
@@ -92,7 +92,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.delete(
     '/:id',
-    requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_PUBLISH_ROLES),
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
@@ -111,7 +111,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.post(
     '/:id/duplicate',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
@@ -130,7 +130,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.post(
     '/:id/publish',
-    requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_PUBLISH_ROLES),
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
@@ -150,7 +150,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.post(
     '/:id/suspend',
-    requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_PUBLISH_ROLES),
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
@@ -169,7 +169,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
 
   hostActivitiesRouter.post(
     '/:id/resume',
-    requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_PUBLISH_ROLES),
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {

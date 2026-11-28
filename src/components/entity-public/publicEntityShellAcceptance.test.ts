@@ -13,7 +13,7 @@ describe('public entity shell (S9 Phase 5)', () => {
   });
 
   it('organisation public route uses EntityPublicDetailShell and tab layout', () => {
-    const page = read('src/operator/public/OrganisationProfile.tsx');
+    const page = read('src/operator/public/TenantStorefrontPage.tsx');
     expect(page).toMatch(/EntityPublicDetailShell/);
     expect(page).toMatch(/entityTabLayout/);
     expect(page).not.toMatch(/ConsumerShell/);

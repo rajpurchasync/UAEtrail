@@ -1,7 +1,7 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { PlanHostingListWindowQuery } from '../plan/planHostingTimeRange';
 import { apiRequest } from '../api/client';
-import { organisationRequestHeaders } from '../api/orgHeaders';
+import { tenantScopeHeaders } from '../api/tenantScopeHeaders';
 
 export const PLAN_HOSTING_OTHER_PAGE_SIZE = 20;
 
@@ -47,7 +47,7 @@ export const fetchPlanHostedActivitiesPage = async (
     meta?: PublishingActivitiesPageMeta;
   }>(`/publishing/activities?${qs}`, {
     auth: true,
-    headers: organisationRequestHeaders(tenantId),
+    headers: tenantScopeHeaders(tenantId),
   });
   const meta = res.meta ?? {
     page: params.page ?? 1,

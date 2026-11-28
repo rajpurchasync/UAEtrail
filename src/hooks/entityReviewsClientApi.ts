@@ -30,8 +30,8 @@ export const submitEntityReview = async (
       });
       return res.data;
     }
-    const res = await api.createOrganisationReview({
-      organisationId: target.organisationId,
+    const res = await api.createTenantStorefrontReview({
+      tenantId: target.organisationId,
       rating: input.rating,
       comment: input.comment,
     });

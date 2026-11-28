@@ -4,7 +4,7 @@ import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from './ConsoleShell';
 import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../../components/ui';
 import { placeSharePath } from '../../utils/share';
-import { useOrganisationSubmittedPlaces } from '../../hooks/usePublishingConsoleQueries';
+import { usePublishingSubmittedPlaces } from '../../hooks/usePublishingConsoleQueries';
 
 const statusLabel = (status: PlaceDTO['status']) => {
   if (status === 'draft') return 'Pending review';
@@ -19,7 +19,7 @@ export const Places = () => {
     data: submitted = [],
     isPending: loading,
     refetch: refetchSubmitted,
-  } = useOrganisationSubmittedPlaces(tenantId);
+  } = usePublishingSubmittedPlaces(tenantId);
 
   return (
     <ConsoleShell title="Places">

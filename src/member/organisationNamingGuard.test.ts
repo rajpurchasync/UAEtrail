@@ -55,7 +55,6 @@ const REQUIRED_HOST_CONSOLE_PAGES = [
   'src/operator/desk/Places.tsx',
   'src/operator/desk/History.tsx',
   'src/operator/desk/PublicProfileEdit.tsx',
-  'src/operator/desk/Manage.tsx',
 ];
 
 const collectSourceFiles = (dir: string): string[] => {
@@ -88,6 +87,12 @@ describe('organisationNamingGuard', () => {
       'src/organisation',
     ];
     expect(staleDirs.filter((rel) => existsSync(join(ROOT, rel)))).toEqual([]);
+  });
+
+  it('operator/public has no Organisation* page modules', () => {
+    const publicDir = join(ROOT, 'src/operator/public');
+    const offenders = readdirSync(publicDir).filter((name) => /^Organisation/i.test(name));
+    expect(offenders).toEqual([]);
   });
 
   it('publishing console route pages live under src/operator/desk/', () => {
@@ -137,7 +142,7 @@ describe('organisationNamingGuard', () => {
       tracked = [];
     }
     const retiredTracked = tracked.filter(
-      (p) => p !== 'src/operator/public/OrganisationProfile.tsx' && p.startsWith('src/pages/Organisation')
+      (p) => p !== 'src/operator/public/TenantStorefrontPage.tsx' && p.startsWith('src/pages/Organisation')
     );
     expect(retiredTracked).toEqual([]);
   });

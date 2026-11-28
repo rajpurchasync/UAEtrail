@@ -97,7 +97,7 @@ Contexts **share** the same rules — they differ by **data and routes**, not by
 
 | Foundation | Every context uses | Guards (representative) |
 |------------|-------------------|------------------------|
-| **HTTP surfaces** | Public read · signed-in `/me/*` · `/admin/*` · tenant `/publishing/*` + `x-organisation-id` — §5.1 | `catalog-http-surface-guard`, `publishing-http-canonical-guard` |
+| **HTTP surfaces** | Public read · signed-in `/me/*` · `/admin/*` · tenant `/publishing/*` + `x-tenant-id` — §5.1 | `catalog-http-surface-guard`, `publishing-http-canonical-guard` |
 | **FE HTTP client** | UI → `src/hooks/*ClientApi` → `src/api/domains/*` → `apiRequest` | `domainImportGuard`, `hooksApiFacadeGuard`, `apiLegacyGuard` |
 | **SPA paths** | `routingCatalog` / `surfacePaths` — no ad-hoc path strings in product UI | `routingCatalogAdoption`, `routingHygiene` |
 | **Member capabilities** | **`GET /me/status`** only (`memberApi` / `useMemberStatus`) | `host-member-contract`, `hostMemberGuard` |
@@ -121,13 +121,13 @@ Each context has **one write path** and **one public read model** where possible
 | **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/map?sources=availability` + `selectAvailabilityFromMapItems` (`src/activity-discovery`). | `src/crew-discovery/*` (`CrewsBrowsePanel`, tabs), `ListDiscoveryExperience` | `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
 | **Member publish capabilities** | Who may Host / publish & open operator desk (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
-| **Operator desk** | Tenant-scoped CRUD, check-in, activity join queue | `src/operator/desk/*`, `components/activity/` | SPA `/operator/*`; HTTP `/publishing/*` + `x-organisation-id` | same + `activities` |
+| **Operator desk** | Tenant-scoped CRUD, check-in, activity join queue | `src/operator/desk/*`, `components/activity/` | SPA `/operator/*`; HTTP `/publishing/*` + `x-tenant-id` | same + `activities` |
 | **Communication** | DMs, inbox, group & outing chat (product label **Chat**) | `Messages.tsx`, `src/messaging`, `@/chat` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `MyCrews.tsx`, `Groups.tsx`, `/crews` | `registerFriendRoutes`, `friend-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `friend_*`, `user_follows`, `member_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Add→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Add→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
 | **Destinations** (bounded id `destinations`) | Admin-curated outdoor hub (Mongo **`destinations`**, stable ids → **`destinationId`**). **Not a map pin** — country / state / city labels come from **AdminGeo** (`geoRef`). Hub `/destination/:slug` + filter `?destination=`. Children via **`place.destinationId`** / **`facility.destinationId`**; facilities on trail via **`onSiteId`**. | `/destination/:slug`, compose **Destination then site**, admin **Destinations** console | `destinations-store`, `explore-map-destination-lens.ts` (hub rollups), `hostingPublishDestination.ts` | **`destinations`**; **`locations.destinationId`**; **`facilities.destinationId`** + **`onSiteId`**; hosted geography = **`activity.locationId` → `place.destinationId`** |
-| **Shop profiles** | Operator shop public page + merchant manage (no product catalog) | `ShopPublic`, `/operator/profile` (inbound `/organisation/manage?kind=shop`) | `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
+| **Shop profiles** | Operator shop public read + desk storefront edit (no product catalog) | `ShopPublic`, `/operator/profile?kind=shop` | `registerShopPublicRoutes` · `registerPublishingShopStorefrontRoutes` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_wishlist`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/admin/*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
 
@@ -142,19 +142,19 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
 |---------|-------------------|----------|------------------|----------|
 | discovery | `activities`, `locations`, shop tenants | `GET /explore/map` (`q`, `country`, `destination`, `venue`) · `GET /me/discover/overlay` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
-| compose | `member_availability`, `activities` (hosted) | `PUT /me/availability`, `POST /publishing/activities` | `exploreApi`, `availabilityApi`, `organisationApi` | `src/explore/ui/*` |
+| compose | `member_availability`, `activities` (hosted) | `PUT /me/availability`, `POST /publishing/activities` | `exploreApi`, `availabilityApi`, `operatorPublicApi` | `src/explore/ui/*` |
 | participation | `activity_requests` (`note`, `hostNote`), `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (hosted + rideshare); tenant **`GET /publishing/requests`** (console API, also Plan manage) | `activitiesApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
 | member_discovery | `member_profile_views` (+ read-only compose from map) | `/me/member-discovery/*` (roster, network, browse, quota, search); profile `?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/crew-discovery` — Find crew list (`listCat=people`), map `CrewsBrowsePanel`, `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | member_publish_capabilities | `tenants`, `tenant_memberships` | **`GET /me/status`** (`profileComplete` + nested `publish`) | `memberApi` | **`useMemberStatus`** |
-| publishing_workspace | + `activities` | SPA `/operator/*`; HTTP `/publishing/*` + `x-organisation-id` | `organisationApi`, `activitiesApi` | `src/operator/desk/*`, `components/activity/*`, `activity/*` |
+| publishing_workspace | + `activities` | SPA `/operator/*`; HTTP `/publishing/*` + `x-tenant-id` (incl. `/publishing/shop-profile`) | `publishingWorkspaceApi`, `operatorDeskClientApi`, `operatorShopStorefrontClientApi` | `src/operator/desk/*`, `components/activity/*`, `activity/*` |
 | communication | `chat_messages`, group wall | `/chat/*`, group wall | `messagingApi` (`chatApi` + wall via `groupsApi`) | `Messages.tsx`, `src/messaging` |
 | social_graph | `buddy_*` (Mongo), `user_follows`, `social_groups*` | `/me/friends`, `/me/friend-requests`, `/me/groups`, `/me/following`, … | `friendsApi`, `groupsApi` | `MyCrews`, `Groups` — relationship admin; **not** the explore people browse panel |
 | places | `locations` (places), `submissions` | `GET /places/catalog`, `/places/:id`, `POST /me/places`, `POST /me/submissions` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi`, `geoHierarchyApi` | `PlaceDetail*`, `/profile/submissions` suggest form |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
 | destinations | `destinations`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /destinations/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `destinationsApi`, `geoHierarchyApi` | `/destination/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/state/destination/venue search |
-| shop_profiles | `merchant_profiles` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
+| shop_profiles | `merchant_profiles` | `GET /shop/shops/:id` | `shopApi` (public read) | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
 | matching | (reads compose; side-effect notify) | `GET /discover/recommendations` — **no** consumer `/matching` mount | — | `apps/api/src/services/matching/*` (import `services/matching/index` only) |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
@@ -256,7 +256,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 | `src/config/*`, `src/content/*` | Routes helpers and canonical copy |
 | `src/member/*` | Host-status display helpers and guards |
 
-**API client:** Prefer `api.getMemberStatus()`, `exploreApi.*`, `organisationApi.*`. Domain modules only — `legacyApi.ts` removed; see `apiLegacyGuard.test.ts`.
+**API client:** Prefer `api.getMemberStatus()`, `exploreApi.*`, `operatorPublicApi.*`. Domain modules only — `legacyApi.ts` removed; see `apiLegacyGuard.test.ts`.
 
 **Publish payload:** Single builder `activityPublishPayload.ts` for explore Host and operator desk forms (shared across surfaces).
 
@@ -475,12 +475,12 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 
 | ID | Symptom | Why it hurts | Target state | Tracker |
 |----|---------|--------------|--------------|---------|
-| **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; workspace confused with Host | Roles = shell; **`GET /me/status`** / `MemberStatusDTO` = product; tenant header = **`x-organisation-id`** on **`/publishing/*`** | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc`, `hostMemberGuard.test.ts` (no `isHostRole` in product gates) |
+| **C1** | Three permission notions (`UserRole`, `HostStatusDTO`, tenant middleware) | Wrong gates in UI; workspace confused with Host | Roles = shell; **`GET /me/status`** / `MemberStatusDTO` = product; tenant header = **`x-tenant-id`** on **`/publishing/*`** | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), `host-member-model.mdc`, `hostMemberGuard.test.ts` (no `isHostRole` in product gates) |
 | **C2** | Organisation/Host naming mix in UI | New code uses wrong copy or imports | `Host*` + `Activity*` for publish/roster; `Organisation*` only for tenant storefront wire; host user copy | §8.8 (this doc) P2 · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames |
 | **C3** | ~~Large `host.ts` / `admin.ts` monoliths~~ | — | **Mitigated (Oct 2026):** host + admin mount shells with `register*` registrars | §8.8 (this doc) P2 |
 | **C4** | Parallel place detail pages (`Trail` / `Camp` / `Event`) | Duplicate SEO/loading patterns | `PlaceDetailCore` + thin kind wrappers (`placeDetailCore.test.ts`) | **R3 done** — routes unchanged for SEO |
 | **C5** | `components/activities/*` modals vs explore wizards | Two create UX paths | Explore compose only for consumer create | Mostly done — audit `components/activities` |
-| **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | Documented split; sync on `/organisation/manage?kind=shop` save | [`DOMAIN.md`](./DOMAIN.md) |
+| **C6** | Shop = `tenant` + `merchant_profile` | Two writes for one brand | **Mitigated:** one desk HTTP `PATCH /publishing/shop-profile`; dual-write internal in `shop-store` | [`DOMAIN.md`](./DOMAIN.md) |
 | **C7** | Premium location unlock + old membership page | Legacy freemium copy vs north star | Product TBD | [`NORTHSTAR.md`](./NORTHSTAR.md) |
 | **C8** | `/community`, `/membership` routes | Secondary surfaces vs explore-first IA | Both redirect to `/explore`; `COMMUNITY_PATH` kept for inbound links only | [`NAVIGATION.md`](./NAVIGATION.md) legacy table |
 | **C9** | Notification + privacy matrix incomplete | Rare group/private actor QA | API `notification-actor-label`; FE `notificationConsumerGuard` + `notificationRouting.test`; API route side effects → `scheduleSideEffect` / `scheduleNotification` | **Eng done (Oct 2026)** — manual QA for edge notification kinds |
@@ -505,7 +505,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/governance/platform-governance.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8 + `platform-governance.json` |
 | **C29** | ~~**Write-surface UI lag**~~ | — | **Done (S14-W5)** — location kit, compose shell, pillar steps, Host bodies, UAE destination modes | **S14** §8.3.6 |
 
-**Not debt (intentional):** Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Stale inbound URLs: **nginx** `inbound-bookmark-redirects.conf` + **`canonicalizeInboundProductPath`** only (no SPA bookmark routes). `PlaceDetailPage` may **`Navigate`** when API kind disagrees with URL segment (`/venue` vs hiking place) — data fix, not a retired hub.
+**Not debt (intentional):** Mongo `locations` collection name (wire **Place**); `x-tenant-id` header; `getOperatorPublicProfile` for **storefront** — not activity roster. Stale bookmark URLs: **nginx** `inbound-bookmark-redirects.conf` + **`canonicalizeNotificationBookmarkPath`** (no `/organisation/manage` SPA). `PlaceDetailPage` may **`Navigate`** when API kind disagrees with URL segment (`/venue` vs hiking place) — data fix, not a redirect hub.
 
 ---
 
@@ -720,7 +720,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 | Phase | Migration | Delete (same PR as new canon) | Horizontal touch |
 |-------|-----------|-------------------------------|------------------|
 | **0** | MIG-ROUTING-CANON-P0 | — | Map + §8.7 + program JSON |
-| **1** | MIG-ROUTING-CANON-P1 | `legacyHostApiRewrite`, `legacyPublishingPathDeprecation`, `/host/*` SPA, `LegacyPublishingConsoleRedirect` | `operator/*`, `organisationApi`, guards |
+| **1** | MIG-ROUTING-CANON-P1 | `legacyHostApiRewrite`, `legacyPublishingPathDeprecation`, `/host/*` SPA, `LegacyPublishingConsoleRedirect` | `operator/*`, `operatorPublicApi`, guards |
 | **2** | MIG-ROUTING-CANON-P2 | `/users/:id/public-profile` (+ brief, upcoming) | `accountApi`, `useMemberProfilePage`, API registrar |
 | **3** | MIG-ROUTING-CANON-P3 | `/social/people*`, `/users/browse`, `/users/search`, `/me/member-discovery-quota` | `registerMemberDiscoveryRoutes`, explore people panel |
 | **4** | MIG-ROUTING-CANON-P4 | `POST /reports`, `socialApi.reportContent` | `safety.ts`, content report hook |

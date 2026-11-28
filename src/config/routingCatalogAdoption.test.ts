@@ -37,12 +37,12 @@ describe('routingCatalog adoption', () => {
     }
   });
 
-  it('pages and components import organisation paths via routingCatalog', () => {
+  it('pages and components import operator desk paths via routingCatalog', () => {
     const violations: string[] = [];
     for (const sub of ['pages', 'components'] as const) {
       for (const file of collectFiles(join(ROOT, sub))) {
         const content = readFileSync(join(process.cwd(), file), 'utf8');
-        if (/from ['"][^'"]*member\/organisationPaths['"]/.test(content)) {
+        if (/from ['"][^'"]*member\/operatorDeskPaths['"]/.test(content)) {
           violations.push(file);
         }
       }

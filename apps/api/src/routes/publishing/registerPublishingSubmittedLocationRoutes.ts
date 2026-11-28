@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { locationSubmitBodySchema } from '../../domain/location-submit.js';
 import { mountRetiredPlaceLocationPaths } from '../../lib/retired-place-location-paths.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
-import { requireOrgRole } from '../../middleware/tenant.js';
+import { requireMembershipRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { submitPublishingLocation } from '../../services/publishing-submitted-location-commands.js';
 import { listPublishingSubmittedLocations } from '../../services/publishing-submitted-location-read.js';
@@ -23,7 +23,7 @@ export const registerPublishingSubmittedLocationRoutes = (publishingRouter: Rout
 
   publishingRouter.post(
     '/places',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ body: locationSubmitBodySchema }),
     async (req, res, next) => {
       try {

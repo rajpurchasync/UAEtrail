@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-25",
+  "generated": "2026-11-27",
   "endpoints": [
     {
       "method": "GET",
@@ -50,26 +50,6 @@
       "method": "PATCH",
       "path": "/verification-documents/:id",
       "registrar": "apps/api/src/routes/admin/registerAdminVerificationRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/${prefix}/stores",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/${prefix}/profile",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/shop/${prefix}/profile",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/shop/${prefix}/profile",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
     },
     {
       "method": "GET",
@@ -543,6 +523,16 @@
     },
     {
       "method": "GET",
+      "path": "/me/places",
+      "registrar": "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/places",
+      "registrar": "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/me/vehicles",
       "registrar": "apps/api/src/routes/user/registerMeVehiclesRoutes.ts"
     },
@@ -769,6 +759,81 @@
     {
       "method": "GET",
       "path": "/explore/map",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/registry",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/catalog",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/popular",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/activities",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/reachable-rides",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/track",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/me/state",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/premium/guide",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/premium/map/download",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/places/:id/premium/guide/pdf",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/places/:id/premium/checkout",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/places/:id/premium/unlock",
+      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/places/:id/view",
       "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
     },
     {
@@ -1150,6 +1215,11 @@
       "publishing-tenant-activity-commands",
       "publishing-tenant-activity-read"
     ],
+    "apps/api/src/routes/publishing/registerPublishingShopStorefrontRoutes.ts": [
+      "publishing-shop-storefront",
+      "shop-merchant-commands",
+      "shop-merchant-read"
+    ],
     "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts": [
       "publishing-submitted-location-commands",
       "publishing-submitted-location-read"
@@ -1157,10 +1227,6 @@
     "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts": [
       "publishing-team-commands",
       "publishing-team-read"
-    ],
-    "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts": [
-      "shop-merchant-commands",
-      "shop-merchant-read"
     ],
     "apps/api/src/routes/shop/registerShopPublicRoutes.ts": [
       "shop-public-read"

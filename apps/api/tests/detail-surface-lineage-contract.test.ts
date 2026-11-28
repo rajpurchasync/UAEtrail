@@ -327,7 +327,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     const create = await request(app)
       .post('/api/publishing/activities')
       .set('Authorization', `Bearer ${hostToken}`)
-      .set('x-organisation-id', hostFixture!.tenantId)
+      .set('x-tenant-id', hostFixture!.tenantId)
       .send({
         activityType: 'hiking',
         locationId: hostFixture!.locationId,
@@ -346,7 +346,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     const publish = await request(app)
       .post(`/api/publishing/activities/${httpPublishedActivityId}/publish`)
       .set('Authorization', `Bearer ${hostToken}`)
-      .set('x-organisation-id', hostFixture!.tenantId);
+      .set('x-tenant-id', hostFixture!.tenantId);
 
     expect(publish.status).toBe(200);
 

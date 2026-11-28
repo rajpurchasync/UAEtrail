@@ -252,12 +252,12 @@ describe('routingHygiene', () => {
     expect(app).not.toMatch(/pages\/MerchantPublic/);
   });
 
-  it('app code does not link to /shop/manage or /agency/manage (use organisationManagePath)', () => {
+  it('app code does not link to /shop/manage or /agency/manage (use operatorDeskProfilePath)', () => {
     const allow = new Set([
       'src/App.tsx',
       'src/utils/authRedirect.ts',
       'src/config/platform.ts',
-      'src/member/organisationPaths.ts',
+      'src/member/operatorDeskPaths.ts',
       'src/config/routingHygiene.test.ts',
     ]);
     const files = collectSourceFiles(SCAN_ROOT);
@@ -269,7 +269,7 @@ describe('routingHygiene', () => {
       if (allow.has(file) || file.includes('/api/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {
-        violations.push(`${file}: use organisationManagePath()`);
+        violations.push(`${file}: use operatorDeskProfilePath()`);
       }
     }
 

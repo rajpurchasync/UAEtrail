@@ -32,7 +32,7 @@ const log = (step, ok, detail = '') => {
 async function req(path, { method = 'GET', token, tenantId, body } = {}) {
   const headers = { Accept: 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  if (tenantId) headers['x-organisation-id'] = tenantId;
+  if (tenantId) headers['x-tenant-id'] = tenantId;
   if (body) headers['Content-Type'] = 'application/json';
   const res = await fetch(`${API}${path}`, {
     method,

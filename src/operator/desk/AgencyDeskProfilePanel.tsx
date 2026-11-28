@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
-import { OrganisationPublicProfile } from '../public/OrganisationPublicProfile';
+import { TenantStorefrontDetail } from '../public/TenantStorefrontDetail';
 import { AgencyTeamSection } from './AgencyTeamSection';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { agencyProfilePath, OPERATOR_PROFILE_PATH } from '../../config/routingCatalog';
 
 type Tab = 'profile' | 'team';
 
-export const AgencyOrganisationPanel = () => {
+export const AgencyDeskProfilePanel = () => {
   const { loading, ownedProfiles } = useMemberStatus();
   const [tab, setTab] = useState<Tab>('profile');
 
@@ -44,7 +44,7 @@ export const AgencyOrganisationPanel = () => {
           <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
         </div>
       ) : tab === 'profile' ? (
-        <OrganisationPublicProfile
+        <TenantStorefrontDetail
           slug={agency.slug}
           mode="owner"
           backTo={OPERATOR_PROFILE_PATH}

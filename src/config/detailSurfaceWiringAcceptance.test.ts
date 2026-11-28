@@ -32,7 +32,7 @@ describe('detailSurfaceWiringAcceptance', () => {
     expect(shopPage).toMatch(/shopPublicClientApi/);
     expect(shopPage).toMatch(/ShopPublicPage/);
 
-    const orgPage = read('src/operator/public/OrganisationProfile.tsx');
+    const orgPage = read('src/operator/public/TenantStorefrontPage.tsx');
     expect(orgPage).toMatch(/operatorDeskClientApi/);
     expect(orgPage).toMatch(/EntityPublicDetailShell/);
 

@@ -2,34 +2,34 @@ import { useQuery } from '@tanstack/react-query';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import type { TeamMember } from '../api/types';
 import {
-  fetchOrganisationReviews,
-  fetchOrganisationSubmittedPlaces,
-  fetchOrganisationTeam,
+  fetchPublishingSubmittedPlaces,
+  fetchPublishingTeam,
+  fetchTenantStorefrontReviews,
 } from './operatorDeskClientApi';
 import { fetchMyTenantMemberships } from './tenantMembershipApi';
 import {
   myTenantMembershipsQueryKey,
-  organisationConsoleRatingQueryKey,
-  organisationSubmittedPlacesQueryKey,
-  organisationTeamQueryKey,
+  operatorDeskRatingQueryKey,
+  publishingSubmittedPlacesQueryKey,
+  publishingTeamQueryKey,
 } from './clientQueryKeys';
 
-export type OrganisationConsoleRating = {
+export type OperatorDeskRating = {
   avgRating: number | null;
   reviewCount: number;
 };
 
-export const useOrganisationSubmittedPlaces = (tenantId: string | null | undefined) =>
+export const usePublishingSubmittedPlaces = (tenantId: string | null | undefined) =>
   useQuery({
-    queryKey: tenantId ? organisationSubmittedPlacesQueryKey(tenantId) : ['publishing', 'submitted-places', ''],
-    queryFn: async (): Promise<PlaceDTO[]> => fetchOrganisationSubmittedPlaces(tenantId!),
+    queryKey: tenantId ? publishingSubmittedPlacesQueryKey(tenantId) : ['publishing', 'submitted-places', ''],
+    queryFn: async (): Promise<PlaceDTO[]> => fetchPublishingSubmittedPlaces(tenantId!),
     enabled: Boolean(tenantId),
   });
 
-export const useOrganisationTeam = (tenantId: string | null | undefined) =>
+export const usePublishingTeam = (tenantId: string | null | undefined) =>
   useQuery({
-    queryKey: tenantId ? organisationTeamQueryKey(tenantId) : ['publishing', 'team', ''],
-    queryFn: async (): Promise<TeamMember[]> => fetchOrganisationTeam(tenantId!),
+    queryKey: tenantId ? publishingTeamQueryKey(tenantId) : ['publishing', 'team', ''],
+    queryFn: async (): Promise<TeamMember[]> => fetchPublishingTeam(tenantId!),
     enabled: Boolean(tenantId),
   });
 
@@ -39,12 +39,12 @@ export const useMyTenantMemberships = () =>
     queryFn: async () => fetchMyTenantMemberships(),
   });
 
-/** Header rating chip on publishing console shell (best-effort). */
-export const useOrganisationConsoleRating = (tenantId: string | null | undefined) =>
+/** Header rating chip on operator desk shell (best-effort). */
+export const useOperatorDeskRating = (tenantId: string | null | undefined) =>
   useQuery({
-    queryKey: tenantId ? organisationConsoleRatingQueryKey(tenantId) : ['publishing', 'console-rating', ''],
-    queryFn: async (): Promise<OrganisationConsoleRating> => {
-      const reviews = await fetchOrganisationReviews(tenantId!);
+    queryKey: tenantId ? operatorDeskRatingQueryKey(tenantId) : ['publishing', 'console-rating', ''],
+    queryFn: async (): Promise<OperatorDeskRating> => {
+      const reviews = await fetchTenantStorefrontReviews(tenantId!);
       if (reviews.length === 0) {
         return { avgRating: null, reviewCount: 0 };
       }

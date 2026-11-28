@@ -2,18 +2,17 @@ import { proMembershipPath } from '../../config/routingCatalog';
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ExternalLink, Store } from 'lucide-react';
-import type { ShopOrganisationDTO } from '@uaetrail/shared-types';
+import type { ShopOperatorProfileDTO } from '@uaetrail/shared-types';
+import { getActiveTenantId } from '../../api/tenant';
 import {
-  createShopOrganisationProfile,
-  fetchShopOrganisationProfile,
-  fetchShopOrganisationStores,
-  updateShopOrganisationProfile,
-} from '../../hooks/shopOrganisationClientApi';
+  createPublishingShopProfile,
+  fetchPublishingShopProfile,
+  updatePublishingShopProfile,
+} from '../../hooks/operatorShopStorefrontClientApi';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { AppButton } from '../../components/mobile/AppButton';
 import { ImageUpload } from '../../components/ui';
-import { AppSelect } from '../../components/ui/AppSelect';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 const emptyProfile = {
@@ -28,76 +27,67 @@ const emptyProfile = {
   showContactPhone: false,
 };
 
-export const ShopOrganisationPanel = () => {
+export const ShopDeskProfilePanel = () => {
   const { hasShopProfile, loading: gateLoading } = useMemberStatus();
-  const [stores, setStores] = useState<ShopOrganisationDTO[]>([]);
-  const [storesLoaded, setStoresLoaded] = useState(false);
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const tenantId = getActiveTenantId();
+  const [profile, setProfile] = useState<ShopOperatorProfileDTO | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [profileForm, setProfileForm] = useState(emptyProfile);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selectedStore = stores.find((store) => store.id === selectedStoreId) ?? null;
-
-  const loadStores = async () => {
-    try {
-      const data = await fetchShopOrganisationStores();
-      setStores(data);
-      setSelectedStoreId((current) => {
-        if (current && data.some((store) => store.id === current)) return current;
-        return data[0]?.id ?? null;
+  const loadProfile = async (scopeTenantId: string) => {
+    const data = await fetchPublishingShopProfile(scopeTenantId);
+    setProfile(data);
+    if (data) {
+      setProfileForm({
+        shopName: data.shopName,
+        description: data.description ?? '',
+        logo: data.logo ?? '',
+        websiteUrl: data.websiteUrl ?? '',
+        contactEmail: data.contactEmail ?? '',
+        contactPhone: data.contactPhone ?? '',
+        region: data.region ?? '',
+        allowInboundChat: data.allowInboundChat === true,
+        showContactPhone: data.showContactPhone === true,
       });
-    } catch {
-      setStores([]);
-      setSelectedStoreId(null);
-    } finally {
-      setStoresLoaded(true);
+    } else {
+      setProfileForm(emptyProfile);
     }
+    setProfileLoaded(true);
   };
 
-  const loadProfile = async (shopId: string) => {
-    const profile = await fetchShopOrganisationProfile(shopId);
-    setProfileForm({
-      shopName: profile.shopName,
-      description: profile.description ?? '',
-      logo: profile.logo ?? '',
-      websiteUrl: profile.websiteUrl ?? '',
-      contactEmail: profile.contactEmail ?? '',
-      contactPhone: profile.contactPhone ?? '',
-      region: profile.region ?? '',
-      allowInboundChat: profile.allowInboundChat === true,
-      showContactPhone: profile.showContactPhone === true,
+  useEffect(() => {
+    if (!tenantId) {
+      setProfileLoaded(true);
+      return;
+    }
+    void loadProfile(tenantId).catch(() => {
+      setError('Could not load shop profile');
+      setProfileLoaded(true);
     });
-  };
-
-  useEffect(() => {
-    void loadStores();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedStoreId) return;
-    void loadProfile(selectedStoreId);
-  }, [selectedStoreId]);
+  }, [tenantId]);
 
   const saveProfile = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!tenantId) return;
     setSaving(true);
     setError(null);
     try {
-      if (selectedStoreId) {
-        await updateShopOrganisationProfile(selectedStoreId, {
-          ...profileForm,
-          websiteUrl: profileForm.websiteUrl.trim() || null,
-        });
+      const payload = {
+        ...profileForm,
+        websiteUrl: profileForm.websiteUrl.trim() || null,
+      };
+      if (profile?.id) {
+        await updatePublishingShopProfile(tenantId, payload);
       } else {
-        const created = await createShopOrganisationProfile({
-          ...profileForm,
+        await createPublishingShopProfile(tenantId, {
+          shopName: profileForm.shopName,
+          ...payload,
           websiteUrl: profileForm.websiteUrl.trim() || undefined,
         });
-        setSelectedStoreId(created.id);
       }
-      await loadStores();
-      if (selectedStoreId) await loadProfile(selectedStoreId);
+      await loadProfile(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save shop');
     } finally {
@@ -105,11 +95,11 @@ export const ShopOrganisationPanel = () => {
     }
   };
 
-  if (!gateLoading && storesLoaded && !hasShopProfile && stores.length === 0) {
+  if (!gateLoading && profileLoaded && !hasShopProfile && !profile) {
     return <Navigate to={proMembershipPath({ intent: 'add-shop' })} replace />;
   }
 
-  if (gateLoading || !storesLoaded) {
+  if (gateLoading || !profileLoaded) {
     return (
       <div className="flex justify-center py-12">
         <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
@@ -117,24 +107,21 @@ export const ShopOrganisationPanel = () => {
     );
   }
 
+  if (!tenantId) {
+    return (
+      <GlassCard padding>
+        <p className="text-sm text-neutral-600">Select a shop operator above to edit the public storefront.</p>
+      </GlassCard>
+    );
+  }
+
+  const publicShopId = profile?.shopId ?? profile?.id;
+
   return (
     <div className="space-y-3 animate-fade-up">
-      {stores.length > 1 && (
-        <GlassCard padding className="!py-3">
-          <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Store</label>
-          <AppSelect
-            value={selectedStoreId ?? ''}
-            onChange={(storeId) => setSelectedStoreId(storeId || null)}
-            options={stores.map((store) => ({ value: store.id, label: store.shopName }))}
-            inputClassName="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
-            aria-label="Store"
-          />
-        </GlassCard>
-      )}
-
-      {selectedStore && (
+      {publicShopId && (
         <Link
-          to={shopPublicPath({ shopId: selectedStore.id })}
+          to={shopPublicPath({ shopId: publicShopId })}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700"
         >
           View public shop page

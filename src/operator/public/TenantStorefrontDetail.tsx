@@ -14,13 +14,13 @@ import {
 import {
   ReviewDTO,
   type ActivityDTO,
-  type OrganisationHostDetailsDTO,
+  type OperatorHostDetailsDTO,
   type TenantPublicDTO,
 } from '@uaetrail/shared-types';
 import {
-  fetchOrganisationProfileBySlug,
-  fetchOrganisationReviews,
-  updateOrganisationDetails,
+  fetchOperatorPublicProfileBySlug,
+  fetchTenantStorefrontReviews,
+  updateOperatorHostDetails,
 } from '../../hooks/operatorDeskClientApi';
 import { updateMeProfile } from '../../hooks/memberProfileApi';
 import { ReviewSection } from '../../components/ui/ReviewSection';
@@ -54,10 +54,10 @@ import { detailBackPath } from '../../config/routingCatalog';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
 import { ConsumerEntityTabBar } from '../../components/mobile/ConsumerEntityTabBar';
 import {
-  ORGANISATION_PUBLIC_TAB_LABELS,
-  ORGANISATION_PUBLIC_TABS,
-  type OrganisationPublicDetailTabId,
-} from './organisationPublicDetailTab';
+  TENANT_STOREFRONT_TAB_LABELS,
+  TENANT_STOREFRONT_TABS,
+  type tenantStorefrontDetailTabId,
+} from './tenantStorefrontDetailTab';
 
 const ORG_TAB_ICONS = {
   about: Info,
@@ -79,7 +79,7 @@ const profileSelectClass =
 
 type ProfileMode = 'public' | 'owner';
 
-interface OrganisationPublicProfileProps {
+interface TenantStorefrontDetailProps {
   slug: string;
   mode?: ProfileMode;
   backTo?: string;
@@ -88,11 +88,11 @@ interface OrganisationPublicProfileProps {
   compact?: boolean;
   /** Public storefront tab layout (S9) — only for `mode="public"` on `/agency` · `/partner`. */
   entityTabLayout?: boolean;
-  publicDetailTab?: OrganisationPublicDetailTabId;
-  onPublicDetailTabChange?: (tab: OrganisationPublicDetailTabId) => void;
+  publicDetailTab?: tenantStorefrontDetailTabId;
+  onPublicDetailTabChange?: (tab: tenantStorefrontDetailTabId) => void;
 }
 
-export const OrganisationPublicProfile = ({
+export const TenantStorefrontDetail = ({
   slug,
   mode = 'public',
   backTo = detailBackPath('host'),
@@ -101,7 +101,7 @@ export const OrganisationPublicProfile = ({
   entityTabLayout = false,
   publicDetailTab = 'about',
   onPublicDetailTabChange,
-}: OrganisationPublicProfileProps) => {
+}: TenantStorefrontDetailProps) => {
   const { user } = useAuth();
   const isOwner = mode === 'owner';
 
@@ -116,18 +116,18 @@ export const OrganisationPublicProfile = ({
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editBio, setEditBio] = useState('');
-  const [editDetails, setEditDetails] = useState<OrganisationHostDetailsDTO>({});
+  const [editDetails, setEditDetails] = useState<OperatorHostDetailsDTO>({});
 
   const loadProfile = useCallback(() => {
     setLoading(true);
     setError(null);
-    fetchOrganisationProfileBySlug(slug)
+    fetchOperatorPublicProfileBySlug(slug)
       .then(async (tenantData) => {
         setTenant(tenantData);
         setActivities(tenantData.activities);
         setEditBio(tenantData.ownerBio ?? '');
         setEditDetails(tenantData.hostDetails ?? {});
-        const reviewList = await fetchOrganisationReviews(tenantData.id).catch(() => []);
+        const reviewList = await fetchTenantStorefrontReviews(tenantData.id).catch(() => []);
         setReviews(reviewList);
       })
       .catch(() => setError(`We couldn't find this ${workspaceProfileLabel(null).toLowerCase()}`))
@@ -146,7 +146,7 @@ export const OrganisationPublicProfile = ({
     setSaveError(null);
     try {
       await updateMeProfile({ bio: editBio.trim() || undefined });
-      await updateOrganisationDetails(editDetails);
+      await updateOperatorHostDetails(editDetails);
       setSaveMessage('Public profile updated.');
       setEditing(false);
       loadProfile();
@@ -217,9 +217,9 @@ export const OrganisationPublicProfile = ({
   const showOutingsPanel = !useEntityTabs || activePublicTab === 'outings';
   const showContactPanel = !useEntityTabs || activePublicTab === 'contact';
 
-  const orgMobileTabs = ORGANISATION_PUBLIC_TABS.map((id) => ({
+  const orgMobileTabs = TENANT_STOREFRONT_TABS.map((id) => ({
     id,
-    label: ORGANISATION_PUBLIC_TAB_LABELS[id],
+    label: TENANT_STOREFRONT_TAB_LABELS[id],
     icon: ORG_TAB_ICONS[id],
   }));
 
@@ -358,7 +358,7 @@ export const OrganisationPublicProfile = ({
             ariaLabel="Host profile sections"
           />
           <nav className="hidden md:flex gap-6 border-b border-neutral-200/80 pb-0">
-            {ORGANISATION_PUBLIC_TABS.map((id) => (
+            {TENANT_STOREFRONT_TABS.map((id) => (
               <button
                 key={id}
                 type="button"
@@ -369,7 +369,7 @@ export const OrganisationPublicProfile = ({
                     : 'border-transparent text-neutral-500 hover:text-neutral-800'
                 }`}
               >
-                {ORGANISATION_PUBLIC_TAB_LABELS[id]}
+                {TENANT_STOREFRONT_TAB_LABELS[id]}
               </button>
             ))}
           </nav>

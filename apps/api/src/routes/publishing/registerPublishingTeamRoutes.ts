@@ -1,7 +1,7 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { ORG_TEAM_MANAGE_ROLES } from '../../lib/org-permissions.js';
-import { requireOrgRole } from '../../middleware/tenant.js';
+import { requireMembershipRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import {
   addPublishingTeamMember,
@@ -28,7 +28,7 @@ export const registerPublishingTeamRoutes = (publishingRouter: Router): void => 
 
   publishingRouter.post(
     '/team',
-    requireOrgRole(ORG_TEAM_MANAGE_ROLES),
+    requireMembershipRole(ORG_TEAM_MANAGE_ROLES),
     validate({ body: teamCreateSchema }),
     async (req, res, next) => {
       try {
@@ -44,7 +44,7 @@ export const registerPublishingTeamRoutes = (publishingRouter: Router): void => 
 
   publishingRouter.patch(
     '/team/:membershipId',
-    requireOrgRole(ORG_TEAM_MANAGE_ROLES),
+    requireMembershipRole(ORG_TEAM_MANAGE_ROLES),
     validate({ params: membershipIdSchema, body: teamPatchSchema }),
     async (req, res, next) => {
       try {
@@ -61,7 +61,7 @@ export const registerPublishingTeamRoutes = (publishingRouter: Router): void => 
 
   publishingRouter.delete(
     '/team/:membershipId',
-    requireOrgRole(ORG_TEAM_MANAGE_ROLES),
+    requireMembershipRole(ORG_TEAM_MANAGE_ROLES),
     validate({ params: membershipIdSchema }),
     async (req, res, next) => {
       try {

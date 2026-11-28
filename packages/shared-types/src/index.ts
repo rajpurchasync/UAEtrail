@@ -619,11 +619,6 @@ export interface HostStatusDTO {
   ownedProfiles: OwnedHostProfileDTO[];
 }
 
-/** Domain aliases — organisation profile types (wire: `GET /me/status`). */
-export type OrganisationApplicationStatus = HostApplicationStatus;
-export type OrganisationProfileType = HostProfileType;
-export type OwnedOrganisationProfileType = OwnedHostProfileType;
-export type OwnedOrganisationProfileDTO = OwnedHostProfileDTO;
 /** Publish/workspace slice of {@link MemberStatusDTO} — not a separate HTTP resource. */
 export interface MemberPublishCapabilitiesDTO {
   canPublish: boolean;
@@ -861,11 +856,12 @@ export interface MerchantProfileDTO {
   showContactPhone?: boolean;
 }
 
-/** Domain alias — shop organisation. Storage/API remain `merchant_profiles` / `MerchantProfileDTO`. */
-export type ShopOrganisationDTO = MerchantProfileDTO;
 
 /** Public shop profile — same wire shape as {@link MerchantProfileDTO}. */
 export type MerchantPublicDTO = MerchantProfileDTO;
+
+/** Shop operator desk + public storefront payload (product name — storage may remain `merchant_profiles`). */
+export type ShopOperatorProfileDTO = MerchantProfileDTO;
 
 /** Domain alias — public shop page payload. */
 export type ShopPublicDTO = MerchantPublicDTO;
@@ -1122,7 +1118,7 @@ export interface TenantListDTO {
   hiddenFromPublic?: boolean;
 }
 
-export interface OrganisationHostDetailsDTO {
+export interface OperatorHostDetailsDTO {
   experience?: string;
   languages?: string;
   age?: number;
@@ -1138,7 +1134,7 @@ export interface TenantPublicTeamMemberDTO {
   avatarUrl: string | null;
 }
 
-/** Public organisation profile — wire shape for `GET /tenants/:slug`. */
+/** Public tenant storefront — wire shape for `GET /tenants/:slug`. */
 export interface TenantPublicDTO {
   id: string;
   name: string;
@@ -1154,7 +1150,7 @@ export interface TenantPublicDTO {
   ownerName: string;
   ownerAvatar: string | null;
   ownerBio: string | null;
-  hostDetails?: OrganisationHostDetailsDTO;
+  hostDetails?: OperatorHostDetailsDTO;
   memberCount: number;
   team: TenantPublicTeamMemberDTO[];
   activities: ActivityDTO[];

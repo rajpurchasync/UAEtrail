@@ -8,7 +8,7 @@
   "axes": {
     "A_RBAC": "Platform/job role — auth middleware, route mounts, admin/merchant API",
     "B_PUBLISH": "Host publish capabilities — GET /me/status publish.* only",
-    "C_STOREFRONT": "Tenant storefront kind — PublishingProfileKind, x-organisation-id",
+    "C_STOREFRONT": "Tenant storefront kind — PublishingProfileKind, x-tenant-id",
     "D_PARTICIPATE": "Per-outing engagement — viewerAccess, join spine, medical safety",
     "E_ENGAGEMENT": "Points/membership tier — badges, reviews; never publish/join"
   },
@@ -192,7 +192,7 @@
       "axis": "C_STOREFRONT",
       "contextId": "publishing_workspace",
       "resolver": { "module": "packages/shared-types/src/publishing-profile-kind.ts", "symbol": "resolvePublishingProfileKind" },
-      "httpHeader": "x-organisation-id"
+      "httpHeader": "x-tenant-id"
     },
     {
       "id": "publish.pro_application",
@@ -315,19 +315,20 @@
       "http": { "method": "GET", "path": "/shop/:id" }
     },
     {
-      "id": "shop.merchant_manage",
-      "label": "Merchant manage shop",
-      "axis": "A_RBAC",
-      "contextId": "shop_profiles",
-      "resolver": { "module": "apps/api/src/lib/shop-store.ts", "symbol": "userCanManageShopProfile" },
-      "http": { "method": "PATCH", "path": "/shop/manage" }
+      "id": "publish.shop_storefront",
+      "label": "Shop operator storefront (desk)",
+      "axis": "C_STOREFRONT",
+      "contextId": "publishing_workspace",
+      "resolver": { "module": "apps/api/src/services/publishing-shop-storefront.ts", "symbol": "assertPublishingShopTenant" },
+      "http": { "method": "PATCH", "path": "/publishing/shop-profile" },
+      "httpHeader": "x-tenant-id"
     },
     {
       "id": "storefront.agency_public",
       "label": "Public agency / partner storefront",
       "axis": "C_STOREFRONT",
       "contextId": "shop_profiles",
-      "resolver": { "module": "src/hooks/operatorDeskClientApi.ts", "symbol": "fetchOrganisationProfileBySlug" },
+      "resolver": { "module": "src/hooks/operatorDeskClientApi.ts", "symbol": "fetchOperatorPublicProfileBySlug" },
       "http": { "method": "GET", "path": "/organisations/:slug" }
     },
     {

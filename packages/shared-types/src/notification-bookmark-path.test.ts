@@ -8,13 +8,6 @@ describe('notification bookmark paths', () => {
     expect(rewriteStaleNotificationBookmarkPath('/rewards')).toBe('/profile/badges');
   });
 
-  it('rewrites organisation manage to operator profile desk', () => {
-    expect(rewriteStaleNotificationBookmarkPath('/organisation/manage')).toBe('/operator/profile');
-    expect(rewriteStaleNotificationBookmarkPath('/organisation/manage?kind=shop')).toBe(
-      '/operator/profile?kind=shop'
-    );
-  });
-
   it('rewrites community, crews, and pro entry bookmarks', () => {
     expect(rewriteStaleNotificationBookmarkPath('/map?list=1')).toBe('/explore?list=1');
     expect(rewriteStaleNotificationBookmarkPath('/discovery')).toBe('/explore');

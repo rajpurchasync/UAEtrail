@@ -38,7 +38,7 @@ describe('buddy host access', () => {
     const canonical = await request(app)
       .get('/api/publishing/activities')
       .set('Authorization', `Bearer ${visitor.accessToken}`)
-      .set('x-organisation-id', tenant.id);
+      .set('x-tenant-id', tenant.id);
     expect(canonical.status).toBe(200);
 
     const membership = await db.collection('tenant_memberships').findOne({

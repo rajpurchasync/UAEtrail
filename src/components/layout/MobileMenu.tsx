@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -44,7 +45,9 @@ import { MESSAGES_PATH, PLAN_PATH } from '../../config/surfacePaths';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
 import { isOperatorConsolePath } from '../../config/surfacePaths';
-import { ADMIN_LINKS, OPERATOR_CONSOLE_LINKS } from '../../constants';
+import { ADMIN_LINKS } from '../../constants';
+import { operatorDeskNavLinksForKind } from '../../operator/desk/modules';
+import { useActiveOperatorDeskKind } from '../../operator/desk/useActiveOperatorDeskKind';
 import { ADMIN_OVERVIEW_PATH } from '../../config/adminSurfacePaths';
 import { isAdminConsoleNavActive } from '../../admin/adminNavActive';
 import { useAuth } from '../../context/AuthContext';
@@ -694,6 +697,11 @@ const MobileMenuPanel = () => {
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
   const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
+  const deskKind = useActiveOperatorDeskKind();
+  const operatorConsoleLinks = useMemo(
+    () => operatorDeskNavLinksForKind(deskKind).map(({ to, label }) => ({ to, label })),
+    [deskKind]
+  );
   const unreadNotifications = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const [androidHelpOpen, setAndroidHelpOpen] = useState(false);
@@ -787,7 +795,7 @@ const MobileMenuPanel = () => {
         ariaLabel="Workspace navigation"
         header={{ eyebrow: 'Organise', title: user?.displayName || 'Account' }}
       >
-        <DashboardDrawerLinks links={OPERATOR_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={operatorConsoleLinks} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
         <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor

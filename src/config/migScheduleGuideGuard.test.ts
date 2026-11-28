@@ -110,8 +110,10 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
       'utf8'
     );
     expect(profile).toMatch(/MEMBER_SCHEDULE_CALENDAR_PATH/);
+    const deskModules = readFileSync(join(ROOT, 'src/operator/desk/modules.ts'), 'utf8');
+    expect(deskModules).toMatch(/MEMBER_SCHEDULE_CALENDAR_PATH/);
     const operator = readFileSync(join(ROOT, 'src/hosting/HostingHubView.tsx'), 'utf8');
-    expect(operator).toMatch(/MEMBER_SCHEDULE_CALENDAR_PATH/);
+    expect(operator).toMatch(/operatorDeskQuickLinksForKind/);
     const markers = readFileSync(join(ROOT, 'src/plan/planCalendarMarkers.ts'), 'utf8');
     expect(markers).toMatch(/kind: 'block'/);
   });

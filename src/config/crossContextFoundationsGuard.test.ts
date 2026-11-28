@@ -51,20 +51,20 @@ describe('crossContextFoundationsGuard', () => {
     expect(missingInCoherence).toEqual([]);
   });
 
-  it('CTX-FOUND-02: tenant HTTP uses /publishing + organisationRequestHeaders (one methodology)', () => {
+  it('CTX-FOUND-02: tenant HTTP uses /publishing + tenantScopeHeaders (one methodology)', () => {
     const violations: string[] = [];
     for (const file of TENANT_DOMAIN_MODULES) {
       const content = read(file);
       if (content.includes('/publishing/')) {
-        if (!content.includes('organisationRequestHeaders')) {
-          violations.push(`${file}: /publishing without organisationRequestHeaders`);
+        if (!content.includes('tenantScopeHeaders')) {
+          violations.push(`${file}: /publishing without tenantScopeHeaders`);
         }
       }
       if (/['"`]\/operator\//.test(content)) {
-        violations.push(`${file}: legacy /operator HTTP path`);
+        violations.push(`${file}: /operator HTTP path in client module`);
       }
-      if (/x-tenant-id/i.test(content)) {
-        violations.push(`${file}: legacy x-tenant-id header`);
+      if (/x-organisation-id/i.test(content)) {
+        violations.push(`${file}: retired x-organisation-id header`);
       }
     }
     expect(violations).toEqual([]);
@@ -95,7 +95,7 @@ describe('crossContextFoundationsGuard', () => {
 
     const workspace = read(PUBLISHING_WORKSPACE_DOMAIN);
     expect(workspace).toMatch(/\/publishing\/activities/);
-    expect(workspace).toMatch(/organisationRequestHeaders/);
+    expect(workspace).toMatch(/tenantScopeHeaders/);
 
     const availability = read('src/api/domains/availability.ts');
     expect(availability).toMatch(/\/me\/availability/);

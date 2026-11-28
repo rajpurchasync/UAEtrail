@@ -18,7 +18,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 |------|--------------|--------------|-----------|
 | `place` | **Place** | `locations`, `LocationDTO` | Second “Venue” entity |
 | `activity` | **Activity** (outing / plan) | `activities`, `ActivityDTO` | `Trip`, `TripDTO`, `Event` row |
-| `organisation` | **Business storefront** (agency / partner tenant) — wire name `organisation`; see §1.5 | `tenants`, `/agency` · `/partner` | A second “organizer” entity table |
+| `tenant` | **Agency / partner storefront** (tenant brand on the map) — `EntityKind.tenant`; see §1.5 | `tenants`, `/agency` · `/partner` | A second “organizer” entity table; consumer copy **agency** / **partner**, not “organisation” |
 | `shop` | **Shop** (outdoor retail brand — profile only, no SKU catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
@@ -46,8 +46,8 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
 | **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | User-facing FAB buttons — reserved word for **message compose** later |
 | **Host** | Product role | Individual leading **this outing** (joiner-facing) | The Mongo `tenants` row; the operator desk |
-| **Operator** | Product identity | Any publishing identity (community host, guide, shop, agency, partner) + shared **desk** at `/operator/*` | The person on this outing (that's **Host**); Mongo `tenants` (that's **organisation** wire) |
-| **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, partner, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Consumer copy — say **host**, **guide**, **agency**, **shop**, **partner**, **operator**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
+| **Operator** | Product identity | Any publishing identity (community host, guide, shop, agency, partner) + shared **desk** at `/operator/*` | The person on this outing (that's **Host**); a single `tenant` row (Mongo `tenants`) |
+| **Tenant storefront** | Code + wire | **One tenant row** for all publishing kinds (guide, agency, shop, partner, …): `TenantStorefront*`, `x-tenant-id`, `EntityKind: tenant` | Consumer copy — **host**, **guide**, **agency**, **shop**, **partner**, **operator**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Retired label | — | Product noun is **host** (activity) or **tenant** (storage) |
 | **Partner** | Product kind | Hotel / campaign / brand **host storefront** — not a shop, not a tour agency | Outdoor gear **shop**; do not call shops “partners” in UI |
 | **Agency** | Product kind | **Tour operator** — join trips remotely; storefront is **not** “visit this pin to join” | Gear **shop**; map **Place** venue |
@@ -109,9 +109,9 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `activity` | Scheduled outing | Host tenant + participation |
 | `person` | Member card | `profileVisibility` + profile `viewerAccess` (§15) |
 | `shop` | Shop **storefront** profile | `PublishingProfileKind: shop` |
-| `organisation` | Business **storefront** slug (`/agency`, `/partner`) | `PublishingProfileKind`: `agency` \| `partner` |
+| `tenant` | Agency / partner **storefront** slug (`/agency`, `/partner`) | `PublishingProfileKind`: `agency` \| `partner` |
 
-**Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **Host** (individual on an outing) / **guide** / **agency** / **shop** / **partner** — not “organisation.” **Operator** = publishing identity + **desk** (`/operator/*`) for every kind. **Organize/publish** = capabilities on **`GET /me/status`** (`profileComplete`, `publish.*`) — not `/me/*` personas. Retired in **architecture/API**: `host` paths and new `Host*` hooks; see `MEMBER_MODEL.md` § Naming vocabulary.
+`EntityKind.tenant` covers `/agency` and `/partner` public storefronts (`parseEntityRefFromPathname`). Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **Host** (individual on an outing) / **guide** / **agency** / **shop** / **partner** — not “organisation.” **Operator** = publishing identity + **desk** (`/operator/*`) for every kind. **Organize/publish** = capabilities on **`GET /me/status`** (`profileComplete`, `publish.*`) — not `/me/*` personas. Retired in **architecture/API**: `host` paths and new `Host*` hooks; see `MEMBER_MODEL.md` § Naming vocabulary.
 
 ---
 
@@ -231,7 +231,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 |-------|---------|----------|
 | **Product / UI** | Copy, nav labels | Place, Activity, **Host** (FAB + individual on this outing), **Operator desk** (any publishing kind, `/operator/*`), Friends, Pro Membership — not **Compose** for FAB |
 | **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/publishing/*` — see **§13** |
-| **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-organisation-id` |
+| **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-tenant-id` |
 
 **Rule:** Product says **Place**; API may still say `/locations` and `LocationDTO` until a deliberate migration. Do **not** introduce new `Location*` **product** names in UI.
 
@@ -272,7 +272,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 ### 3.1 Consumer detail tab wire ids
 
-Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/place/placeDetailTab.ts`; area/shop/org `src/area|shop|organisation/*DetailTab.ts`; guard canon `src/config/consumerDetailTabWireCanon.ts`. **Plan:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 / `consumerDetailQaMatrixGuard`.
+Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/place/placeDetailTab.ts`; area/shop/tenant storefront `src/area|shop|operator/public/*DetailTab.ts`; guard canon `src/config/consumerDetailTabWireCanon.ts`. **Plan:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 / `consumerDetailQaMatrixGuard`.
 
 | Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
 |---------|--------------|-----------------------------------|-----------|
@@ -280,7 +280,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceDetailKindFacts` (trail / camp / event) |
 | Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/destinationDetail/destinationDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` (inbound `?tab=products` → `about`) |
-| Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/operator/public/organisationPublicDetailTab.ts` |
+| Tenant storefront (agency / partner) | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/operator/public/organisationPublicDetailTab.ts` (legacy filename) |
 
 **Aliases (one release when renaming place tabs):** `location` → `transport`; document in Phase 3 PR.
 
@@ -380,12 +380,12 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 |-------|--------|--------|----------|
 | Public read | `/activities`, `/explore/map` (`sources=availability` for Looking for), `/places` | — | Browse; crew map slice = `availability-fixed-map-items.ts` |
 | Member | `/me/*` | Bearer | `availability`, `status`, profile |
-| Operator desk (tenant HTTP) | `/publishing/*` | Bearer + `x-organisation-id` | `activities`, **`/publishing/requests`** (activity join queue); SPA `/operator/*` |
+| Operator desk (tenant HTTP) | `/publishing/*` | Bearer + `x-tenant-id` | `activities`, **`/publishing/requests`** (activity join queue); SPA `/operator/*` |
 | Person public | `/users/:id` | optional | Public profile |
 
 **Kebab-case plurals** on URLs: `availability` (crew registry), not `intents` or `demand`.
 
-**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberStatus`, `getPublicPlaces`). No retired alias layer on `api` (see `apiClientSurfaceGuard.test.ts`).
+**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOperatorPublicProfile`, `getMemberStatus`, `getPublicPlaces`). No retired alias layer on `api` (see `apiClientSurfaceGuard.test.ts`).
 
 ### 5.1 API vs UI (read-models)
 
@@ -404,9 +404,9 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 | Prefer | Deprecated alias | Notes |
 |--------|------------------|-------|
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
-| `getOrganisationProfile`, `ShopOrganisation*`, `src/operator/apply/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
+| `getOperatorPublicProfile`, `ShopOrganisation*`, `src/operator/apply/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § wire fossils |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiClientSurfaceGuard`, `organisationNamingGuard` |
-| `OPERATOR_CONSOLE_LINKS`, `src/operator/desk/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Operator desk SPA `/operator/*`; HTTP `/publishing/*` |
+| `operatorDeskNavLinksForKind`, `src/operator/desk/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Operator desk SPA `/operator/*`; HTTP `/publishing/*` |
 | `getMemberStatus` | `getMemberHostStatus`, `getMyOrganisationStatus` | Tier + nested `publish` |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
@@ -466,7 +466,7 @@ When renaming or adding routes:
 | Duplicate | Why |
 |-----------|-----|
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
-| `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
+| `tenant` vs Organisation | `x-tenant-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
 | Retired SPA bookmark redirects | Removed GW-7 — `canonicalizeNotificationBookmarkPath` + nginx 301s; no duplicate client rewrite tables |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
@@ -492,7 +492,7 @@ When renaming or adding routes:
 | Map / Find | `exploreApi`, `availabilityApi` | explore map; `/me/availability` |
 | Buddies / groups / follow | `buddiesApi`, `groupsApi` | `/me/friends`, `/me/groups`, `/me/following` |
 | Wishlist / entity follow / reviews | `wishlistApi`, `entityFollowApi`, `reviewsApi` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
-| Tenant console | `organisationApi` | organisation profile, team, join queue |
+| Operator desk (tenant) | `operatorPublicApi`, `publishingWorkspaceApi` | public profile, team, join queue, shop storefront |
 | Badges | `badgesApi` | `getMemberBadges()` |
 
 **API client:** `api` merges `src/api/domains/*` only (legacy alias layer removed Oct 2026). **Base URL:** `VITE_API_BASE_URL` → `/api` (unversioned). **Notification deep links:** `apps/api/src/lib/member-routes.ts` ↔ `src/config/surfacePaths.ts` (`member-routes-alignment.test.ts`). **Resolvers** (`resolve*`) belong in `apps/api/src/services/*` only.
@@ -534,11 +534,11 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Destination** (curated **name**, not a pin) | `GET /destinations`, `GET /destinations/:slug` | `destinations-store`, `hostingPublishDestination.ts`, `/destination/:slug`, explore `?destination=` | `source: area` map pin; `placeHubLabel` confused with destination name; assigning destination from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `actorUserId`, “buddy entity” |
-| **Operator desk** | SPA `/operator/*`; HTTP `/publishing/*` | `src/operator/desk/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
+| **Operator desk** | SPA `/operator/*`; HTTP `/publishing/*` | `src/operator/desk/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-tenant-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Destination** is a name (`?destination=` / `/destination/:slug`), not a map.
 
-**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/content/workspaceVocabulary.ts`, `src/components/<domain>/` — not new `utils/<domain>*.ts`.
+**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`operatorDeskPaths.ts`), `src/content/workspaceVocabulary.ts`, `src/components/<domain>/` — not new `utils/<domain>*.ts`.
 
 ### 12.1 Geography — Destination hub, Place (site) catalog, Activity (authoritative)
 
@@ -664,7 +664,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 
 **Rule:** Name **modules** by **bounded context** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3). Name **props** with neutral ids (`memberUserId`, `activityId`). Put **role words** in **copy** (`messageLabel`, `workspaceVocabulary`), not in shared component filenames.
 
-**Mental model (canonical):** One **Activity** entity; **member capabilities** (`canPublish`, profile complete, tenants they may represent); **per-activity viewer access** (join, manage roster, crew surfaces). Do **not** invent a second product noun (**operator**, **host**) in TypeScript for things that are already scoped by **`tenantId`**, **`x-organisation-id`**, or **activity id**.
+**Mental model (canonical):** One **Activity** entity; **member capabilities** (`canPublish`, profile complete, tenants they may represent); **per-activity viewer access** (join, manage roster, crew surfaces). Do **not** invent a second product noun (**operator**, **host**) in TypeScript for things that are already scoped by **`tenantId`**, **`x-tenant-id`**, or **activity id**.
 
 | Layer | Question | Name in code (target) |
 |-------|----------|------------------------|
@@ -985,7 +985,7 @@ ViewerRequestContext
 | `platformRole` | Coarse JWT role (`UserRole`) — shell routes, admin |
 | `hostStatus` | Optional snapshot from **`GET /me/status`** — **capabilities only**, loaded server-side for mutations; avoid shipping whole DTO on every public read |
 | `surface` | `explore_map`, `activity_route`, `publishing_workspace`, … |
-| `tenantScope` | `x-organisation-id` when acting as business host |
+| `tenantScope` | `x-tenant-id` when acting as business host |
 
 **Where each concern lives:**
 

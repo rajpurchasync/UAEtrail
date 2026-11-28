@@ -5,13 +5,12 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('shop route registrars (COH-11)', () => {
-  it('shop.ts is a thin mount shell', () => {
+  it('shop.ts is a thin public mount shell', () => {
     const shop = read('src/routes/shop.ts');
     expect(shop).toMatch(/registerShopPublicRoutes/);
-    expect(shop).toMatch(/registerShopMerchantManageRoutes/);
+    expect(shop).not.toMatch(/registerShopMerchantManageRoutes/);
     expect(shop).not.toMatch(/registerShopCheckoutRoutes/);
     expect(shop).not.toMatch(/shopRouter\.(get|post|patch|delete)\(/);
-    expect(shop).not.toMatch(/merchantScopeSchema/);
   });
 
   it('public storefront keeps /shops/:id with /merchants/:id alias', () => {
@@ -22,22 +21,29 @@ describe('shop route registrars (COH-11)', () => {
     expect(registrar).not.toMatch(/\/products/);
   });
 
-  it('merchant manage is profile-only (no product catalog routes)', () => {
-    const registrar = read('src/routes/shop/registerShopMerchantManageRoutes.ts');
-    expect(registrar).toMatch(/shopOrganisationManagePrefixes/);
+  it('shop operator manage lives on publishing workspace', () => {
+    const publishing = read('src/routes/publishing.ts');
+    expect(publishing).toMatch(/registerPublishingShopStorefrontRoutes/);
+    const registrar = read('src/routes/publishing/registerPublishingShopStorefrontRoutes.ts');
+    expect(registrar).toMatch(/\/shop-profile/);
     expect(registrar).toMatch(/shop-merchant-commands/);
-    expect(registrar).not.toMatch(/\/merchant\/products/);
-    expect(registrar).not.toMatch(/merchantScopeSchema/);
+    expect(registrar).toMatch(/assertPublishingShopTenant/);
   });
 
-  it('client emits /shop/merchant; /shop/organisation stays inbound alias', () => {
-    const client = read('../../src/api/domains/shop.ts');
-    expect(client).toMatch(/\/shop\/merchant\/stores/);
-    expect(client).toMatch(/\/shop\/merchant\/profile/);
-    expect(client).not.toMatch(/['`]\/shop\/organisation\//);
-    const prefixes = read('src/routes/shop/shop-route-schemas.ts');
-    expect(prefixes).toMatch(/'\/merchant'/);
-    expect(prefixes).toMatch(/'\/organisation'/);
+  it('FE desk uses publishingWorkspace for shop profile manage', () => {
+    const workspace = read('../../src/api/domains/publishingWorkspace.ts');
+    expect(workspace).toMatch(/\/publishing\/shop-profile/);
+    expect(workspace).not.toMatch(/\/shop\/merchant\//);
+    const shop = read('../../src/api/domains/shop.ts');
+    expect(shop).not.toMatch(/\/shop\/merchant\//);
+    const panel = read('../../src/operator/desk/ShopDeskProfilePanel.tsx');
+    expect(panel).toMatch(/operatorShopStorefrontClientApi/);
+  });
+
+  it('retired /shop/merchant manage registrar is removed', () => {
+    expect(existsSync(join(process.cwd(), 'src/routes/shop/registerShopMerchantManageRoutes.ts'))).toBe(
+      false
+    );
   });
 
   it('does not keep an empty socialGraphRouter shim', () => {
@@ -50,5 +56,6 @@ describe('shop route registrars (COH-11)', () => {
     expect(shared).not.toMatch(/export interface ProductDTO/);
     expect(shared).not.toMatch(/TenantPublicProductDTO/);
     expect(shared).not.toMatch(/shopProducts\?/);
+    expect(shared).toMatch(/ShopOperatorProfileDTO/);
   });
 });

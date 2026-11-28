@@ -1,8 +1,8 @@
-import type { MemberProfileRoleLabel, OwnedOrganisationProfileDTO, UserRole } from '@uaetrail/shared-types';
+import type { MemberProfileRoleLabel, OwnedHostProfileDTO, UserRole } from '@uaetrail/shared-types';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
 
 export const resolveProfileHostKind = (
-  ownedProfiles: OwnedOrganisationProfileDTO[]
+  ownedProfiles: OwnedHostProfileDTO[]
 ): 'shop' | 'agency' | 'guide' | null => {
   if (ownedProfiles.some((profile) => profile.type === 'shop')) return 'shop';
   if (ownedProfiles.some((profile) => profile.type === 'agency')) return 'agency';
@@ -29,7 +29,7 @@ export const resolvePublicMemberRoleLabel = (profile: {
 
 export const resolveProfileRoleLabel = (
   role: UserRole | undefined,
-  ownedProfiles: OwnedOrganisationProfileDTO[],
+  ownedProfiles: OwnedHostProfileDTO[],
   isCommunityHost = false
 ): string => {
   const hostKind = resolveProfileHostKind(ownedProfiles);

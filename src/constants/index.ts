@@ -1,11 +1,4 @@
 import {
-  OPERATOR_ACTIVITIES_PATH,
-  OPERATOR_HISTORY_PATH,
-  OPERATOR_OVERVIEW_PATH,
-  OPERATOR_PLACES_PATH,
-  OPERATOR_PROFILE_PATH,
-  OPERATOR_REQUESTS_PATH,
-  OPERATOR_TEAM_PATH,
   JOURNEY_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
@@ -19,17 +12,6 @@ export const DIFFICULTY_COLORS = {
 };
 
 export { PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH };
-
-/** Operator console nav — canonical `/operator/*` routes. */
-export const OPERATOR_CONSOLE_LINKS = [
-  { to: OPERATOR_OVERVIEW_PATH, label: 'Overview' },
-  { to: OPERATOR_REQUESTS_PATH, label: 'Join requests' },
-  { to: OPERATOR_ACTIVITIES_PATH, label: 'Activities' },
-  { to: OPERATOR_PROFILE_PATH, label: 'Public profile' },
-  { to: OPERATOR_TEAM_PATH, label: 'Team' },
-  { to: OPERATOR_PLACES_PATH, label: 'Places' },
-  { to: OPERATOR_HISTORY_PATH, label: 'History' },
-];
 
 /** Flat admin sidebar links (grouped IA lives in `adminNav.ts`). */
 export const ADMIN_LINKS = ADMIN_SIDEBAR_LINKS;

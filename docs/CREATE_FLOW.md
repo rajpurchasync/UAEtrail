@@ -16,7 +16,7 @@
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host (compose `activity:*`)** → hosted **Activity** only. **Find crew (compose `intent:*`)** → **`member_availability`** (fixed map pin or open calendar — **not** an Activity row). **Add on map (`place:*`)** → **Where** (Place or Facility). **Joining a trip** is **How** on a hosted **`activityId`** (RSVP / request) — separate from posting availability. **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch.
 
-**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator desk** (any publishing kind) is SPA **`/operator/*`** (HTTP **`/publishing/*`**) — not on the FAB.
+**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-tenant-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator desk** (any publishing kind) is SPA **`/operator/*`** (HTTP **`/publishing/*`**) — not on the FAB.
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 

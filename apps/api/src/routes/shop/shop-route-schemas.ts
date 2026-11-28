@@ -32,8 +32,8 @@ export const merchantProfileSchema = z.object({
 
 export const merchantProfilePatchSchema = merchantProfileSchema.partial();
 
-/** Canonical `/merchant/*`; inbound alias `/organisation/*` (do not emit from new clients). */
-export const shopOrganisationManagePrefixes = ['/merchant', '/organisation'] as const;
+/** Shop manage HTTP mount — `/merchant/*` only. */
+export const shopMerchantManagePrefixes = ['/merchant'] as const;
 
 export const serializeMerchantProfile = (profile: {
   id: string;

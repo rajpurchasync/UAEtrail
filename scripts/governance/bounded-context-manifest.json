@@ -126,13 +126,15 @@
         "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts",
         "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts",
         "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts",
-        "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts"
+        "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts",
+        "apps/api/src/routes/publishing/registerPublishingShopStorefrontRoutes.ts"
       ],
       "feDomains": [
         "src/api/domains/publishingWorkspace.ts",
         "src/hooks/publishingJoinQueueClientApi.ts",
         "src/hooks/tenantActivityClientApi.ts",
-        "src/hooks/operatorDeskClientApi.ts"
+        "src/hooks/operatorDeskClientApi.ts",
+        "src/hooks/operatorShopStorefrontClientApi.ts"
       ],
       "feRoots": [
         "src/operator/desk",
@@ -236,8 +238,7 @@
       "apiFiles": ["apps/api/src/routes/shop.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/shop.ts",
-        "apps/api/src/routes/shop/registerShopPublicRoutes.ts",
-        "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+        "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
       ],
       "feDomains": ["src/api/domains/shop.ts"],
       "feRoots": ["src/pages/ShopPublic.tsx", "src/components/shop"]
@@ -484,7 +485,7 @@
     "memberCommitmentHub",
     "memberJourneyMap",
     "messaging",
-    "organisation",
+    "operatorPublic",
     "placeCatalogClient",
     "places",
     "reviews",

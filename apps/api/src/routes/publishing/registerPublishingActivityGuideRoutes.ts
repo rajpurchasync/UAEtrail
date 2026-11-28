@@ -1,6 +1,6 @@
 import type { Router } from 'express';
 import { z } from 'zod';
-import { requireOrgRole } from '../../middleware/tenant.js';
+import { requireMembershipRole } from '../../middleware/tenant.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { validate } from '../../middleware/validate.js';
 import { listActivityGuidesForHost, syncActivityGuides } from '../../services/activity-guides.js';
@@ -14,7 +14,7 @@ const guideIdsSchema = z.object({
 export const registerPublishingActivityGuideRoutes = (hostActivitiesRouter: Router): void => {
   hostActivitiesRouter.get(
     '/:id/guides',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
@@ -29,7 +29,7 @@ export const registerPublishingActivityGuideRoutes = (hostActivitiesRouter: Rout
 
   hostActivitiesRouter.put(
     '/:id/guides',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: idParamSchema, body: guideIdsSchema }),
     async (req, res, next) => {
       try {

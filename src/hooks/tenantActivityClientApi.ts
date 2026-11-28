@@ -1,5 +1,5 @@
 /**
- * Tenant-scoped activity publish/manage client (`/publishing/*` + `x-organisation-id`).
+ * Tenant-scoped activity publish/manage client (`/publishing/*` + `x-tenant-id`).
  * Prefer these imports in console, plan manage, and activity detail publish actions.
  */
 import type {

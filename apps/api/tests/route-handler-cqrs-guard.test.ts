@@ -154,6 +154,7 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts',
       'apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts',
       'apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts',
+      'apps/api/src/routes/publishing/registerPublishingShopStorefrontRoutes.ts',
       'apps/api/src/routes/admin/registerAdminAuditRoutes.ts',
       'apps/api/src/routes/admin/registerAdminMetricsRoutes.ts',
       'apps/api/src/routes/admin/registerAdminContentReportRoutes.ts',

@@ -49,7 +49,7 @@ describe('access management', () => {
     const addRes = await request(app)
       .post('/api/publishing/team')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .set('x-organisation-id', tenant.id)
+      .set('x-tenant-id', tenant.id)
       .send({ email: teammate.email, role: 'tenant_guide' });
 
     expect(addRes.status).toBe(201);
@@ -58,7 +58,7 @@ describe('access management', () => {
     const disableRes = await request(app)
       .patch(`/api/publishing/team/${membershipId}`)
       .set('Authorization', `Bearer ${ownerToken}`)
-      .set('x-organisation-id', tenant.id)
+      .set('x-tenant-id', tenant.id)
       .send({ isActive: false });
 
     expect(disableRes.status).toBe(200);
@@ -67,7 +67,7 @@ describe('access management', () => {
     const listRes = await request(app)
       .get('/api/publishing/team')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .set('x-organisation-id', tenant.id);
+      .set('x-tenant-id', tenant.id);
 
     expect(listRes.status).toBe(200);
     const disabledMember = listRes.body.data.find((member: { id: string }) => member.id === membershipId);
@@ -76,7 +76,7 @@ describe('access management', () => {
     const blockedEventsRes = await request(app)
       .get('/api/publishing/activities')
       .set('Authorization', `Bearer ${teammate.accessToken}`)
-      .set('x-organisation-id', tenant.id);
+      .set('x-tenant-id', tenant.id);
 
     expect(blockedEventsRes.status).toBe(403);
 

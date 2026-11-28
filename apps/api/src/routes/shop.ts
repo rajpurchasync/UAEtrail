@@ -1,9 +1,7 @@
 import { Router } from 'express';
-import { registerShopMerchantManageRoutes } from './shop/registerShopMerchantManageRoutes.js';
 import { registerShopPublicRoutes } from './shop/registerShopPublicRoutes.js';
 
-/** Public storefront (`/shop/shops/:id`) and shop manage (`/shop/merchant/*`). */
+/** Public shop read (`/shop/shops/:id`) — manage via `/publishing/shop-profile` + `x-tenant-id`. */
 export const shopRouter = Router();
 
 registerShopPublicRoutes(shopRouter);
-registerShopMerchantManageRoutes(shopRouter);

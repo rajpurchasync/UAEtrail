@@ -125,7 +125,7 @@ describe('engineeringHygiene guard (R1–R6 closure)', () => {
     expect(existsSync(join(ROOT, 'packages/shared-types/src/entity-path.ts'))).toBe(true);
   });
 
-  it('AUDIT-23: shop vocabulary — merchant product term retired on map/follow surfaces (C9)', () => {
+  it('AUDIT-23: explore/map/follow shop entity uses shopId (C9)', () => {
     expect(read('src/explore/exploreMapItemKind.ts')).not.toMatch(/isMerchantShopMapItem/);
     expect(read('src/discovery/discoveryCardModel.ts')).toMatch(/shopId/);
     expect(read('src/discovery/discoveryCardModel.ts')).not.toMatch(/merchantId/);

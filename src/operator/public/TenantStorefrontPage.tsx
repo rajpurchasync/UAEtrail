@@ -1,29 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { OrganisationPublicProfile } from './OrganisationPublicProfile';
+import { TenantStorefrontDetail } from './TenantStorefrontDetail';
 import { EntityPublicDetailShell } from '../../components/entity-public/EntityPublicDetailShell';
 import type { TenantPublicDTO } from '@uaetrail/shared-types';
-import { fetchOrganisationProfileBySlug } from '../../hooks/operatorDeskClientApi';
+import { fetchOperatorPublicProfileBySlug } from '../../hooks/operatorDeskClientApi';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { detailBackPath } from '../../config/routingCatalog';
 import { AsyncLoadingState } from '../../components/ui/AsyncLoadingState';
 import {
-  ORGANISATION_PUBLIC_TAB_QUERY,
-  parseOrganisationPublicDetailTabParam,
-  type OrganisationPublicDetailTabId,
-} from './organisationPublicDetailTab';
+  TENANT_STOREFRONT_TAB_QUERY,
+  parseTenantStorefrontDetailTabParam,
+  type TenantStorefrontDetailTabId,
+} from './tenantStorefrontDetailTab';
 
 const isShopTenant = (tenant: TenantPublicDTO): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
 
 /** Public brand profile — `/agency` or `/partner`. Shop tenants redirect to `/shop/:id`. Individual Pro is `/member/:userId`. */
-export const OrganisationProfile = () => {
+export const TenantStorefrontPage = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const publicTab = parseOrganisationPublicDetailTabParam(searchParams.get(ORGANISATION_PUBLIC_TAB_QUERY));
-  const onPublicTabChange = (tab: OrganisationPublicDetailTabId) => {
+  const publicTab = parseTenantStorefrontDetailTabParam(searchParams.get(TENANT_STOREFRONT_TAB_QUERY));
+  const onPublicTabChange = (tab: TenantStorefrontDetailTabId) => {
     const next = new URLSearchParams(searchParams);
-    next.set(ORGANISATION_PUBLIC_TAB_QUERY, tab);
+    next.set(TENANT_STOREFRONT_TAB_QUERY, tab);
     setSearchParams(next, { replace: true });
   };
 
@@ -36,7 +36,7 @@ export const OrganisationProfile = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetchOrganisationProfileBySlug(id)
+    fetchOperatorPublicProfileBySlug(id)
       .then((tenant) => {
         setTenant(tenant as TenantPublicDTO);
         setIsShop(isShopTenant(tenant as TenantPublicDTO));
@@ -69,7 +69,7 @@ export const OrganisationProfile = () => {
 
   return (
     <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false} maxWidthClass="max-w-5xl">
-      <OrganisationPublicProfile
+      <TenantStorefrontDetail
         slug={id}
         mode="public"
         compact={false}

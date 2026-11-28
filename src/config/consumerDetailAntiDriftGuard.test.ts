@@ -15,7 +15,7 @@ const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
   { path: 'src/place/detail/templates/PlaceDetailSections.tsx', pattern: /detailBackPath/ },
   { path: 'src/pages/DestinationDetailPage.tsx', pattern: /detailBackPath/ },
   { path: 'src/components/shop/ShopPublicPage.tsx', pattern: /detailBackPath\(['"]shop['"]\)/ },
-  { path: 'src/operator/public/OrganisationPublicProfile.tsx', pattern: /detailBackPath/ },
+  { path: 'src/operator/public/TenantStorefrontDetail.tsx', pattern: /detailBackPath/ },
 ];
 
 const MEMBER_HUB_SHELL = [{ path: 'src/pages/MemberProfile.tsx', pattern: /ConsumerShell/ }];

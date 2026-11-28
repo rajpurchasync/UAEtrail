@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getActiveTenantId } from '../../api/tenant';
-import { useOrganisationConsoleRating } from '../../hooks/usePublishingConsoleQueries';
+import { useOperatorDeskRating } from '../../hooks/usePublishingConsoleQueries';
 import { ConsumerShell } from '../../components/mobile/ConsumerShell';
 import { ConsumerHeaderActions } from '../../components/layout/ConsumerHeaderActions';
 import { FilterChips } from '../../components/mobile/FilterChips';
@@ -32,7 +32,7 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
   const shellTitle = title ?? workspaceConsoleLabel(deskBrand);
 
   const tenantId = getActiveTenantId();
-  const { data: rating } = useOrganisationConsoleRating(tenantId);
+  const { data: rating } = useOperatorDeskRating(tenantId);
   const avgRating = rating?.avgRating ?? null;
   const reviewCount = rating?.reviewCount ?? 0;
 

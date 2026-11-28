@@ -4,18 +4,18 @@ import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accou
 import { getActiveTenantId } from '../../api/tenant';
 import { useAuth } from '../../context/AuthContext';
 import { TenantSwitcher } from '../../components/ui';
-import { OrganisationPublicProfile } from '../public/OrganisationPublicProfile';
+import { TenantStorefrontDetail } from '../public/TenantStorefrontDetail';
 import { ConsoleShell } from './ConsoleShell';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
-import { AgencyOrganisationPanel } from './AgencyOrganisationPanel';
-import { ShopOrganisationPanel } from './ShopOrganisationPanel';
+import { AgencyDeskProfilePanel } from './AgencyDeskProfilePanel';
+import { ShopDeskProfilePanel } from './ShopDeskProfilePanel';
 import {
   OPERATOR_PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
-  parseOrganisationKind,
+  parseOperatorDeskProfileKind,
   signInPath,
-  type OrganisationKind,
+  type OperatorDeskProfileKind,
 } from '../../config/routingCatalog';
 import { navigateToVisitorHome } from '../../hosting/navigateHostRoleHome';
 import { useMyTenantMemberships } from '../../hooks/usePublishingConsoleQueries';
@@ -30,7 +30,7 @@ export const PublicProfileEdit = () => {
   const { user, initializing, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const kindParam = parseOrganisationKind(searchParams.get('kind'));
+  const kindParam = parseOperatorDeskProfileKind(searchParams.get('kind'));
   const [activeTenantId, setActiveTenantId] = useState(getActiveTenantId());
   const { data: memberships, isPending: loadingTenants } = useMyTenantMemberships();
   const gate = useMemberStatus({ enabled: Boolean(user) });
@@ -49,7 +49,7 @@ export const PublicProfileEdit = () => {
 
   const hasMultipleBusinessKinds = hasAgencyProfile && hasShopProfile;
 
-  const manageKind = useMemo((): OrganisationKind | null => {
+  const manageKind = useMemo((): OperatorDeskProfileKind | null => {
     if (activePublishingKind === 'shop') return 'shop';
     if (activePublishingKind === 'agency') return 'agency';
     if (hasMultipleBusinessKinds) {
@@ -70,7 +70,7 @@ export const PublicProfileEdit = () => {
     setSearchParams({ kind: manageKind }, { replace: true });
   }, [manageKind, hasMultipleBusinessKinds, kindParam, loadingStatus, setSearchParams]);
 
-  const setManageKind = (kind: OrganisationKind) => {
+  const setManageKind = (kind: OperatorDeskProfileKind) => {
     setSearchParams({ kind }, { replace: true });
   };
 
@@ -162,11 +162,11 @@ export const PublicProfileEdit = () => {
           <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
         </div>
       ) : manageKind === 'shop' || activePublishingKind === 'shop' ? (
-        <ShopOrganisationPanel />
+        <ShopDeskProfilePanel />
       ) : manageKind === 'agency' || activePublishingKind === 'agency' ? (
-        <AgencyOrganisationPanel />
+        <AgencyDeskProfilePanel />
       ) : showAgencyPublicEditor && tenantSlug ? (
-        <OrganisationPublicProfile slug={tenantSlug} mode="owner" />
+        <TenantStorefrontDetail slug={tenantSlug} mode="owner" />
       ) : activePublishingKind === 'pro_guide' || activePublishingKind === 'community' ? (
         <GlassCard padding className="py-8 text-center">
           <p className="text-sm text-neutral-700">
@@ -178,7 +178,7 @@ export const PublicProfileEdit = () => {
           <p className="text-neutral-600">Select an operator profile above to edit your storefront.</p>
         </GlassCard>
       ) : (
-        <OrganisationPublicProfile slug={tenantSlug} mode="owner" />
+        <TenantStorefrontDetail slug={tenantSlug} mode="owner" />
       )}
     </ConsoleShell>
   );

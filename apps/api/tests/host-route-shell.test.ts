@@ -9,6 +9,7 @@ describe('publishing route mount shell', () => {
     const operator = read('src/routes/publishing.ts');
     expect(operator).toMatch(/registerPublishingSubmittedLocationRoutes/);
     expect(operator).toMatch(/registerPublishingActivityRoutes/);
+    expect(operator).toMatch(/registerPublishingShopStorefrontRoutes/);
     expect(operator).not.toMatch(/registerHost/);
     expect(operator).not.toMatch(/publishingRouter\.(get|post|patch|delete)\(/);
   });

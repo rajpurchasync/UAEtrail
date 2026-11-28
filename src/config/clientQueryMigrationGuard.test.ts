@@ -174,8 +174,8 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
   }
 
   const publishingConsolePageAssertions: Array<{ page: string; hook: string; queryKey: string }> = [
-    { page: 'src/operator/desk/Places.tsx', hook: 'useOrganisationSubmittedPlaces', queryKey: 'organisationSubmittedPlacesQueryKey' },
-    { page: 'src/operator/desk/Team.tsx', hook: 'useOrganisationTeam', queryKey: 'organisationTeamQueryKey' },
+    { page: 'src/operator/desk/Places.tsx', hook: 'usePublishingSubmittedPlaces', queryKey: 'publishingSubmittedPlacesQueryKey' },
+    { page: 'src/operator/desk/Team.tsx', hook: 'usePublishingTeam', queryKey: 'publishingTeamQueryKey' },
     { page: 'src/operator/desk/PublicProfileEdit.tsx', hook: 'useMyTenantMemberships', queryKey: 'myTenantMembershipsQueryKey' },
   ];
 
@@ -195,11 +195,11 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 
-  it('ConsoleShell loads rating via useOrganisationConsoleRating', () => {
+  it('ConsoleShell loads rating via useOperatorDeskRating', () => {
     const content = read('src/operator/desk/ConsoleShell.tsx');
-    expect(content).toMatch(/useOrganisationConsoleRating/);
+    expect(content).toMatch(/useOperatorDeskRating/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
-    expect(read('src/hooks/usePublishingConsoleQueries.ts')).toMatch(/organisationConsoleRatingQueryKey/);
+    expect(read('src/hooks/usePublishingConsoleQueries.ts')).toMatch(/operatorDeskRatingQueryKey/);
   });
 
   it('W6c surfaces use TanStack Query (no mount useSafeAsyncEffect)', () => {

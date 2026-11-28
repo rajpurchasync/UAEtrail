@@ -16,7 +16,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Home map sends `sources` (default `place,activity`) and `includeRideshare=1` only for the rideshare topic. Omit `sources` for the full catalog (`/list`). Destination is a filter (`?destination=`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Operator desk** HTTP (any kind): publish, roster, **activity** join queue. SPA is `/operator/*`. |
+| **`/publishing/*`** | Verified + **tenant** (`x-tenant-id`) | **Operator desk** HTTP (any kind): publish, roster, **activity** join queue. SPA is `/operator/*`. |
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
 | **`/me/discover/overlay`** | Auth | Per-viewer `viewerAccess` for public map item ids (not a second catalog) |
 | **`/discover/*`** | Mixed | **Discover layer** — federated Find crew (`GET /discover/crew`, auth) · ranked recommendations (`GET /discover/recommendations`, `surface=map` optional auth · `surface=crew` auth) |
@@ -25,7 +25,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/chat/*`** | Auth | DMs |
 | **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
-| **`/shop/*`** | Public read; auth merchant manage | **Operator shop profile** (contact, website, map coords) — `shop.ts` mounts `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` only. **Retired (Oct 2026):** `/shop/products`, `/shop/checkout`, admin product catalog — no in-app product sales |
+| **`/shop/*`** | Public read (`GET /shop/shops/:id`) | Shop **consumer** page payload only — `registerShopPublicRoutes`. Desk edit: **`/publishing/shop-profile`** + `x-tenant-id` (`registerPublishingShopStorefrontRoutes`). **Retired:** `/shop/merchant/*` manage (Nov 2026). **Retired (Oct 2026):** product catalog / checkout |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
@@ -412,7 +412,7 @@ SPA: `/admin/hosts` → `pages/admin/Operators` (see [`NAVIGATION.md`](./NAVIGAT
 | `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/publishing/activities`, `/publishing/requests` |
-| `shop.ts` | `GET /shop/shops/:id`; auth shop manage on `/shop/merchant/*` (inbound `/shop/organisation/*`) |
+| `shop.ts` | `GET /shop/shops/:id` (public read). Shop desk manage: `registerPublishingShopStorefrontRoutes` on `/publishing/shop-profile` |
 | `explore.ts` | `/explore/map` |
 | `availability.ts` | **`/me/availability`** (+ match-preview) |
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |

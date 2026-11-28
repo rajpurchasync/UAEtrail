@@ -5,8 +5,8 @@ import type { HostProfileType } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { setActiveTenantId } from '../../api/tenant';
 import {
-  fetchMyOrganisationApplication,
-  submitOrganisationApplication,
+  fetchMyOperatorProApplication,
+  submitOperatorProApplication,
 } from '../../hooks/operatorDeskClientApi';
 import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { COUNTRIES } from '../../constants';
@@ -207,7 +207,7 @@ export const ProProfileApplicationFlow = ({
 
     let disposed = false;
     setFlowBusy({ kind: 'prefilling' });
-    Promise.all([fetchMeProfile(), fetchMyOrganisationApplication()])
+    Promise.all([fetchMeProfile(), fetchMyOperatorProApplication()])
       .then(([profile, application]) => {
         if (disposed) return;
         const prefill = buildProProfileApplicationFormPrefill({
@@ -309,7 +309,7 @@ export const ProProfileApplicationFlow = ({
     setFlowBusy({ kind: 'submitting' });
     setError(null);
     try {
-      const application = await submitOrganisationApplication(payload);
+      const application = await submitOperatorProApplication(payload);
       const tenantId = application.requestedTenantId ?? null;
       if (tenantId) {
         setActiveTenantId(tenantId);

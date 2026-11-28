@@ -169,8 +169,8 @@ describe('systemCoherenceGuard', () => {
 
   it('S10b publishing console catalog pages use TanStack Query (MIG-CLIENT-QUERY)', () => {
     const catalogPages: [string, string][] = [
-      ['src/operator/desk/Places.tsx', 'useOrganisationSubmittedPlaces'],
-      ['src/operator/desk/Team.tsx', 'useOrganisationTeam'],
+      ['src/operator/desk/Places.tsx', 'usePublishingSubmittedPlaces'],
+      ['src/operator/desk/Team.tsx', 'usePublishingTeam'],
       ['src/operator/desk/PublicProfileEdit.tsx', 'useMyTenantMemberships'],
     ];
     const violations: string[] = [];

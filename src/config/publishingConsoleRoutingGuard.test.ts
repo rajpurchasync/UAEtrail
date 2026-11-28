@@ -33,6 +33,11 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(existsSync(join(ROOT, 'src/hooks/useOperatorActivityManageActions.ts'))).toBe(false);
   });
 
+  it('no SPA route for retired /organisation/manage', () => {
+    const app = readAppRouteRegistry();
+    expect(app).not.toMatch(/['"]\/organisation\/manage['"]/);
+  });
+
   it('GW7-01: App mounts canonical /operator/* console only (no inbound wildcards)', () => {
     const app = readAppRouteRegistry();
     expect(app).not.toMatch(/LegacyPublishingConsoleRedirect/);
@@ -43,8 +48,9 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(app).toMatch(/OPERATOR_OVERVIEW_PATH/);
     expect(app).not.toMatch(/path="\/publishing\/messages"/);
     expect(app).not.toMatch(/path="\/operator\/messages"/);
-    expect(app).toMatch(/ORGANISATION_MANAGE_PATH/);
-    expect(app).toMatch(/PublishingManage/);
+    expect(app).not.toMatch(/ORGANISATION_MANAGE_PATH/);
+    expect(app).not.toMatch(/\/organisation\/manage/);
+    expect(app).not.toMatch(/PublishingManage/);
   });
 
   it('surfacePaths exposes operator workspace (/operator) paths', () => {

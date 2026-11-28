@@ -163,7 +163,7 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW10-01: ExploreMapItemDTO drops duplicate person fields on wire', () => {
     const types = read('packages/shared-types/src/index.ts');
     expect(types).not.toMatch(/Use `featuredPerson` — kept for cached/);
-    expect(types).not.toMatch(/organizerDetails\?: OrganisationHostDetailsDTO/);
+    expect(types).not.toMatch(/organizerDetails\?: OperatorHostDetailsDTO/);
     const catalog = read('apps/api/src/lib/discovery-catalog-builder.ts');
     expect(catalog).not.toMatch(/hostName: activity\.hostName \?\? null/);
     expect(catalog).not.toMatch(/requesterUserId: owner/);
@@ -238,7 +238,7 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(read('src/constants/userTypes.ts')).not.toMatch(/USER_TYPE_LABELS/);
     expect(read('src/utils/userDisplay.ts')).not.toMatch(/resolveExploreHostPersonName/);
     expect(read('src/components/ui/PlaceCard.tsx')).not.toMatch(/export const TrailCard/);
-    expect(read('packages/shared-types/src/index.ts')).not.toMatch(/organizerDetails\?: OrganisationHostDetailsDTO/);
+    expect(read('packages/shared-types/src/index.ts')).not.toMatch(/organizerDetails\?: OperatorHostDetailsDTO/);
   });
 
   it('GW11-01: retired component prop aliases removed', () => {

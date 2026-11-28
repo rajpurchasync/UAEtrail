@@ -39,7 +39,9 @@ export const ActivityDetail = lazy(() => import('../pages/ActivityDetail').then(
 export const ActivityCrewPage = lazy(() =>
   import('../pages/ActivityCrewPage').then((m) => ({ default: m.ActivityCrewPage }))
 );
-export const OrganisationProfile = lazy(() => import('../operator/public/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
+export const TenantStorefrontPage = lazy(() =>
+  import('../operator/public/TenantStorefrontPage').then((m) => ({ default: m.TenantStorefrontPage }))
+);
 export const MemberProfile = lazy(() => import('../pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 export const SignUp = lazy(() => import('../pages/SignUp').then((m) => ({ default: m.SignUp })));
 export const SignIn = lazy(() => import('../pages/SignIn').then((m) => ({ default: m.SignIn })));
@@ -96,7 +98,6 @@ export const PublishingPlaces = lazy(() => import('../operator/desk/Places').the
 export const PublishingHistory = lazy(() => import('../operator/desk/History').then((m) => ({ default: m.History })));
 export const UserRequests = lazy(() => import('../pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 export const MessagesGate = lazy(() => import('../pages/Messages').then((m) => ({ default: m.MessagesGate })));
-export const PublishingManage = lazy(() => import('../operator/desk/Manage').then((m) => ({ default: m.Manage })));
 export const ProfileHistoryPage = lazy(() =>
   import('../pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
 );

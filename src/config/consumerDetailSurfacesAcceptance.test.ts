@@ -32,13 +32,8 @@ describe('consumerDetailSurfacesAcceptance', () => {
         tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
-        file: 'src/operator/public/OrganisationProfile.tsx',
-        wire: 'organisationPublicDetailTab',
-        tabChrome: /OrganisationPublicProfile/,
-      },
-      {
-        file: 'src/operator/public/OrganisationPublicProfile.tsx',
-        wire: 'organisationPublicDetailTab',
+        file: 'src/operator/public/TenantStorefrontDetail.tsx',
+        wire: 'tenantStorefrontDetailTab',
         tabChrome: /ConsumerEntityTabBar/,
       },
     ];

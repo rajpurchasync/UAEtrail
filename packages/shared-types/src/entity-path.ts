@@ -4,13 +4,13 @@ import { canonicalizeNotificationBookmarkPath } from './notification-bookmark-pa
 /** Public venue kinds that map to place detail routes. */
 export type PlaceVenueKind = 'hiking' | 'camping' | 'event' | 'shop';
 
-export type EntityKind = 'place' | 'activity' | 'organisation' | 'shop' | 'person';
+export type EntityKind = 'place' | 'activity' | 'tenant' | 'shop' | 'person';
 
 export type EntityRef =
   | { kind: 'place'; id: string; activityType: string }
   | { kind: 'activity'; id: string }
   | {
-      kind: 'organisation';
+      kind: 'tenant';
       slug: string;
       /** Agency · partner — required for canonical URLs when known. */
       brandProfileKind?: PublishingProfileKind;
@@ -243,7 +243,7 @@ export const memberProfilePath = (
 
 export type ResolveEntityPathOptions = {
   shopFallback?: string;
-  /** Used when organisation slug or person id is missing. */
+  /** Used when tenant slug or person id is missing. */
   missingFallback?: string;
 };
 
@@ -256,7 +256,7 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
       return placeDetailPath(ref.activityType, ref.id);
     case 'activity':
       return activityDetailPath(ref.id);
-    case 'organisation': {
+    case 'tenant': {
       const path = hostBrandProfilePath(ref.slug, ref.brandProfileKind ?? 'pro_guide');
       return path ?? missingFallback;
     }
@@ -285,10 +285,10 @@ const PARTNER_PROFILE_PATH_RE = /^\/partner\/([^/?#]+)/;
 const SHOP_PATH_RE = /^\/shop\/([^/?#]+)/;
 const MEMBER_PATH_RE = /^\/member\/([^/?#]+)/;
 
-const parseOrganisationRef = (
+const parseTenantStorefrontRef = (
   slug: string,
   brandProfileKind: PublishingProfileKind
-): EntityRef => ({ kind: 'organisation', slug, brandProfileKind });
+): EntityRef => ({ kind: 'tenant', slug, brandProfileKind });
 
 /** Parse a browser pathname into an entity ref when it matches a public detail route. */
 export const parseEntityRefFromPathname = (pathname: string): EntityRef | null => {
@@ -327,12 +327,12 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
 
   const agencyMatch = path.match(AGENCY_PROFILE_PATH_RE);
   if (agencyMatch) {
-    return parseOrganisationRef(decodeURIComponent(agencyMatch[1]), 'agency');
+    return parseTenantStorefrontRef(decodeURIComponent(agencyMatch[1]), 'agency');
   }
 
   const partnerMatch = path.match(PARTNER_PROFILE_PATH_RE);
   if (partnerMatch) {
-    return parseOrganisationRef(decodeURIComponent(partnerMatch[1]), 'partner');
+    return parseTenantStorefrontRef(decodeURIComponent(partnerMatch[1]), 'partner');
   }
 
   const shopMatch = path.match(SHOP_PATH_RE);

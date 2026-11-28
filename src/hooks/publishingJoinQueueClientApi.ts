@@ -1,5 +1,5 @@
 /**
- * Host join queue (`GET/PATCH /publishing/requests`) — tenant scope + `x-organisation-id`.
+ * Host join queue (`GET/PATCH /publishing/requests`) — tenant scope + `x-tenant-id`.
  * Pair with `activityJoinClientEffects.afterHostJoinDecisionClientRefresh` after approve/reject.
  */
 import type { ActivityRequestView } from '../api/types';

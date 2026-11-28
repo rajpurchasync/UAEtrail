@@ -76,8 +76,8 @@ describe('componentsClientApi (R8.1)', () => {
     const cases: Array<{ file: string; hook: RegExp }> = [
       { file: 'src/operator/desk/AgencyTeamSection.tsx', hook: /operatorDeskClientApi/ },
       { file: 'src/operator/apply/ProProfileApplicationFlow.tsx', hook: /operatorDeskClientApi|memberProfileApi/ },
-      { file: 'src/operator/public/OrganisationPublicProfile.tsx', hook: /operatorDeskClientApi/ },
-      { file: 'src/operator/desk/ShopOrganisationPanel.tsx', hook: /shopOrganisationClientApi/ },
+      { file: 'src/operator/public/TenantStorefrontDetail.tsx', hook: /operatorDeskClientApi/ },
+      { file: 'src/operator/desk/ShopDeskProfilePanel.tsx', hook: /operatorShopStorefrontClientApi/ },
       { file: 'src/components/chat/GroupWallChatSettingsSheet.tsx', hook: /socialGroupSettingsApi/ },
       { file: 'src/components/layout/MobileMenu.tsx', hook: /accountSessionApi/ },
       { file: 'src/components/auth/ProtectedRoute.tsx', hook: /memberProfileApi/ },

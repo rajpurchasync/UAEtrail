@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { resolveHostNote } from '@uaetrail/shared-types';
 import { createAuditLog } from '../../lib/audit.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
-import { requireOrgRole } from '../../middleware/tenant.js';
+import { requireMembershipRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { performParticipantCheckIn } from '../../services/checkin.js';
 import { undoTenantActivityParticipantCheckIn } from '../../services/publishing-activity-participant-commands.js';
@@ -41,7 +41,7 @@ export const registerPublishingActivityParticipantRoutes = (hostActivitiesRouter
 
   hostActivitiesRouter.post(
     '/:id/participants/:participantId/checkin',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: participantIdSchema }),
     async (req, res, next) => {
       try {
@@ -67,7 +67,7 @@ export const registerPublishingActivityParticipantRoutes = (hostActivitiesRouter
 
   hostActivitiesRouter.delete(
     '/:id/participants/:participantId/checkin',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: participantIdSchema }),
     async (req, res, next) => {
       try {
@@ -90,7 +90,7 @@ export const registerPublishingActivityParticipantRoutes = (hostActivitiesRouter
 
   hostActivitiesRouter.post(
     '/:id/participants/:participantId/revoke',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: participantIdSchema, body: hostParticipantRevokeSchema }),
     async (req, res, next) => {
       try {
@@ -123,7 +123,7 @@ export const registerPublishingActivityParticipantRoutes = (hostActivitiesRouter
 
   hostActivitiesRouter.post(
     '/:id/participants/:participantId/rating',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: participantIdSchema, body: hostParticipantRatingSchema }),
     async (req, res, next) => {
       try {

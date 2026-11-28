@@ -62,7 +62,7 @@ Business capabilities attach to **operator tenants** (shop/agency), each with **
 | **Where** | Trail, camp, **shop pin**, future partner/hotel pin | Tour **agency** (join trips without visiting a pin) |
 | **Who** | Activity, seeking, **`/member/:userId`**, **agency / shop operator profiles** (not person map pins) | Calling a gear **shop** a “partner” |
 
-**Publish as:** when a user is linked to a business (`tenant_memberships`), Host / operator desk should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+**Publish as:** when a user is linked to a business (`tenant_memberships`), Host / operator desk should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-tenant-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ### Member profile visibility
 
@@ -224,7 +224,7 @@ This is **not** hosting. No tenant is created until profile is complete and the 
 
 ### Publish trips (organizer / operator)
 
-The **publishing actor is always a user** (human on the activity). They publish **as themselves** (buddy / individual pro) or **on behalf of a business** they own or belong to (`x-organisation-id`). Businesses are **tenants** with a **storefront** — not a substitute for the user account.
+The **publishing actor is always a user** (human on the activity). They publish **as themselves** (buddy / individual pro) or **on behalf of a business** they own or belong to (`x-tenant-id`). Businesses are **tenants** with a **storefront** — not a substitute for the user account.
 
 | Path | Product | Paid trips? | Code (today) |
 |------|---------|-------------|--------------|
@@ -248,10 +248,10 @@ Any member may add a **business hosting identity** without replacing their perso
 |---------|---------|------|
 | Business creator | Becomes **tenant owner / admin** | `MembershipRole.TENANT_OWNER` on new tenant |
 | Team | Owner invites **admins** and **guides** | `/host/team`, `POST` org team APIs; roles `TENANT_ADMIN`, `TENANT_GUIDE` |
-| Publish on behalf of business | Same **user** publishes with **tenant** scope (`x-organisation-id`); picker in console / Host when linked | `/host/activities` |
+| Publish on behalf of business | Same **user** publishes with **tenant** scope (`x-tenant-id`); picker in console / Host when linked | `/host/activities` |
 | Publish as self | Individual or community tenant | Same user; no business header |
 
-Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/become-host` redirects) or **`/organisation/manage?kind=agency`** (and shop variant). There is not yet a single “create business” toggle that skips the host-application flow.
+Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`) or **`/operator/profile?kind=agency`** (and shop variant). There is not yet a single “create business” toggle that skips the host-application flow.
 
 ### Public surfaces (do not merge)
 
@@ -285,7 +285,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 | Individual guide | **Guide**, **guide profile**, **guide desk** | — |
 | Licensed business | **Agency**, **agency profile**, **agency desk** | — |
 | Gear seller | **Shop**, **shop profile**, **shop desk** | — |
-| Code / filenames / API aliases | `Organisation*`, `tenant`, `/publishing/*`, `x-organisation-id` | Product copy — organisation is wire only |
+| Code / filenames / API | `tenantId`, `/publishing/*`, `x-tenant-id`, operator desk modules | Product copy uses **operator**, **host**, **shop** — not organisation |
 
 Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `workspaceProfileLabel()`, `normalizeWorkspaceBrandKind()`.
 
@@ -300,7 +300,7 @@ Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `wo
 | `hostName` (signup) | `organizationName` | Wire field on `/auth/register` |
 | `hostDetails`, `shopId` (tenant profile JSON) | — | GET tenant profile sends `hostDetails` and `shopId` |
 | `GET /admin/places` (admin CRUD) | `GET /admin/locations` | SPA redirect only |
-| `shopId`, `/shop/merchant/*` (shop manage) | `/shop/organisation/*` inbound | Mongo collection stays `merchant_profiles` |
+| `shopId`, `PATCH /publishing/shop-profile` + `x-tenant-id` (desk) | — | Mongo collection stays `merchant_profiles` (C6 internal dual-write) |
 | `GET /shop/shops/:id` (public shop) | — | One public storefront route |
 
 ### Capabilities by host kind
@@ -331,7 +331,7 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 | **Hospitality** (Business Pro) | Hotels / venues | Often pin + campaigns | TBD |
 | **Partner** (Partner Pro) | Campaign host | Pin + feeds (future) | TBD |
 
-Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/operator/profile`, inbound `/organisation/manage?kind=shop`), linked via `merchant_profiles.tenantId`.
+Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/operator/profile?kind=shop`), linked via `merchant_profiles.tenantId`.
 
 ## Legacy → domain naming
 
@@ -342,18 +342,18 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | `/host/*`, `/publishing/*` SPA | Inbound redirects | Canonical SPA `/operator/*`; HTTP `/publishing/*`; `/operator/:slug` is not a storefront |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host (outing) or operator (desk) | — |
-| Tenant | Operator (copy) / organisation (wire) | `tenants`, `x-organisation-id` |
+| Tenant | Operator storefront row | `tenants`, `x-tenant-id` |
 
 ## Page renames (routes unchanged)
 
 | File / export | Route | Notes |
 |---------------|-------|-------|
-| `OrganisationProfile` | `/agency/:id`, `/partner/:id` | Public business brand profile |
+| `TenantStorefrontPage` | `/agency/:id`, `/partner/:id` | Public business brand profile |
 | `src/operator/desk/Overview` (`Overview`) | `/operator/overview` | **Operator desk** hub (HTTP `/publishing/*`) |
 | `src/operator/desk/Activities` (`Activities`) | `/operator/activities` | Tenant activity list + manage sheet |
 | `src/operator/desk/JoinRequests` (`JoinRequests`) | `/operator/requests` | Activity join queue |
-| `src/operator/desk/Manage` (`Manage`) | inbound `/organisation/manage` → `/operator/profile` | Redirect only — shop/agency panels on profile |
-| `ProfileProMembership` (`BecomeHost` leftover inbound export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Host / publish (`canPublish` via profile complete) |
+| `src/operator/desk/PublicProfileEdit` (`PublicProfileEdit`) | `/operator/profile` | Shop/agency public profile panels (`?kind=`) |
+| `ProfileProMembership` | `/profile/pro-membership` | Pro / agency / shop applications — **not** buddy Host / publish (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `pages/admin/Operators` (`Organisations`) | `/admin/hosts` | Admin copy: **Hosts** — folder is the namespace, not `AdminOrganisations.tsx` |
 

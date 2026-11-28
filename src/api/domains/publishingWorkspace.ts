@@ -5,13 +5,14 @@ import {
   ParticipantDTO,
   PlaceDTO,
   type PublishingActivityUpsertBody,
+  type ShopOperatorProfileDTO,
 } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
-import { organisationRequestHeaders } from '../orgHeaders';
+import { tenantScopeHeaders } from '../tenantScopeHeaders';
 import type { ActivityRequestView, TeamMember } from '../types';
 
 /**
- * Tenant publishing workspace HTTP (`/publishing/*` + `x-organisation-id`).
+ * Tenant publishing workspace HTTP (`/publishing/*` + `x-tenant-id`).
  * UI should use `tenantActivityClientApi` / `operatorDeskClientApi` — not raw `api.*` (`apiClientSurfaceGuard`).
  */
 export const publishingWorkspaceApi = {
@@ -22,7 +23,7 @@ export const publishingWorkspaceApi = {
     }
     return apiRequest<{ data: ActivityRequestView[] }>(`/publishing/requests?${params.toString()}`, {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     });
   },
 
@@ -35,28 +36,28 @@ export const publishingWorkspaceApi = {
     apiRequest(`/publishing/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify({ status, hostNote }),
     }),
 
-  getOrganisationTeam: (tenantId: string) =>
+  getPublishingTeam: (tenantId: string) =>
     apiRequest<{ data: TeamMember[] }>('/publishing/team', {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
-  createOrganisationTeamMember: (
+  createPublishingTeamMember: (
     tenantId: string,
     payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
   ) =>
     apiRequest<{ data: TeamMember }>('/publishing/team', {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
-  updateOrganisationTeamMemberRole: (
+  updatePublishingTeamMemberRole: (
     tenantId: string,
     membershipId: string,
     role: 'tenant_admin' | 'tenant_guide'
@@ -64,46 +65,46 @@ export const publishingWorkspaceApi = {
     apiRequest<{ data: { id: string; role: string } }>(`/publishing/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify({ role }),
     }),
 
-  toggleOrganisationTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
+  togglePublishingTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
     apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(
       `/publishing/team/${membershipId}`,
       {
         method: 'PATCH',
         auth: true,
-        headers: organisationRequestHeaders(tenantId),
+        headers: tenantScopeHeaders(tenantId),
         body: JSON.stringify({ isActive }),
       }
     ),
 
-  removeOrganisationTeamMember: (tenantId: string, membershipId: string) =>
+  removePublishingTeamMember: (tenantId: string, membershipId: string) =>
     apiRequest(`/publishing/team/${membershipId}`, {
       method: 'DELETE',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
-  submitOrganisationPlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
+  submitPublishingPlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
     apiRequest<{ data: PlaceDTO }>('/publishing/places', {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
-  getOrganisationSubmittedPlaces: (tenantId: string) =>
+  getPublishingSubmittedPlaces: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/publishing/places', {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   listActivities: (tenantId: string) =>
     apiRequest<{ data: ActivityDTO[] }>('/publishing/activities?pageSize=100', {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   listPublishingActivitiesPage: (
@@ -115,14 +116,14 @@ export const publishingWorkspaceApi = {
       meta?: { page: number; pageSize: number; total: number; totalPages: number };
     }>(`/publishing/activities?${queryString}`, {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   createActivity: (tenantId: string, payload: PublishingActivityUpsertBody) =>
     apiRequest<{ data: ActivityDTO }>('/publishing/activities', {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
@@ -130,7 +131,7 @@ export const publishingWorkspaceApi = {
     apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}`, {
       method: 'PATCH',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
 
@@ -138,35 +139,35 @@ export const publishingWorkspaceApi = {
     apiRequest(`/publishing/activities/${activityId}/publish`, {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   suspendActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/publishing/activities/${activityId}/suspend`, {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   resumeActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/publishing/activities/${activityId}/resume`, {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   duplicateActivity: (tenantId: string, activityId: string) =>
     apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}/duplicate`, {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   cancelActivity: (tenantId: string, activityId: string) =>
     apiRequest(`/publishing/activities/${activityId}`, {
       method: 'DELETE',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   getActivityParticipants: (tenantId: string, activityId: string) =>
@@ -180,21 +181,21 @@ export const publishingWorkspaceApi = {
       };
     }>(`/publishing/activities/${activityId}/participants`, {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
     apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   undoCheckin: (tenantId: string, activityId: string, participantId: string) =>
     apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'DELETE',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   revokeActivityParticipant: (
@@ -206,7 +207,7 @@ export const publishingWorkspaceApi = {
     apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/revoke`, {
       method: 'POST',
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
       body: JSON.stringify({ hostNote }),
     }),
 
@@ -230,7 +231,7 @@ export const publishingWorkspaceApi = {
       {
         method: 'POST',
         auth: true,
-        headers: organisationRequestHeaders(tenantId),
+        headers: tenantScopeHeaders(tenantId),
         body: JSON.stringify(payload),
       }
     ),
@@ -238,7 +239,7 @@ export const publishingWorkspaceApi = {
   getPublishingActivityGuides: (tenantId: string, activityId: string) =>
     apiRequest<{ data: ActivityGuideHostDTO[] }>(`/publishing/activities/${activityId}/guides`, {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
     }),
 
   getActivityHistory: (tenantId: string) =>
@@ -256,6 +257,58 @@ export const publishingWorkspaceApi = {
       }>;
     }>('/publishing/activities/history', {
       auth: true,
-      headers: organisationRequestHeaders(tenantId),
+      headers: tenantScopeHeaders(tenantId),
+    }),
+
+  getPublishingShopProfile: (tenantId: string) =>
+    apiRequest<{ data: ShopOperatorProfileDTO }>('/publishing/shop-profile', {
+      auth: true,
+      headers: tenantScopeHeaders(tenantId),
+    }),
+
+  createPublishingShopProfile: (
+    tenantId: string,
+    payload: {
+      shopName: string;
+      description?: string;
+      logo?: string;
+      websiteUrl?: string | null;
+      contactEmail?: string;
+      contactPhone?: string;
+      latitude?: number | null;
+      longitude?: number | null;
+      region?: string | null;
+      allowInboundChat?: boolean;
+      showContactPhone?: boolean;
+    }
+  ) =>
+    apiRequest<{ data: ShopOperatorProfileDTO }>('/publishing/shop-profile', {
+      method: 'POST',
+      auth: true,
+      headers: tenantScopeHeaders(tenantId),
+      body: JSON.stringify(payload),
+    }),
+
+  updatePublishingShopProfile: (
+    tenantId: string,
+    payload: Partial<{
+      shopName: string;
+      description?: string;
+      logo?: string;
+      websiteUrl?: string | null;
+      contactEmail?: string;
+      contactPhone?: string;
+      latitude?: number | null;
+      longitude?: number | null;
+      region?: string | null;
+      allowInboundChat?: boolean;
+      showContactPhone?: boolean;
+    }>
+  ) =>
+    apiRequest<{ data: ShopOperatorProfileDTO }>('/publishing/shop-profile', {
+      method: 'PATCH',
+      auth: true,
+      headers: tenantScopeHeaders(tenantId),
+      body: JSON.stringify(payload),
     }),
 } as const;

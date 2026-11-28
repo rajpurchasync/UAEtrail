@@ -11,9 +11,9 @@ const readHeader = (req: Request, name: string): string | undefined => {
   return Array.isArray(value) ? value[0] : value;
 };
 
-/** Tenant publishing scope — `x-organisation-id` only (Mongo field remains `tenantId`). */
-export const readOrganisationIdHeader = (req: Request): string | undefined =>
-  readHeader(req, 'x-organisation-id');
+/** Tenant publishing scope — `x-tenant-id` (Mongo field remains `tenantId`). */
+export const readTenantIdHeader = (req: Request): string | undefined =>
+  readHeader(req, 'x-tenant-id');
 
 
 export const requireTenantContext = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
@@ -22,17 +22,17 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       throw new ApiError(401, 'unauthorized', 'Authentication is required.');
     }
 
-    const organisationId = readOrganisationIdHeader(req);
-    if (!organisationId) {
+    const tenantId = readTenantIdHeader(req);
+    if (!tenantId) {
       throw new ApiError(
         400,
-        'organisation_header_missing',
-        'x-organisation-id header is required.'
+        'tenant_header_missing',
+        'x-tenant-id header is required.'
       );
     }
 
     if (req.auth.role === UserRole.PLATFORM_ADMIN) {
-      const tenant = await findTenantById(organisationId);
+      const tenant = await findTenantById(tenantId);
       if (!tenant) {
         throw new ApiError(404, 'tenant_not_found', 'Operator not found.');
       }
@@ -41,14 +41,14 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       }
 
       req.tenantContext = {
-        tenantId: organisationId,
+        tenantId,
         membershipRole: MembershipRole.TENANT_ADMIN,
         actingAsPlatformAdmin: true
       };
       if (req.method !== 'GET' && req.method !== 'HEAD') {
         void auditPlatformAdminTenantScope({
           actorId: req.auth.userId,
-          tenantId: organisationId,
+          tenantId,
           method: req.method,
           path: req.path,
         });
@@ -56,19 +56,19 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       return next();
     }
 
-    const membership = await findTenantMembershipContext(organisationId, req.auth.userId);
+    const membership = await findTenantMembershipContext(tenantId, req.auth.userId);
 
     if (!membership) {
-      const tenant = await findTenantById(organisationId);
+      const tenant = await findTenantById(tenantId);
       if (!tenant || tenant.ownerId !== req.auth.userId) {
         throw new ApiError(403, 'forbidden', 'No operator membership found for this scope.');
       }
       if (tenant.status !== 'ACTIVE') {
         throw new ApiError(403, 'tenant_inactive', 'Operator is not active.');
       }
-      await ensureOwnerMembershipForTenant(req.auth.userId, organisationId);
+      await ensureOwnerMembershipForTenant(req.auth.userId, tenantId);
       req.tenantContext = {
-        tenantId: organisationId,
+        tenantId,
         membershipRole: MembershipRole.TENANT_OWNER,
         actingAsPlatformAdmin: false,
       };
@@ -79,7 +79,7 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
     }
 
     req.tenantContext = {
-      tenantId: organisationId,
+      tenantId,
       membershipRole: membership.role,
       actingAsPlatformAdmin: false
     };
@@ -105,5 +105,3 @@ export const requireMembershipRole =
     return next();
   };
 
-/** Organisation-scoped role gate — alias for requireMembershipRole. */
-export const requireOrgRole = requireMembershipRole;

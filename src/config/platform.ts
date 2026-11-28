@@ -93,12 +93,12 @@ export const DOMAIN_GLOSSARY = {
   },
   Organisation: {
     product: 'Operator',
-    description: 'Publishing identity — community host, guide, agency, partner, or shop. Wire: organisation.',
+    description: 'Publishing identity — community host, guide, agency, partner, or shop (tenant row).',
     storage: 'Tenant',
     api: '/publishing, /tenants/:slug',
     consoleRoute: '/operator/*',
     publicRoute: '/agency/:slug · /partner/:slug · /member/:userId (individuals)',
-    manageRoute: '/organisation/manage',
+    manageRoute: '/operator/profile',
   },
   Shop: {
     product: 'Shop',
@@ -433,7 +433,6 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/partner/',
   '/venue/',
   '/operator/',
-  '/organisation/manage',
   '/operator/security-privacy',
 ] as const;
 

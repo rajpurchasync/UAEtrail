@@ -8,7 +8,7 @@ import type {
 import { mapLocationToPlace } from '../api/mappers/place';
 import type { PublicMemberProfileDTO } from '../api/types';
 import type { Place } from '../types/place';
-import { fetchOrganisationProfileBySlug } from './operatorDeskClientApi';
+import { fetchOperatorPublicProfileBySlug } from './operatorDeskClientApi';
 import { fetchPublicPlaceDetailPayload } from './placeDetailClientApi';
 import { fetchPersonPublicProfile } from './memberPublicProfileApi';
 import { fetchPublicActivityDetail } from './publicActivityClientApi';
@@ -25,7 +25,7 @@ export type EntityFetchResult =
       nearbyFacilities: LocationDetailResponse['nearbyFacilities'];
     }
   | { kind: 'activity'; activity: ActivityDetailDTO }
-  | { kind: 'organisation'; tenant: TenantPublicDTO }
+  | { kind: 'tenant'; tenant: TenantPublicDTO }
   | { kind: 'shop'; shop: ShopPublicDTO }
   | { kind: 'person'; profile: PublicMemberProfileDTO };
 
@@ -54,9 +54,9 @@ export const fetchEntity = async (ref: EntityRef): Promise<EntityFetchResult> =>
       const { activity } = await fetchPublicActivityDetail(ref.id);
       return { kind: 'activity', activity };
     }
-    case 'organisation': {
-      const tenant = await fetchOrganisationProfileBySlug(ref.slug);
-      return { kind: 'organisation', tenant };
+    case 'tenant': {
+      const tenant = await fetchOperatorPublicProfileBySlug(ref.slug);
+      return { kind: 'tenant', tenant };
     }
     case 'shop': {
       const shopId =

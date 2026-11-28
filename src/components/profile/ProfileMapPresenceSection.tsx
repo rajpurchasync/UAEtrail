@@ -2,8 +2,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import type { HostFlowIntent } from '../../operator/apply/hostWizardFlow';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
-import { operatorDeskProfilePath } from '../../config/routingCatalog';
+import {
+  operatorDeskOverviewPath,
+  primeOperatorDeskTenant,
+  PRO_MEMBERSHIP_PATH,
+} from '../../config/routingCatalog';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 
@@ -68,15 +71,11 @@ export const ProfileMapPresenceSection = ({ embedded = false }: ProfileMapPresen
           <div className="flex flex-wrap gap-2">
             {HOST_PROFILE_CHIPS.map((chip) => {
               const active = isActive(chip.key);
-              const name = ownedProfiles.find((profile) => profile.type === chip.key)?.name;
+              const owned = ownedProfiles.find((profile) => profile.type === chip.key);
+              const name = owned?.name;
 
               if (active) {
-                const managePath =
-                  chip.key === 'shop'
-                    ? operatorDeskProfilePath('shop')
-                    : chip.key === 'agency'
-                      ? operatorDeskProfilePath('agency')
-                      : PRO_MEMBERSHIP_PATH;
+                const managePath = operatorDeskOverviewPath();
                 const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
                   chip.key === 'guide'
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -86,7 +85,15 @@ export const ProfileMapPresenceSection = ({ embedded = false }: ProfileMapPresen
                 }`;
 
                 return (
-                  <Link key={chip.key} to={managePath} className={className} title={name ?? chip.label}>
+                  <Link
+                    key={chip.key}
+                    to={managePath}
+                    className={className}
+                    title={name ?? chip.label}
+                    onClick={() => {
+                      if (owned?.tenantId) primeOperatorDeskTenant(owned.tenantId);
+                    }}
+                  >
                     <span>{chip.emoji}</span>
                     <span className="max-w-[120px] truncate">{name ?? chip.label}</span>
                     <span className="text-[10px] opacity-70">✓</span>

@@ -2,7 +2,7 @@ import type { Router } from 'express';
 import { z } from 'zod';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
-import { requireOrgRole } from '../../middleware/tenant.js';
+import { requireMembershipRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { decideTenantActivityJoinRequest } from '../../services/publishing-activity-request-commands.js';
 import { listTenantActivityJoinRequests } from '../../services/publishing-activity-request-read.js';
@@ -38,7 +38,7 @@ export const registerPublishingActivityRequestRoutes = (publishingRouter: Router
 
   publishingRouter.patch(
     '/requests/:id',
-    requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
+    requireMembershipRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: idParamSchema, body: activityRequestDecisionSchema }),
     async (req, res, next) => {
       try {

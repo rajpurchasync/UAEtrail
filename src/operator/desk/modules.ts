@@ -1,5 +1,6 @@
 import type { PublishingProfileKind } from '@uaetrail/shared-types';
 import {
+  MESSAGES_PATH,
   OPERATOR_ACTIVITIES_PATH,
   OPERATOR_HISTORY_PATH,
   OPERATOR_OVERVIEW_PATH,
@@ -8,6 +9,7 @@ import {
   OPERATOR_REQUESTS_PATH,
   OPERATOR_TEAM_PATH,
 } from '../../config/surfacePaths';
+import { MEMBER_SCHEDULE_CALENDAR_PATH } from '../../plan/planRouting';
 import {
   publishingProfileKindToDeskBrand,
   type WorkspaceBrandKind,
@@ -76,3 +78,55 @@ export const resolveOperatorDeskBrand = (
   kind: PublishingProfileKind | null | undefined
 ): WorkspaceBrandKind =>
   publishingProfileKindToDeskBrand(kind ?? 'community');
+
+/** Consumer projections that share the publishing spine (not separate desk modules). */
+export type OperatorDeskProjectionLinkId = 'calendar' | 'messages';
+
+export type OperatorDeskQuickLinkId = OperatorDeskModuleId | OperatorDeskProjectionLinkId;
+
+export type OperatorDeskQuickLink = {
+  id: OperatorDeskQuickLinkId;
+  to: string;
+  label: string;
+};
+
+const DESK_QUICK_LINK_META: Record<OperatorDeskQuickLinkId, { to: string; label: string }> = {
+  overview: { to: OPERATOR_OVERVIEW_PATH, label: 'Overview' },
+  requests: { to: OPERATOR_REQUESTS_PATH, label: 'Approvals' },
+  activities: { to: OPERATOR_ACTIVITIES_PATH, label: 'Manage trips' },
+  profile: { to: OPERATOR_PROFILE_PATH, label: 'Public profile' },
+  team: { to: OPERATOR_TEAM_PATH, label: 'Manage team' },
+  places: { to: OPERATOR_PLACES_PATH, label: 'Submit a place' },
+  history: { to: OPERATOR_HISTORY_PATH, label: 'Past trips' },
+  calendar: { to: MEMBER_SCHEDULE_CALENDAR_PATH, label: 'My calendar' },
+  messages: { to: MESSAGES_PATH, label: 'Chat groups' },
+};
+
+const DESK_QUICK_LINK_ORDER: OperatorDeskQuickLinkId[] = [
+  'calendar',
+  'messages',
+  'requests',
+  'activities',
+  'history',
+  'profile',
+  'places',
+  'team',
+];
+
+/**
+ * Quick links for overview / profile projections — filtered by {@link operatorDeskModulesForKind}.
+ * Calendar + chat are member-surface entry points into the same supply data, not parallel consoles.
+ */
+export const operatorDeskQuickLinksForKind = (kind: PublishingProfileKind): OperatorDeskQuickLink[] => {
+  const moduleAllow = new Set(operatorDeskModulesForKind(kind));
+  const allowed = new Set<OperatorDeskQuickLinkId>(['calendar', 'messages']);
+  for (const moduleId of moduleAllow) {
+    if (moduleId !== 'overview') {
+      allowed.add(moduleId);
+    }
+  }
+  return DESK_QUICK_LINK_ORDER.filter((id) => allowed.has(id)).map((id) => ({
+    id,
+    ...DESK_QUICK_LINK_META[id],
+  }));
+};

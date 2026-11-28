@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ACTIVITY_DETAIL_TABS } from '../activity/activityDetailTab';
 import { DESTINATION_DETAIL_TABS } from '../destinationDetail/destinationDetailTab';
-import { ORGANISATION_PUBLIC_TABS } from '../operator/public/organisationPublicDetailTab';
+import { TENANT_STOREFRONT_TABS } from '../operator/public/tenantStorefrontDetailTab';
 import { PLACE_DETAIL_TABS, parsePlaceDetailTabParam } from '../place/placeDetailTab';
 import { SHOP_PUBLIC_TABS } from '../shop/shopPublicDetailTab';
 import { CONSUMER_DETAIL_TAB_WIRE_CANON } from './consumerDetailTabWireCanon';
@@ -15,7 +15,7 @@ describe('detailSurfaceTabWireGuard (DOMAIN_CANONICALS §3.1)', () => {
     tabIdsEqual(PLACE_DETAIL_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.place);
     tabIdsEqual(DESTINATION_DETAIL_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.destination);
     tabIdsEqual(SHOP_PUBLIC_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.shop);
-    tabIdsEqual(ORGANISATION_PUBLIC_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.organisation);
+    tabIdsEqual(TENANT_STOREFRONT_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.organisation);
   });
 
   it('place legacy tab alias location maps to transport wire id', () => {

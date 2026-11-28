@@ -23,7 +23,7 @@ import { ReviewSection } from '../ui/ReviewSection';
 import { DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
 import { detailBackPath } from '../../config/routingCatalog';
 import { shopPublicPath } from '../../utils/shopPaths';
-import { fetchOrganisationReviews } from '../../hooks/operatorDeskClientApi';
+import { fetchTenantStorefrontReviews } from '../../hooks/operatorDeskClientApi';
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';
 import { useAuth } from '../../context/AuthContext';
@@ -105,7 +105,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
       setReviews([]);
       return;
     }
-    fetchOrganisationReviews(reviewTargetId)
+    fetchTenantStorefrontReviews(reviewTargetId)
       .then((data) => setReviews(data))
       .catch(() => setReviews([]));
   }, [reviewTargetId]);

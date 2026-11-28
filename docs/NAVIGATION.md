@@ -86,8 +86,8 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Canonical SPA `/operator/*`** — one console for community hosts and workspace tenants; inbound `/publishing/*`, `/hosting`, `/host/*`, `/organizer/*` redirect to `/operator/*`. Capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Tenant HTTP API remains **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
 - **Host mode home:** hosts land on **`/operator/overview`** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/explore`.
 - **Host mode chrome:** while role is `tenant_*` (not visitor), primary nav is **Hosting (`/operator/overview`) · My Plans (`/plan`) · Chat**. Hamburger leads with **Hosting** and still includes **Explore**.
-- **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/operator/desk/*`); route pages in `src/operator/desk/*`. Copy: `src/content/workspaceVocabulary.ts`.
-- **`/operator/overview`:** workspace tenants see `ConsoleHubSections`; **community** tenants see `HostingHubView` (schedule + host tools) inside the same shell — no mode switcher.
+- **Shell nav:** `operatorDeskNavLinksForKind` in `ConsoleShell` + mobile operator drawer (`MobileMenu`); registry in `src/operator/desk/modules.ts`. Copy: `src/content/workspaceVocabulary.ts`.
+- **`/operator/overview`:** all publishing kinds with an active tenant see `HostingHubView` (schedule + kind-filtered host tools) inside `ConsoleShell` — no mode switcher.
 - **Member profile (`/profile`):** consumer hub only; organizing shortcuts → operator overview, not a second `/hosting` surface.
 
 ### Admin console (`/admin/*`)

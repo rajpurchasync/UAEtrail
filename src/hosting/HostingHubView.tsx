@@ -33,17 +33,12 @@ import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../api/types';
 import { matchesActivitySearch } from '../utils/activitySearch';
 import type { PlanHostingScheduleLens } from '../plan/planHostingTimeRange';
+import { OPERATOR_ACTIVITIES_PATH, OPERATOR_HISTORY_PATH, OPERATOR_OVERVIEW_PATH, OPERATOR_REQUESTS_PATH } from '../config/routingCatalog';
 import {
-  MEMBER_SCHEDULE_CALENDAR_PATH,
-  OPERATOR_OVERVIEW_PATH,
-  MESSAGES_PATH,
-  OPERATOR_ACTIVITIES_PATH,
-  OPERATOR_HISTORY_PATH,
-  OPERATOR_PLACES_PATH,
-  OPERATOR_PROFILE_PATH,
-  OPERATOR_REQUESTS_PATH,
-  OPERATOR_TEAM_PATH,
-} from '../config/routingCatalog';
+  operatorDeskQuickLinksForKind,
+  type OperatorDeskQuickLinkId,
+} from '../operator/desk/modules';
+import { useActiveOperatorDeskKind } from '../operator/desk/useActiveOperatorDeskKind';
 import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
@@ -52,6 +47,7 @@ import {
   AccountLinkList,
   AccountSectionHeader,
   AccountStatGrid,
+  type AccountLinkItem,
   type AccountStat,
 } from '../components/account';
 
@@ -74,11 +70,12 @@ type HostingHubViewProps = {
 };
 
 /**
- * Community host schedule on `/operator/overview` — hosting workspace only
- * (upcoming, approvals, chat, manage, history — not My Plans).
+ * Operator overview body — schedule + manage projections into `publishing_workspace`
+ * (same modules as desk chips; quick links respect {@link operatorDeskQuickLinksForKind}).
  */
 export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps) => {
   const navigate = useNavigate();
+  const deskKind = useActiveOperatorDeskKind();
   // Join queue only — schedule / counts / past use scoped queries (no full tenant dump).
   const host = useConsoleHubData(true, { fetchActivities: false });
   const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
@@ -166,6 +163,39 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
     return rangeCounts.counts[key];
   };
 
+  const quickLinks = useMemo(() => operatorDeskQuickLinksForKind(deskKind), [deskKind]);
+
+  const quickLinkIcon = (id: OperatorDeskQuickLinkId) => {
+    if (id === 'calendar') return <CalendarDays className="h-4 w-4" />;
+    if (id === 'messages') return <MessageSquare className="h-4 w-4" />;
+    if (id === 'requests') return <Users className="h-4 w-4" />;
+    if (id === 'activities') return <CalendarDays className="h-4 w-4" />;
+    if (id === 'history') return <History className="h-4 w-4" />;
+    if (id === 'profile') return <UserCircle className="h-4 w-4" />;
+    if (id === 'places') return <MapPin className="h-4 w-4" />;
+    if (id === 'team') return <UsersRound className="h-4 w-4" />;
+    return <CalendarDays className="h-4 w-4" />;
+  };
+
+  const quickLinkAccent = (id: OperatorDeskQuickLinkId): AccountLinkItem['accent'] => {
+    if (id === 'requests') return 'amber';
+    if (id === 'activities' || id === 'profile') return 'emerald';
+    if (id === 'places') return 'blue';
+    return undefined;
+  };
+
+  const hostToolItems = useMemo(
+    () =>
+      quickLinks.map((link) => ({
+        to: link.to,
+        icon: quickLinkIcon(link.id),
+        label: link.label,
+        badge: link.id === 'requests' ? host.pendingJoinRequests || undefined : undefined,
+        accent: quickLinkAccent(link.id),
+      })),
+  [quickLinks, host.pendingJoinRequests]
+  );
+
   const hubStats: AccountStat[] = useMemo(
     () => [
       {
@@ -252,56 +282,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
         <h2 id="plan-hosting-tools-heading" className="sr-only">
           Host tools
         </h2>
-        <AccountLinkList
-          items={[
-            {
-              to: MEMBER_SCHEDULE_CALENDAR_PATH,
-              icon: <CalendarDays className="h-4 w-4" />,
-              label: 'My calendar',
-              accent: 'emerald',
-            },
-            {
-              to: OPERATOR_REQUESTS_PATH,
-              icon: <Users className="h-4 w-4" />,
-              label: 'Approvals',
-              badge: host.pendingJoinRequests || undefined,
-              accent: 'amber',
-            },
-            {
-              to: MESSAGES_PATH,
-              icon: <MessageSquare className="h-4 w-4" />,
-              label: 'Chat groups',
-            },
-            {
-              to: OPERATOR_ACTIVITIES_PATH,
-              icon: <CalendarDays className="h-4 w-4" />,
-              label: 'Manage trips',
-              accent: 'emerald',
-            },
-            {
-              to: OPERATOR_HISTORY_PATH,
-              icon: <History className="h-4 w-4" />,
-              label: 'Past trips',
-            },
-            {
-              to: OPERATOR_PROFILE_PATH,
-              icon: <UserCircle className="h-4 w-4" />,
-              label: 'Public profile',
-              accent: 'emerald',
-            },
-            {
-              to: OPERATOR_PLACES_PATH,
-              icon: <MapPin className="h-4 w-4" />,
-              label: 'Submit a place',
-              accent: 'blue',
-            },
-            {
-              to: OPERATOR_TEAM_PATH,
-              icon: <UsersRound className="h-4 w-4" />,
-              label: 'Manage team',
-            },
-          ]}
-        />
+        <AccountLinkList items={hostToolItems} />
       </section>
 
       <div className="relative">

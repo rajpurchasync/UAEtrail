@@ -29,7 +29,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 
 - `/auth` — JWT + refresh
 - `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, **`/me/availability`**, groups, buddies, wishlist, member-discovery)
-- `/publishing` — tenant-scoped activities, check-in, join queue (`x-organisation-id`; no `/host` or `/operator` API)
+- `/publishing` — tenant-scoped activities, check-in, join queue (`x-tenant-id`; no `/host` or `/operator` API)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — operator shop **profiles** (public read + merchant manage); no product catalog or shop checkout routes
 - `/safety` — member content reports (`POST /safety/reports`)
@@ -60,7 +60,7 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Individual Pro | `tenants` (professional) + member | `/member/:userId` | No |
 | Agency (organisation) | `tenants` (agency) | `/agency/:slug` | No |
 
-Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/operator/profile`, inbound `/organisation/manage?kind=shop`: contact, branding). Saving there syncs both and invalidates the explore map cache.
+Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/operator/profile?kind=shop`: contact, branding). Saving there syncs both and invalidates the explore map cache.
 
 ## Frontend (`src`)
 
@@ -85,7 +85,7 @@ utils/          authRouting, shopPaths — explore URL builders live in `src/exp
 
 - List endpoints: `{ data, pagination: { page, pageSize, total, totalPages } }`
 - Errors: `{ error: { code, message } }` via `ApiError`
-- Auth: `Authorization: Bearer` + `x-organisation-id` for `/publishing/*` routes
+- Auth: `Authorization: Bearer` + `x-tenant-id` for `/publishing/*` routes
 - Dates: stored UTC; returned as local `date` + `time` per tenant `countryCode`
 
 ## Cross-Platform Session + Access Addendum (2026-08)

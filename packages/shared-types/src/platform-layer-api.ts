@@ -11,7 +11,7 @@ export const PLATFORM_LAYER_API_MODULES: Record<PlatformLayer, readonly string[]
     'explore',
     'places',
     'account',
-    'organisation',
+    'operatorPublic',
     'shop',
     'destinations',
     'weather',
@@ -21,7 +21,7 @@ export const PLATFORM_LAYER_API_MODULES: Record<PlatformLayer, readonly string[]
   join: ['activities', 'member', 'memberCommitmentHub'],
   connect: ['friends', 'groups', 'chat', 'messaging', 'entityFollow', 'reviews'],
   plan: ['wishlist', 'goals', 'availability', 'memberJourneyMap', 'badges'],
-  manage: ['publishingWorkspace', 'organisation', 'admin', 'platformAlerts'],
+  manage: ['publishingWorkspace', 'operatorPublic', 'admin', 'platformAlerts'],
 };
 
 export const apiDomainModulesForLayer = (layer: PlatformLayer): readonly string[] =>

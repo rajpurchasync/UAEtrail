@@ -20,10 +20,10 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
     expect(read('src/member/hostMemberGuard.test.ts')).toMatch(/become-host/);
   });
 
-  it('STOREFRONT-SPINE-03: operator desk SPA /operator/*; HTTP /publishing (legacy /host/* inbound)', () => {
+  it('STOREFRONT-SPINE-03: operator desk SPA /operator/*; HTTP /publishing', () => {
     expect(read('src/config/publishingConsoleRoutingGuard.test.ts')).toMatch(/\/publishing/);
     expect(read('src/member/publishingConsoleHookGuard.test.ts')).toMatch(/tenantActivityClientApi/);
-    expect(read('src/member/organisationNamingGuard.test.ts')).toMatch(/OrganisationProfile/);
+    expect(read('src/member/organisationNamingGuard.test.ts')).toMatch(/TenantStorefrontPage/);
   });
 
   it('STOREFRONT-SPINE-04: shop and agency public detail use client facades', () => {
@@ -33,6 +33,8 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('shop.public_profile')?.axis).toBe('C_STOREFRONT');
     expect(byId.get('publish.as_tenant')?.resolver?.module).toMatch(/publishing-profile-kind/);
+    expect(byId.get('publish.shop_storefront')?.contextId).toBe('publishing_workspace');
+    expect(byId.get('publish.shop_storefront')?.http?.path).toBe('/publishing/shop-profile');
   });
 
   it('STOREFRONT-SPINE-05: workspace access does not broaden via UserRole', () => {

@@ -30,7 +30,6 @@ import {
   MY_CREWS_PATH,
 } from '../config/surfacePaths';
 import { ADMIN_DESTINATIONS_PATH } from '../config/adminSurfacePaths';
-import { ORGANISATION_MANAGE_PATH } from '../member/organisationPaths';
 import {
   ProtectedRoute,
   Home,
@@ -45,7 +44,7 @@ import {
   ShopPublic,
   ActivityDetail,
   ActivityCrewPage,
-  OrganisationProfile,
+  TenantStorefrontPage,
   MemberProfile,
   SignUp,
   SignIn,
@@ -81,7 +80,6 @@ import {
   PublishingHistory,
   UserRequests,
   MessagesGate,
-  PublishingManage,
   ProfileHistoryPage,
   JourneyMapPage,
   Profile,
@@ -404,7 +402,7 @@ export const AppRoutes = () => (
       path="/agency/:id"
       element={
         <ProtectedRoute>
-          <OrganisationProfile />
+          <TenantStorefrontPage />
         </ProtectedRoute>
       }
     />
@@ -412,7 +410,7 @@ export const AppRoutes = () => (
       path="/partner/:id"
       element={
         <ProtectedRoute>
-          <OrganisationProfile />
+          <TenantStorefrontPage />
         </ProtectedRoute>
       }
     />
@@ -637,14 +635,6 @@ export const AppRoutes = () => (
       element={
         <ProtectedRoute publishingWorkspace>
           <PublishingHistory />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path={ORGANISATION_MANAGE_PATH}
-      element={
-        <ProtectedRoute publishingWorkspace>
-          <PublishingManage />
         </ProtectedRoute>
       }
     />

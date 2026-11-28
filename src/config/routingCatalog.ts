@@ -108,18 +108,14 @@ export {
 } from './adminSurfacePaths';
 
 export {
-  ORGANISATION_MANAGE_PATH,
-  organisationManagePath,
+  operatorDeskOverviewPath,
   operatorDeskProfilePath,
-  parseOrganisationKind,
-  type OrganisationKind,
-} from '../member/organisationPaths';
+  parseOperatorDeskProfileKind,
+  primeOperatorDeskTenant,
+  type OperatorDeskProfileKind,
+} from '../member/operatorDeskPaths';
 
-export {
-  PLAN_PATH,
-  OPERATOR_CONSOLE_LINKS,
-  ADMIN_LINKS,
-} from '../constants';
+export { PLAN_PATH, ADMIN_LINKS } from '../constants';
 
 export {
   INBOUND_PLAN_HUB_TRIPS_PATH,
